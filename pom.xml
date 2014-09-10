@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>eemws</groupId>
     <artifactId>eemws-client-parent</artifactId>
-    <version>1.0</version>
+    <version>1.0-m1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>eemws-client-parent</name>
     <description>parent</description>
@@ -15,4 +15,21 @@
         <module>eemws-kit</module>
     </modules>
     
+    <build>
+      <plugins>
+         <plugin>
+             <groupId>external.atlassian.jgitflow</groupId>
+             <artifactId>jgitflow-maven-plugin</artifactId>
+             <version>${jgitflow.version}</version>
+             <configuration>
+                 <noDeploy>true</noDeploy>
+                 <autoVersionSubmodules>true</autoVersionSubmodules>
+                 <scmCommentPrefix>[jgitflow] </scmCommentPrefix>
+             </configuration>
+         </plugin>
+      </plugins>
+    </build>
+    <properties>
+        <jgitflow.version>1.0-m4.3</jgitflow.version>
+    </properties>
 </project>
