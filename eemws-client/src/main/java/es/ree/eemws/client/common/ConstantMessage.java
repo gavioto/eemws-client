@@ -38,8 +38,5 @@ public final class ConstantMessage {
     }
 
     /** Verb of the action. */
-    public static final String RESPONSE_VERB = "reply";
-
-    /** Expected value of the field "Result" of the reply. */
-    public static final String RESPONSE_REPLY_RESULT = "OK";
+    public static final String RESPONSE_VERB = "reply"; //$NON-NLS-1$
 }

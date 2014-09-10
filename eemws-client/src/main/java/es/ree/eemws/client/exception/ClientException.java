@@ -20,6 +20,12 @@
  */
 package es.ree.eemws.client.exception;
 
+import java.util.List;
+
+import ch.iec.tc57._2011.schema.message.ErrorType;
+import es.ree.eemws.client.common.Messages;
+import _504.iec62325.wss._1._0.MsgFaultMsg;
+
 
 /**
  * General exception used by the client of the web service.
@@ -29,9 +35,12 @@ package es.ree.eemws.client.exception;
  */
 public final class ClientException extends Exception {
 
-    /** Serial version UID. */
-    private static final long serialVersionUID = 1738083255122012738L;
-
+	/** Serial version UID. */
+	private static final long serialVersionUID = -4884537802173142975L;
+	
+	/** Fault message cause. Can be <code>null</code>. */
+    private MsgFaultMsg faultCause;
+    
     /**
      * Constructor.
      */
@@ -51,6 +60,15 @@ public final class ClientException extends Exception {
 
     /**
      * Constructor.
+     * @param cause Fault received from server.
+     */
+    public ClientException(final MsgFaultMsg cause) {
+    	super(cause);
+    	faultCause = cause;
+    }
+    
+    /**
+     * Constructor.
      * @param cause Exception.
      */
     public ClientException(final Throwable cause) {
@@ -67,4 +85,67 @@ public final class ClientException extends Exception {
 
         super(errorMessage, cause);
     }
+
+    /**
+     * Returns this exception error message.
+     * In case that the exception was produced by a fault message,
+     * a string version of such fault will be also returned.
+     * @return A string message with this exception details. 
+     */
+    @Override
+    public String getMessage() {
+    	String retValue;
+    	if (faultCause == null) {
+    		retValue = super.getMessage();
+    	} else {
+    		StringBuilder sb = new StringBuilder();
+    		sb.append(Messages.getString("SERVER_FAULT", faultCause.getMessage(), faultCause.getFaultInfo().getReply().getResult())); //$NON-NLS-1$
+    		
+    		List<ErrorType> lstErr = faultCause.getFaultInfo().getReply().getErrors();
+    		if (lstErr != null && !lstErr.isEmpty()) {
+    			
+    			sb.append("["); //$NON-NLS-1$
+    			sb.append(Messages.getString("SERVER_FAULT_ERRORS")); //$NON-NLS-1$
+    			sb.append("="); //$NON-NLS-1$
+    			for (ErrorType error : lstErr) {
+    				sb.append("{"); //$NON-NLS-1$
+    				String str;
+    				str = error.getCode();
+    				if (str != null) {
+    					sb.append("["); //$NON-NLS-1$
+    					sb.append(Messages.getString("SERVER_FAULT_CODE")); //$NON-NLS-1$
+    					sb.append("="); //$NON-NLS-1$
+    					sb.append(str);
+    					sb.append("]"); //$NON-NLS-1$
+    				}
+    				
+    				str = error.getReason();
+    				if (str != null) {
+    					sb.append("["); //$NON-NLS-1$
+    					sb.append(Messages.getString("SERVER_FAULT_REASON")); //$NON-NLS-1$
+    					sb.append("="); //$NON-NLS-1$
+    					sb.append(str);
+    					sb.append("]"); //$NON-NLS-1$
+    				}
+    				
+    				str = error.getDetails();
+    				if (str != null) {
+    					sb.append("["); //$NON-NLS-1$
+    					sb.append(Messages.getString("SERVER_FAULT_DETAILS")); //$NON-NLS-1$
+    					sb.append("="); //$NON-NLS-1$
+    					sb.append(str);
+    					sb.append("]"); //$NON-NLS-1$
+    				}
+    				sb.append("},"); //$NON-NLS-1$
+    			}
+    			sb.setLength(sb.length() - 1);
+    			sb.append("]"); //$NON-NLS-1$
+    		}
+    		
+    		retValue = sb.toString();    		
+    	}
+    	
+    	return retValue;
+    }
+
 }
