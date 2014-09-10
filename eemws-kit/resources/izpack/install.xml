@@ -7,7 +7,7 @@
 	<info>
 		<javaversion>1.7</javaversion>
 		<appname>Connection Kit</appname>
-		<appversion>1.0</appversion>
+		<appversion>@{project.version}</appversion>
 		<url>http://www.ree.es</url>
 		<authors>
 			<author name="Red Eléctrica de España" email="soportesios@ree.es"/>
@@ -18,7 +18,7 @@
 	<variables>
 		<variable name="desktopshortcutcheckboxenabled" value="true"/>
 	</variables>
-	
+   
 	<guiprefs width="540" height="320" resizable="yes"/>
 	
 	<locale>
@@ -79,13 +79,13 @@
 			
 			<file src="../../certificates/local-cacerts.jks" targetdir="$INSTALL_PATH/certificates"/>
 
-			<file src="../../../core-kit/target/dependency/eemws-client-1.0.jar" targetdir="$INSTALL_PATH/lib"/>
-			<file src="../../../core-kit/target/dependency/eemws-core-1.0.jar" targetdir="$INSTALL_PATH/lib"/>
-			<file src="../../../core-kit/target/dependency/eemws-utils-1.0.jar" targetdir="$INSTALL_PATH/lib"/>
-			<file src="../../../core-kit/target/core-kit-1.0.jar" targetdir="$INSTALL_PATH/lib"/>
+			<file src="../../../core-kit/target/dependency/eemws-client-@{project.version}.jar" targetdir="$INSTALL_PATH/lib"/>
+			<file src="../../../core-kit/target/dependency/eemws-core-@{project.version}.jar" targetdir="$INSTALL_PATH/lib"/>
+			<file src="../../../core-kit/target/dependency/eemws-utils-@{project.version}.jar" targetdir="$INSTALL_PATH/lib"/>
+			<file src="../../../core-kit/target/core-kit-@{project.version}.jar" targetdir="$INSTALL_PATH/lib"/>
 
-			<file src="../../../../../COPYING" targetdir="$INSTALL_PATH"/>
-			<file src="../../../../../COPYING.LESSER" targetdir="$INSTALL_PATH"/>
+			<file src="../../../../COPYING" targetdir="$INSTALL_PATH"/>
+			<file src="../../../../COPYING.LESSER" targetdir="$INSTALL_PATH"/>
 			
 			<parsable targetfile="$INSTALL_PATH/config/config.properties" type="javaprop"/>
 			<parsable targetfile="$INSTALL_PATH/bin/commEnv.cmd" type="shell" os="windows"/>

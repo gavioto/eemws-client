@@ -11,12 +11,12 @@
 		<dependency>
 			<groupId>eemws</groupId>
 			<artifactId>eemws-utils</artifactId>
-			<version>1.0</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eemws</groupId>
 			<artifactId>eemws-core</artifactId>
-			<version>1.0</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax</groupId>
