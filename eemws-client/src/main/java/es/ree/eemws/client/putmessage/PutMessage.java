@@ -21,7 +21,6 @@
 package es.ree.eemws.client.putmessage;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
@@ -37,7 +36,7 @@ import ch.iec.tc57._2011.schema.message.RequestMessage;
 import ch.iec.tc57._2011.schema.message.RequestType;
 import ch.iec.tc57._2011.schema.message.RequestType.ID;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
-import es.ree.eemws.client.common.ErrorText;
+import es.ree.eemws.client.common.Messages;
 import es.ree.eemws.client.common.ParentClient;
 import es.ree.eemws.client.exception.ClientException;
 import es.ree.eemws.core.utils.file.GZIPUtil;
@@ -54,18 +53,25 @@ import es.ree.eemws.core.utils.xml.XMLElementUtil;
 public final class PutMessage extends ParentClient {
 
     /** Verb of the action. */
-    private static final String VERB = "create";
+    private static final String VERB = "create"; //$NON-NLS-1$
 
     /** Name of the name of the binary file. */
-    private static final String NAME_OPTION = "name";
+    private static final String NAME_OPTION = "name"; //$NON-NLS-1$
 
+    /** Put request messages are signed by default. */
+    private static final boolean SIGN_REQUEST = true;
+
+    /** Put response messages signature are validated by default. */
+	private static final boolean VERIFY_RESPONSE = true;
+
+    
     /**
      * Constructor.
      */
     public PutMessage() {
 
-        setSignRequest(true);
-        setVerifyResponse(true);
+        setSignRequest(SIGN_REQUEST);
+        setVerifyResponse(VERIFY_RESPONSE);
     }
 
     /**
@@ -100,7 +106,7 @@ public final class PutMessage extends ParentClient {
 
             RequestMessage requestMessage = createRequest(noun, name, data, format);
             ResponseMessage responseMessage = sendMessage(requestMessage);
-            return processResponse(responseMessage);
+            return getPrettyPrintPayloadMessage(responseMessage);
 
         } catch (MsgFaultMsg | IOException e) {
 
@@ -161,7 +167,7 @@ public final class PutMessage extends ParentClient {
 
             RequestMessage requestMessage = createRequest(xmlMessage);
             ResponseMessage responseMessage = sendMessage(requestMessage);
-            return processResponse(responseMessage);
+            return getPrettyPrintPayloadMessage(responseMessage);
 
         } catch (MsgFaultMsg e) {
 
@@ -195,9 +201,7 @@ public final class PutMessage extends ParentClient {
 
         } catch (ParserConfigurationException | SAXException | IOException e) {
 
-            Object[] paramsText = {e.getMessage()};
-            String errorText = MessageFormat.format(ErrorText.ERROR_TEXT_004, paramsText);
-            throw new ClientException(errorText, e);
+        	throw new ClientException(Messages.getString("UNABLE_TO_CREATE_PAYLOAD", e.getMessage()), e); //$NON-NLS-1$
         }
     }
 }

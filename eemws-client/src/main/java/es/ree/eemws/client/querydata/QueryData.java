@@ -119,7 +119,7 @@ public final class QueryData extends ParentClient {
 
             RequestMessage requestMessage = createRequest(dataType, startTime, endTime, areaCode);
             ResponseMessage responseMessage = sendMessage(requestMessage);
-            return processResponse(responseMessage);
+            return getPrettyPrintPayloadMessage(responseMessage);
 
         } catch (MsgFaultMsg e) {
 

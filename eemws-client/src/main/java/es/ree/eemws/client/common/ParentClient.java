@@ -22,7 +22,8 @@ package es.ree.eemws.client.common;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.MessageFormat;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 import javax.xml.namespace.QName;
@@ -40,12 +41,12 @@ import _504.iec62325.wss._1._0.ServiceEME;
 import ch.iec.tc57._2011.schema.message.HeaderType;
 import ch.iec.tc57._2011.schema.message.OptionType;
 import ch.iec.tc57._2011.schema.message.PayloadType;
-import ch.iec.tc57._2011.schema.message.ReplyType;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
 import es.ree.eemws.client.exception.ClientException;
 import es.ree.eemws.client.handler.SendHandler;
 import es.ree.eemws.core.utils.xml.XMLElementUtil;
+import es.ree.eemws.core.utils.xml.XMLUtil;
 
 
 /**
@@ -57,10 +58,10 @@ import es.ree.eemws.core.utils.xml.XMLElementUtil;
 public abstract class ParentClient {
 
     /** Service name of the Web Service EME. */
-    private static final QName SERVICE_NAME = new QName("urn:iec62325.504:wss:1:0", "ServiceEME");
+    private static final QName SERVICE_NAME = new QName("urn:iec62325.504:wss:1:0", "ServiceEME"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    /** WSDL extension. */
-    private static final String WSDL_EXTENSION = "?WSDL";
+    /** WSDL file name. This avoids connection to the remote server just to retrieve it. */
+    private static final String WSDL_FILE = "urn-iec62325-504-wss-1-0.wsdl"; //$NON-NLS-1$
 
     /** URL of the end point of the web service. */
     private URL endPoint = null;
@@ -71,24 +72,36 @@ public abstract class ParentClient {
     /** Check to verify the response. */
     private boolean verifyResponse = true;
 
+    /** Certificate to sign request. */
+    private X509Certificate certificate = null;
+
+    /** Private key of the certificate. */
+    private PrivateKey privateKey = null;
+
+    /** Data of the message. */
+    private MessageData messageData = null;
+
     /**
-     * This method set the URL of the end point of the web service.
+     * This method sets the URL of the end point of the web service.
      * @param url URL of the end point of the web service.
+     * @throws MalformedURLException if the given address is not valid.
      */
-    public final void setEndPoint(final String url) {
+    public final void setEndPoint(final String url) throws MalformedURLException {
 
-        try {
-
-            endPoint = new URL(url + WSDL_EXTENSION);
-
-        } catch (MalformedURLException e) {
-
-            endPoint = null;
-        }
+        endPoint = new URL(url);
     }
 
     /**
-     * This method set the check to sign the request.
+     * This method sets the URL of the end point of the web service.
+     * @param url URL of the end point of the web service.
+     */
+    public final void setEndPoint(final URL url) {
+
+        endPoint = url;
+    }
+
+    /**
+     * This method sets whether signs the request.
      * @param check Check to sign the request.
      */
     public final void setSignRequest(final boolean check) {
@@ -97,7 +110,7 @@ public abstract class ParentClient {
     }
 
     /**
-     * This method set the check to verify the response.
+     * This method sets whether checks the response signature.
      * @param check Check to verify the response.
      */
     public final void setVerifyResponse(final boolean check) {
@@ -106,27 +119,59 @@ public abstract class ParentClient {
     }
 
     /**
-     * This method send a message.
+     * This method sets the certificate to sign request.
+     * @param inCertificate Certificate to sign request.
+     */
+    public final void setCertificate(final X509Certificate inCertificate) {
+
+        certificate = inCertificate;
+    }
+
+    /**
+     * This method sets the private key of the certificate.
+     * @param inPrivateKey Private key of the certificate.
+     */
+    public final void setPrivateKey(final PrivateKey inPrivateKey) {
+
+        privateKey = inPrivateKey;
+    }
+
+    /**
+     * This method gets the data of the message.
+     * @return Data of the message.
+     */
+    public final MessageData getMessageData() {
+
+        return messageData;
+    }
+
+    /**
+     * This method sends a message.
+     *
      * @param message Message to send.
      * @return Response to the message.
      * @throws MsgFaultMsg Fault message.
      */
+    @SuppressWarnings("rawtypes")
     protected final ResponseMessage sendMessage(final RequestMessage message) throws MsgFaultMsg {
 
-        ServiceEME service = new ServiceEME(endPoint, SERVICE_NAME);
+        ServiceEME service = new ServiceEME(getClass().getClassLoader().getResource(WSDL_FILE), SERVICE_NAME);
         PortTFEDIType port = service.getServiceEMEPort();
+        BindingProvider bindingProvider = (BindingProvider) port;
+        bindingProvider.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint.toString());
 
-        Binding binding = ((BindingProvider) port).getBinding();
-        @SuppressWarnings("rawtypes")
-		List<Handler> handlerList = binding.getHandlerChain();
-        handlerList.add(new SendHandler(signRequest, verifyResponse));
+        messageData = new MessageData();
+
+        Binding binding = bindingProvider.getBinding();
+        List<Handler> handlerList = binding.getHandlerChain();
+        handlerList.add(new SendHandler(signRequest, verifyResponse, messageData, certificate, privateKey));
         binding.setHandlerChain(handlerList);
 
         return port.request(message);
     }
 
     /**
-     * This method create the header of the message.
+     * This method creates the header of the message.
      * @param verb Verb of the message.
      * @param noun Noun of the message.
      * @return Header of the message.
@@ -140,7 +185,7 @@ public abstract class ParentClient {
     }
 
     /**
-     * This method create a new option.
+     * This method creates a new option.
      * @param name Name of the new option.
      * @param value Value of the new option.
      * @return New option.
@@ -154,83 +199,50 @@ public abstract class ParentClient {
     }
 
     /**
-     * This method process the response message.
+     * Gets the pretty print version of the response payload.
+     * For performance considere to use: <code>getMessageData().getPayload()</code> instead.
      * @param responseMessage Response message.
-     * @return String with the XML message.
-     * @throws ClientException Exception with the error.
+     * @return String with the payload message.
+     * @throws ClientException If the response has no payload or if the relation between payload and header is not fulfilled.
      */
-    protected final String processResponse(final ResponseMessage responseMessage)
+    protected final String getPrettyPrintPayloadMessage(final ResponseMessage responseMessage)
             throws ClientException {
 
         HeaderType header = responseMessage.getHeader();
-        ReplyType reply = responseMessage.getReply();
         PayloadType payload = responseMessage.getPayload();
-
-        checkHeaderResponse(header, payload);
-        checkReplyResponse(reply);
-
-        return processPayload(payload);
-    }
-
-    /**
-     * This method check the header of the response.
-     * @param header Header of the response.
-     * @param payload Payload with the XML message.
-     * @throws ClientException Exception with the error.
-     */
-    protected final void checkHeaderResponse(final HeaderType header, final PayloadType payload)
-            throws ClientException {
-
         String verb = header.getVerb();
         String noun = header.getNoun();
-
-        Element xml = payload.getAnies().get(0);
-        String rootTag = xml.getLocalName();
-
-        boolean error = !ConstantMessage.RESPONSE_VERB.equals(verb) || !rootTag.equals(noun);
-        if (error) {
-
-            Object[] paramsText = {verb, noun, ConstantMessage.RESPONSE_VERB, rootTag};
-            String errorText = MessageFormat.format(ErrorText.ERROR_TEXT_001, paramsText);
-            throw new ClientException(errorText);
+        String retValue = null;
+        
+        if (payload == null) {
+        	throw new ClientException(Messages.getString("NO_PAYLOAD", "Payload load is null")); //$NON-NLS-1$ //$NON-NLS-2$
         }
-    }
-
-    /**
-     * This method check the reply of the response.
-     * @param reply Reply of the response.
-     * @throws ClientException Exception with the error.
-     */
-    protected final void checkReplyResponse(final ReplyType reply) throws ClientException {
-
-        String result = reply.getResult();
-        boolean error = !ConstantMessage.RESPONSE_REPLY_RESULT.equals(result);
-        if (error) {
-
-            Object[] paramsText = {result};
-            String errorText = MessageFormat.format(ErrorText.ERROR_TEXT_002, paramsText);
-            throw new ClientException(errorText);
+            
+        Element message = payload.getAnies().get(0);
+            
+        if (message == null) {
+            	
+        	throw new ClientException(Messages.getString("PAYLOAD_EMPTY")); //$NON-NLS-1$
         }
-    }
-
-    /**
-     * This method get the XML in the payload of the message.
-     * @param payload Payload of the message.
-     * @return XML in the payload of the message.
-     * @throws ClientException Exception with the error.
-     */
-    private String processPayload(final PayloadType payload) throws ClientException {
-
-        try {
-
-            Element message = payload.getAnies().get(0);
-            return XMLElementUtil.element2String(message);
-
-        } catch (TransformerException | ParserConfigurationException e) {
-
-            Object[] paramsText = {e.getMessage()};
-            String errorText = MessageFormat.format(ErrorText.ERROR_TEXT_003, paramsText);
-            throw new ClientException(errorText, e);
+            
+        String rootTag = message.getLocalName();
+            	
+        if (!ConstantMessage.RESPONSE_VERB.equals(verb) || !rootTag.equals(noun)) {
+                	
+        	throw new ClientException(Messages.getString("INVALID_HEADER", verb, noun, ConstantMessage.RESPONSE_VERB, rootTag)); //$NON-NLS-1$
         }
+       
+       
+       try {
+               
+    	   retValue = XMLUtil.prettyPrint(XMLUtil.removeNameSpaces(XMLElementUtil.element2String(message)).toString()).toString();
+                
+       } catch (TransformerException | ParserConfigurationException e) {
+
+           	throw new ClientException(Messages.getString("NO_PAYLOAD", e.getMessage()), e); //$NON-NLS-1$
+       }
+       
+       return retValue;
+    
     }
 }

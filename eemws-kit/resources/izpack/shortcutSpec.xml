@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<shortcuts>
+    <skipIfNotSupported/>
+
+    <programGroup defaultName="Connection kit" location="applications"/>
+
+    <shortcut name="Settings" target="$INSTALL_PATH/bin/setup.cmd" commandLine=""
+        workingDirectory="$INSTALL_PATH/bin" description="Connecion kit Settings"
+        iconFile="$INSTALL_PATH/bin/setup.ico" iconIndex="0" initialState="normal"
+        programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no">
+
+        <createForPack name="Core"/>
+    </shortcut>
+
+    <shortcut name="Message editor" target="$INSTALL_PATH/bin/editor.cmd" commandLine=""
+        workingDirectory="$INSTALL_PATH/bin" description="Send and retrieve messages"
+        iconFile="$INSTALL_PATH/bin/editor.ico" iconIndex="0" initialState="normal" programGroup="yes"
+        desktop="yes" applications="no" startMenu="no" startup="no">
+
+        <createForPack name="Core"/>
+    </shortcut>
+
+    <shortcut name="List and request" target="$INSTALL_PATH/bin/lists.cmd" commandLine=""
+        workingDirectory="$INSTALL_PATH/bin" description="List and request messages"
+        iconFile="$INSTALL_PATH/bin/lists.ico" iconIndex="0" initialState="normal" programGroup="yes"
+        desktop="no" applications="no" startMenu="no" startup="no">
+
+        <createForPack name="Core"/>
+    </shortcut>
+
+    <shortcut name="Magic folder" target="$INSTALL_PATH/bin/magic-folder.cmd" commandLine=""
+        workingDirectory="$INSTALL_PATH/bin" description="Magic folder"
+        iconFile="$INSTALL_PATH/bin/magic-folder.ico" iconIndex="0" initialState="normal"
+        programGroup="yes" desktop="yes" applications="no" startMenu="no" startup="no">
+
+        <createForPack name="Core"/>
+    </shortcut>
+
+    <shortcut name="Shell" target="$INSTALL_PATH/bin/shell.cmd" commandLine=""
+        workingDirectory="$INSTALL_PATH/bin" description="Shell"
+        iconFile="$INSTALL_PATH/bin/shell.ico" iconIndex="0" initialState="normal"
+        programGroup="yes" desktop="yes" applications="no" startMenu="no" startup="no">
+
+        <createForPack name="Core"/>
+    </shortcut>
+
+    <shortcut name="Uninstall" target="$INSTALL_PATH/bin/uninstaller.cmd" commandLine=""
+        workingDirectory="$INSTALL_PATH/bin" description="Uninstall program"
+        iconFile="$INSTALL_PATH/bin/uninstaller.ico" iconIndex="0" initialState="normal"
+        programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no">
+
+        <createForPack name="Core"/>
+    </shortcut>
+
+</shortcuts>
