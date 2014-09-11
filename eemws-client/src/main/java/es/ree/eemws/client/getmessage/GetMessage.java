@@ -28,6 +28,7 @@ import ch.iec.tc57._2011.schema.message.OptionType;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
 import ch.iec.tc57._2011.schema.message.RequestType;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
+import es.ree.eemws.client.common.Messages;
 import es.ree.eemws.client.common.ParentClient;
 import es.ree.eemws.client.exception.ClientException;
 
@@ -41,19 +42,22 @@ import es.ree.eemws.client.exception.ClientException;
 public final class GetMessage extends ParentClient {
 
     /** Verb of the action. */
-    private static final String VERB = "get";
+    private static final String VERB = "get"; //$NON-NLS-1$
 
     /** Name of the MessageIdentification option. */
-    private static final String MESSAGE_IDENTIFICATION_OPTION = "MessageIdentification";
+    private static final String MESSAGE_IDENTIFICATION_OPTION = "MessageIdentification"; //$NON-NLS-1$
 
     /** Name of the MessageVersion option. */
-    private static final String MESSAGE_VERSION_OPTION = "MessageVersion";
+    private static final String MESSAGE_VERSION_OPTION = "MessageVersion"; //$NON-NLS-1$
 
     /** Name of the Code option. */
-    private static final String CODE_OPTION = "Code";
+    private static final String CODE_OPTION = "Code"; //$NON-NLS-1$
 
     /** Name of the Queue option. */
-    private static final String QUEUE_OPTION = "Queue";
+    private static final String QUEUE_OPTION = "Queue"; //$NON-NLS-1$
+
+    /** Queue value should be alwyas "NEXT". */
+	private static final String QUEUE_NEXT_VALUE = "NEXT"; //$NON-NLS-1$
 
     /**
      * Constructor.
@@ -95,14 +99,18 @@ public final class GetMessage extends ParentClient {
     /**
      * This method obtain the message associated to the given parameter (filter).
      * @param noun Specifies the Message Type of the requested message.
-     * @param queue Indicates that the server will decide which message will be returned. Its value shall be “NEXT”.
+     * @param queue Indicates that the server will decide which message will be returned. Its value must be <code>NEXT</code> or <code>null</code> 
      * @return String with the XML message.
      * @throws ClientException Exception with the error.
      */
-    public String get(final String noun, final String queue)
-            throws ClientException {
-
-        return get(noun, null, null, null, queue);
+    public String get(final String noun, final String queue) throws ClientException {
+    	
+    	if (queue != null && !QUEUE_NEXT_VALUE.equals(queue)) {
+    		
+    		throw new ClientException(Messages.getString("INVALID_QUEUE", QUEUE_NEXT_VALUE, queue)); //$NON-NLS-1$
+    	}
+    	
+        return get(noun, null, null, null, QUEUE_NEXT_VALUE);
     }
 
     /**
@@ -126,7 +134,7 @@ public final class GetMessage extends ParentClient {
 
             RequestMessage requestMessage = createRequest(noun, messageIdentification, messageVersion, code, queue);
             ResponseMessage responseMessage = sendMessage(requestMessage);
-            return processResponse(responseMessage);
+            return getPrettyPrintPayloadMessage(responseMessage);
 
         } catch (MsgFaultMsg e) {
 
