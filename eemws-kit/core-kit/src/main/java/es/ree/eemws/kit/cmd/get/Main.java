@@ -30,10 +30,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
-
-
-
 import es.ree.eemws.client.exception.ClientException;
 import es.ree.eemws.client.getmessage.GetMessage;
 import es.ree.eemws.core.utils.config.ConfigException;
@@ -87,13 +83,6 @@ public final class Main extends ParentMain {
 			Integer iMessageVersion = null;
 
 			List<String> arguments = new ArrayList<>(Arrays.asList(args));
-
-			/* Message type is the first parameter, with no prefix and is mandatory. */
-			if (arguments.isEmpty()) {
-				throw new IllegalArgumentException(Messages.getString("INCORRECT_PARAMETERS_1")); //$NON-NLS-1$
-			}			
-			String messageType = arguments.get(0);
-			arguments.remove(0);
 			
 			String code = readParameter(arguments, PARAMETER_CODE);
 			String messageId = readParameter(arguments, PARAMETER_MSG_ID);
@@ -142,7 +131,7 @@ public final class Main extends ParentMain {
 
 			if (outputFile != null) {
 				File f = new File(outputFile);
-				if (!f.canWrite() || f.isDirectory()) {
+				if (f.isDirectory()) {
 					throw new IllegalArgumentException(Messages.getString("UNABLE_TO_WRITE", outputFile)); //$NON-NLS-1$
 				}
 			}
@@ -150,7 +139,6 @@ public final class Main extends ParentMain {
 			urlEndPoint = setConfig(urlEndPoint);
 
 			GetMessage get = new GetMessage();
-			get.setVerifyResponse(getConfig().isVerifySignResponse());
 			get.setEndPoint(urlEndPoint);
 
 			long init = System.currentTimeMillis();
@@ -159,15 +147,15 @@ public final class Main extends ParentMain {
 			
 			if (lCode != null) {
 
-				response = get.get(messageType, lCode);
+				response = get.get(lCode);
 
 			} else if (queue != null) {
 
-				response = get.get(messageType, queue);
+				response = get.get(queue);
 
 			} else {
 
-				response = get.get(messageType, messageId, iMessageVersion);
+				response = get.get(messageId, iMessageVersion);
 			}
 			
 			if (response.length() > 0) {

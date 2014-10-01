@@ -187,14 +187,18 @@ public abstract class ParentClient {
     /**
      * This method creates a new option.
      * @param name Name of the new option.
-     * @param value Value of the new option.
+     * @param value Value of the new option. Value is optional, so its value can be <code>null</code> if not set.
      * @return New option.
      */
     protected final OptionType createOption(final String name, final String value) {
 
         OptionType option = new OptionType();
         option.setName(name);
-        option.setValue(value);
+        
+        if (value != null) {
+        	option.setValue(value);
+        }
+        
         return option;
     }
 

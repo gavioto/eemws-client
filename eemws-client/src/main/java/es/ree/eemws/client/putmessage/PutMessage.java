@@ -56,7 +56,7 @@ public final class PutMessage extends ParentClient {
     private static final String VERB = "create"; //$NON-NLS-1$
 
     /** Name of the name of the binary file. */
-    private static final String NAME_OPTION = "name"; //$NON-NLS-1$
+    private static final String BINARY_FILENAME_ID = "name"; //$NON-NLS-1$
 
     /** Put request messages are signed by default. */
     private static final boolean SIGN_REQUEST = true;
@@ -83,8 +83,7 @@ public final class PutMessage extends ParentClient {
      * @return String with the XML response message.
      * @throws ClientException Exception with the error.
      */
-    public String put(final String noun, final String name, final byte[] data)
-            throws ClientException {
+    public String put(final String noun, final String name, final byte[] data) throws ClientException {
 
         return put(noun, name, data, null);
     }
@@ -134,7 +133,7 @@ public final class PutMessage extends ParentClient {
         RequestType resquest = new RequestType();
 
         ID id = new ID();
-        id.setIdType(NAME_OPTION);
+        id.setIdType(BINARY_FILENAME_ID);
         id.setValue(name);
 
         List<ID> ids = resquest.getIDS();

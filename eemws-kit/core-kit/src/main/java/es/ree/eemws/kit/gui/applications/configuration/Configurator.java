@@ -64,10 +64,7 @@ public final class Configurator extends JFrame {
     /** Server and service settings panel . */
     private ServerPanel serverPanel;
 
-    /** Miscellaneous Settings panel. */
-    private MiscPanel miscPanel;
-
-    /** MAgic folder settings panel. */
+    /** Magic folder settings panel. */
     private FolderPanel folderPanel;
 
     /** Main panel on which panels are put. */
@@ -121,7 +118,6 @@ public final class Configurator extends JFrame {
         identityPanel = new IdentityPanel();
         proxyPanel = new ProxyPanel();
         serverPanel = new ServerPanel();
-        miscPanel = new MiscPanel();
         folderPanel = new FolderPanel();
         initGraphicElements();
 
@@ -149,11 +145,8 @@ public final class Configurator extends JFrame {
         identityPanel.loadValues(cm);
         proxyPanel.loadValues(cm);
         serverPanel.loadValues(cm);
-        miscPanel.loadValues(cm);
-        if (folderPanel != null) {
-
-            folderPanel.loadValues();
-        }
+        folderPanel.loadValues();
+        
     }
 
     /**
@@ -195,14 +188,9 @@ public final class Configurator extends JFrame {
         main.setMinimumSize(new Dimension(500, 500));
         main.add(serverPanel.getPanel(), serverPanel.getPanelName());
         main.add(identityPanel.getPanel(), identityPanel.getPanelName());
-        main.add(miscPanel.getPanel(), miscPanel.getPanelName());
         main.add(proxyPanel.getPanel(), proxyPanel.getPanelName());
-
-        if (folderPanel != null) {
-
-            main.add(folderPanel.getPanel(), folderPanel.getPanelName());
-        }
-
+        main.add(folderPanel.getPanel(), folderPanel.getPanelName());
+        
         return main;
     }
 
@@ -305,7 +293,6 @@ public final class Configurator extends JFrame {
         Configuration config = new Configuration();
         identityPanel.setValues(config);
         serverPanel.setValues(config);
-        miscPanel.setValues(config);
         proxyPanel.setValues(config);
         config.writeConfiguration();
         if (folderPanel != null) {

@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,25 +46,31 @@ import es.ree.eemws.kit.common.Messages;
  * @version 1.0 13/06/2014
  */
 public final class Main extends ParentMain {
-
+	
 	/** Name of the command. */
-	private static final String COMMAND_NAME = "query";
+	private static final String COMMAND_NAME = "query"; //$NON-NLS-1$
 
 	/** Log messages. */
 	private static final Logger LOGGER = Logger.getLogger(COMMAND_NAME);
 
 	/** Sets text for parameter <code>startTime</code>. */
-	private static final String PARAMETER_START_TIME = Messages.getString("PARAMETER_START_TIME");
+	private static final String PARAMETER_START_TIME = Messages.getString("PARAMETER_START_TIME"); //$NON-NLS-1$
 
 	/** Sets text for parameter <code>endTime</code>. */
-	private static final String PARAMETER_END_TIME = Messages.getString("PARAMETER_END_TIME");
+	private static final String PARAMETER_END_TIME = Messages.getString("PARAMETER_END_TIME"); //$NON-NLS-1$
 
 	/** Sets text for parameter <code>url</code>. */
-	private static final String PARAMETER_URL = Messages.getString("PARAMETER_URL");
+	private static final String PARAMETER_URL = Messages.getString("PARAMETER_URL"); //$NON-NLS-1$
 
 	/** Sets text for parameter <code>out</code>. */
-	private static final String PARAMETER_OUT_FILE = Messages.getString("PARAMETER_OUT_FILE");
+	private static final String PARAMETER_OUT_FILE = Messages.getString("PARAMETER_OUT_FILE"); //$NON-NLS-1$
 
+	/** Sets text for parameter <code>id</code>. */
+	private static final String QUERY_PARAMETER_ID = Messages.getString("QUERY_PARAMETER_ID"); //$NON-NLS-1$
+
+	/** Token that specifies that the value is a parameter name, not a value. */
+	private static final String PARAMETER_PREFIX = "-"; //$NON-NLS-1$
+	
 	/**
 	 * Main. Execute the query action.
 	 * @param args command line arguments.
@@ -81,26 +88,44 @@ public final class Main extends ParentMain {
 
 			/* Query dataType is the first parameter, with no prefix and is mandatory. */
 			if (arguments.isEmpty()) {
-				throw new IllegalArgumentException(Messages.getString("INCORRECT_PARAMETERS_1"));
+				throw new IllegalArgumentException(Messages.getString("INCORRECT_PARAMETERS_1")); //$NON-NLS-1$
 			}
-			String dataType = arguments.get(0);
-			arguments.remove(0);
-
+			
 			String startTime = readParameter(arguments, PARAMETER_START_TIME);
 			String endTime = readParameter(arguments, PARAMETER_END_TIME);
+			String dataType = readParameter(arguments, QUERY_PARAMETER_ID);
 			urlEndPoint = readParameter(arguments, PARAMETER_URL);
 			outputFile = readParameter(arguments, PARAMETER_OUT_FILE);
+			HashMap<String, String> others = new HashMap<>();
 			
-			if (!arguments.isEmpty()) {
-				throw new IllegalArgumentException(Messages.getString("UNKNOWN_PARAMETERS", arguments.toString()));
+			int len = others.size();
+			for (int cont = 0; cont < len; cont++) {
+				
+				String key = arguments.get(cont);
+				if (key.startsWith(PARAMETER_PREFIX)) {
+					if ((cont + 1) < len) {
+						String value = arguments.get(cont + 1);
+						
+						if (value.startsWith(PARAMETER_PREFIX)) { // Next value is other parameter not a value
+							others.put(key, null);
+						} else {
+							others.put(key, value);
+							cont++;
+						}
+					} else { // last parameter, with no value
+						others.put(key, null);
+					}
+				} else {
+					throw new IllegalArgumentException(Messages.getString("QUERY_INCORRECT_PARAMETER_LIST", key)); //$NON-NLS-1$
+				}
 			}
-
+	 
 			Date dateStartTime = null;
 			if (startTime != null) {
 				try {
 					dateStartTime = sdf.parse(startTime);
 				} catch (ParseException e) {
-					throw new IllegalArgumentException(Messages.getString("QUERY_INCORRECT_DATE_FORMAT", PARAMETER_START_TIME, startTime, DATE_FORMAT_PATTERN));
+					throw new IllegalArgumentException(Messages.getString("QUERY_INCORRECT_DATE_FORMAT", PARAMETER_START_TIME, startTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
 				}
 			}
 
@@ -109,20 +134,19 @@ public final class Main extends ParentMain {
 				try {
 					dateEndTime = sdf.parse(endTime);
 				} catch (ParseException e) {
-					throw new IllegalArgumentException(Messages.getString("QUERY_INCORRECT_DATE_FORMAT", PARAMETER_END_TIME, endTime, DATE_FORMAT_PATTERN));
+					throw new IllegalArgumentException(Messages.getString("QUERY_INCORRECT_DATE_FORMAT", PARAMETER_END_TIME, endTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
 				}
 			}
 
 			urlEndPoint = setConfig(urlEndPoint);
 
 			QueryData query = new QueryData();
-			query.setSignRequest(getConfig().isSignResquest());
-			query.setVerifyResponse(getConfig().isVerifySignResponse());
 			query.setEndPoint(urlEndPoint);
 
 			long init = System.currentTimeMillis();
 
-			String response = query.query(dataType, dateStartTime, dateEndTime);
+			
+			String response = query.query(dataType, dateStartTime, dateEndTime, others);
 
 			if (outputFile == null) {
 				LOGGER.info(response);
@@ -133,7 +157,7 @@ public final class Main extends ParentMain {
 
 				FileUtil.writeUTF8(outputFile, response);
 				long end = System.currentTimeMillis();
-				LOGGER.info(Messages.getString("EXECUTION_TIME", getPerformance(init, end)));
+				LOGGER.info(Messages.getString("EXECUTION_TIME", getPerformance(init, end))); //$NON-NLS-1$
 			}
 
 		} catch (ClientException e) {
@@ -142,23 +166,23 @@ public final class Main extends ParentMain {
 
 		} catch (MalformedURLException e) {
 
-			LOGGER.severe(Messages.getString("INVALID_URL", urlEndPoint));
+			LOGGER.severe(Messages.getString("INVALID_URL", urlEndPoint)); //$NON-NLS-1$
 
 		} catch (ConfigException e) {
 
-			LOGGER.severe(Messages.getString("INVALID_CONFIGURATION", e.getMessage()));
+			LOGGER.severe(Messages.getString("INVALID_CONFIGURATION", e.getMessage())); //$NON-NLS-1$
 
 			/* Shows stack trace only for debug. Don't bother the user with this details. */
-			LOGGER.log(Level.FINE, Messages.getString("INVALID_CONFIGURATION", e.getMessage()), e);
+			LOGGER.log(Level.FINE, Messages.getString("INVALID_CONFIGURATION", e.getMessage()), e); //$NON-NLS-1$
 
 		} catch (IllegalArgumentException e) {
 
 			LOGGER.info(e.getMessage());
-			LOGGER.info(Messages.getString("QUERY_USAGE", PARAMETER_START_TIME, PARAMETER_END_TIME, PARAMETER_OUT_FILE, PARAMETER_URL, new Date()));
+			LOGGER.info(Messages.getString("QUERY_USAGE", PARAMETER_START_TIME, PARAMETER_END_TIME, PARAMETER_OUT_FILE, PARAMETER_URL, new Date())); //$NON-NLS-1$
 
 		} catch (IOException e) {
 
-			LOGGER.severe(Messages.getString("UNABLE_TO_WRITE", outputFile));
+			LOGGER.severe(Messages.getString("UNABLE_TO_WRITE", outputFile)); //$NON-NLS-1$
 
 		}
 

@@ -1,3 +1,9 @@
-@echo off
+echo off
 call commEnv.cmd
-start javaw %MEM_ARGS% -Dfolder.intercativo es.ree.eemws.kit.folders.FolderManager
+if NOT EXIST ../log (
+	CD ..
+	MKDIR log
+	CD bin
+) 
+@REM do not include argument "-Dinteractive" in no-interctative environments  (ie daemons, background process, etc.)
+start javaw %MEM_ARGS% %FILE_LOG% -Dinteractive es.ree.eemws.kit.folders.FolderManager

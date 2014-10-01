@@ -1,2 +1,7 @@
-. ./commEnv.sh
-javaw $MEM_ARGS es.ree.eemws.kit.folders.FolderManager
+#!/bin/sh
+if [ ! -d ../log ] ; then
+        cd ..
+        mkdir log
+        cd bin
+fi
+javaw $MEM_ARGS $FILE_LOG es.ree.eemws.kit.folders.FolderManager

@@ -109,8 +109,6 @@ public final class Main extends ParentMain {
             urlEndPoint = setConfig(urlEndPoint);
 
             PutMessage put = new PutMessage();
-            put.setSignRequest(getConfig().isSignResquest());
-            put.setVerifyResponse(getConfig().isVerifySignResponse());
             put.setEndPoint(urlEndPoint);
             
             long init = System.currentTimeMillis();
