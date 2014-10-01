@@ -28,387 +28,360 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Vector;
+import java.util.List;
 import java.util.logging.Logger;
 
+import es.ree.eemws.kit.common.Messages;
+
 /**
- * <code>LockHandler</code> class implements the remote interface
- * to request message lock.
- *
+ * <code>LockHandler</code> class implements the remote interface to communicate working group.
+ * 
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 29/05/2014
- *
+ * 
  */
 public final class LockHandler extends UnicastRemoteObject implements LockHandlerIntf {
 
-    /** Class ID. */
-    private static final long serialVersionUID = 189508672518820218L;
+	/** Class ID. */
+	private static final long serialVersionUID = 9069481093242188767L;
 
-    /** Indicate that based on the number of that there can be only be a server. */
-    private static final int ONLY_ONE_SERVER = 2;
+	/** Constant for "only one server in the group. */
+	private static final int ONLY_ONE_SERVER = 1;
 
-    /** Name of the service to run / create . */
-    private static final String SERVICE_NAME = "magic-folder";
+	/** Number of invalid attempts before give up. */
+	private static final int NUM_RETRIES = 3;
 
-    /** Number of invalid attempts before giving up. */
-    private static final int NUM_RETRIES = 3;
+	/** Number of milliseconds to wait before retry after a failed attempt. */
+	private static final long SLEEP_BEFORE_RETRY = 5000;
 
-    /** Number of milliseconds to wait before retry after a failed attempt. */
-    private static final long SLEEP_BEFORE_RETRY = 5000;
+	/** Indicate whether is there an only server or multiple servers. */
+	private boolean isSingle = false;
 
-    /** Indicate whether is there an only server or multiple servers. */
-    private boolean isSingle = false;
+	/** Names of locked files. */
+	private List<String> lockFiles;
 
-    /** Mutual exclusion Lock. */
-    private Object lock = new Object();
+	/** Names of messages to be locked. */
+	private List<String> tryLockFiles;
 
-    /** Mutual exclusion lock for the Management of group members. */
-    private Object neighborLock = new Object();
+	/** Unique ID for this service in the group. */
+	private int thisServiceID;
 
-    /** Names of locked messages. */
-    private Vector<String> lockFiles;
+	/** Members of the group. */
+	private ArrayList<Member> members = new ArrayList<>();
 
-    /** Names of messages to be locked. */
-    private Vector<String> tryLockFiles;
+	/** Logging system. */
+	private static final Logger LOGGER = Logger.getLogger(LockHandler.class.getName());
 
-    /** Denotes the number of active neighbors. */
-    private int numberOfNeighbors;
+	/**
+	 * Constructor. Creates a new lock manager according to the configuration. The manager will find the remote
+	 * references to all members and will subscribe to all of them.
+	 * @param config System settings.
+	 * @throws RemoteException If cannot create an RMI register and subscribe to it.
+	 */
+	public LockHandler(final Configuration config) throws RemoteException {
+		String serviceID = config.getServiceID();
+		List<String> membersRmiUrls = config.getMembersRmiUrls();
 
-    /** Unique ID for this service into farm. */
-    private int thisServiceID;
+		if (serviceID == null || membersRmiUrls == null || membersRmiUrls.size() == ONLY_ONE_SERVER) {
+			isSingle = true;
+		} else {
+			isSingle = false;
+			lockFiles = new ArrayList<>();
+			tryLockFiles = new ArrayList<>();
 
-    /** Contains full addresses of all members. */
-    private Vector<String> neighborURLs;
+			thisServiceID = Integer.parseInt(serviceID);
+			String thisServerURL = membersRmiUrls.get(thisServiceID - 1);
+			createRMIRegistry(thisServerURL);
+			membersRmiUrls.remove(thisServerURL);
+			getRemoteReferences(membersRmiUrls);
 
-    /** Contains references (remote stubs) to all members. */
-    private Vector<LockHandlerIntf> neighbors;
+			/* Notifying the rest of neighbors our existence. */
+			registerThisMemberIntoTheGroup(thisServerURL);
+		}
+	}
 
-    /** Thread log system. */
-    private static Logger log = Logger.getLogger(Thread.currentThread().getStackTrace()[0].getClassName());
+	/**
+	 * Creates an RMI registry on port passed as argument.
+	 * @param url URL where service subscribes.
+	 * @throws RemoteException If cannot connect to RMI server.
+	 */
+	private void createRMIRegistry(final String url) throws RemoteException {
 
+		try {
+			try {
+				/* Search port in URL expression: rmi://<host>:<port>/service_name */
+				int colonPosition = url.indexOf(":"); //$NON-NLS-1$
+				colonPosition = url.indexOf(":", colonPosition + 1); //$NON-NLS-1$
+				String port = url.substring(colonPosition + 1, url.indexOf("/", colonPosition)); //$NON-NLS-1$
+				LocateRegistry.createRegistry(Integer.parseInt(port));
+			} catch (RemoteException ex) {
+				LOGGER.warning(Messages.getString("MF_UNABLE_TO_CREATE_REGISTRY")); //$NON-NLS-1$
+			}
 
-    /**
-     * Constructor. Creates a new lock manager with the values passed as arguments.
-     * The manager will find the remote references to all members and will subscribe
-     * to all of them.
-     * @param config System settings.
-     * @throws RemoteException If cannot create an RMI register and subscribe to it.
-     */
-    public LockHandler(final Configuration config) throws RemoteException {
-        String serviceID = config.getServiceID();
-        ArrayList<String> serviceFarm = config.getServiceFarm();
+			/* Subscribe to service. */
+			Naming.rebind(url, this);
+		} catch (MalformedURLException e) {
+			throw new RemoteException(Messages.getString("MF_INVALID_HOST_PORT", url)); //$NON-NLS-1$
+		}
+	}
 
-        if (serviceID == null || serviceFarm == null || (serviceFarm != null && serviceFarm.size() < ONLY_ONE_SERVER)) {
-            isSingle = true;
-        } else {
-            isSingle = false;
-            lockFiles = new Vector<String>();
-            tryLockFiles = new Vector<String>();
-            neighborURLs = new Vector<String>();
-            neighbors = new Vector<LockHandlerIntf>();
+	/**
+	 * Retrieve remote references to neighbors.
+	 * @param membersRmiUrls
+	 * @param urls URLs of the services to inspect.
+	 * @throws RemoteException If the settings of any server are incorrect.
+	 */
+	private void getRemoteReferences(List<String> membersRmiUrls) throws RemoteException {
 
-            /* Retrieving IP and port values for this service. */
-            thisServiceID = Integer.parseInt(serviceID);
+		boolean gotReference;
 
-            String url = "rmi://" + (String) serviceFarm.get(thisServiceID - 1) + "/" + SERVICE_NAME;
+		for (String memberUrl : membersRmiUrls) {
 
-            createRMIRegistry(url);
+			gotReference = false;
 
-            /*  Retrieving full URLs for the rest of services
-             *  URL must always match the pattern "rmi://<host>:<port>/SERVICE_NAME". */
-            String[] urls = getRemoteURLs(serviceFarm);
+			for (int times = 0; !gotReference && times < NUM_RETRIES; times++) {
+				try {
+					LockHandlerIntf interfaceN = (LockHandlerIntf) Naming.lookup(memberUrl);
 
-            /*
-             *  Retrieving remote references to the rest of servers.
-             *  If a server is not available, another attempt will be made
-             *  after the time set by SLEEP_BEFORE_RETRY expressed in milliseconds.
-             *  Once the maximum number of retries set by NUM_RETRIES is reached,
-             *  the server will be taken for unavailable and ignored.
-             */
-            getRemoteReferences(urls);
+					synchronized (members) {
+						if (!membersRmiUrls.contains(memberUrl)) {
+							members.add(new Member(memberUrl, interfaceN));
+						}
+					}
 
-            /* Notifying the rest of neighbors our existence. */
-            neighborSubscription(url);
-        }
-    }
+					gotReference = true;
+				} catch (MalformedURLException e) {
+					throw new RemoteException(Messages.getString("MF_INVALID_MEMBER_CONFIGURATION", memberUrl)); //$NON-NLS-1$
+				} catch (RemoteException | NotBoundException ex) {
+					LOGGER.info(Messages.getString("MF_MEMBER_NOT_AVAILABLE_YET", memberUrl)); //$NON-NLS-1$
+				}
 
-    /**
-     * Retrieve the URLs of the rest of neighbors.
-     * Return array containing info about all hosts and ports
-     * @param serviceFarm Addresses of Host and port for neighbor services..
-     * @return Array containing URLs of neighbor settings.
-     */
-    private String[] getRemoteURLs(final ArrayList<String> serviceFarm) {
-        ArrayList<String> servers = new ArrayList<String>();
-        int numberOfServers = serviceFarm.size();
-        for (int count = 0; count < numberOfServers; count++) {
-            if (thisServiceID != (count + 1)) {
-                servers.add("rmi://" + serviceFarm.get(count) + "/" + SERVICE_NAME);
-            }
-        }
+				try {
+					Thread.sleep(SLEEP_BEFORE_RETRY * (times + 1));
+				} catch (InterruptedException ex) {
+					LOGGER.finest("Interrupted!"); // Don't mind! //$NON-NLS-1$
+				}
+			}
 
-        return (String[]) servers.toArray(new String[]{});
-    }
+			if (!gotReference) {
+				LOGGER.warning(Messages.getString("MF_MEMBER_NOT_AVAILABLE", memberUrl)); //$NON-NLS-1$
+			}
+		}
+	}
 
-    /**
-     * Creates an RMI registry on port passed as argument.
-     * Service will subscribe to this registry, thus the class registers
-     * as Request server.
-     * @param url URL where service subscribes.
-     * @throws RemoteException If cannot connect to RMI server.
-     */
-    private void createRMIRegistry(final String url) throws RemoteException {
+	/**
+	 * Notifies the rest of nodes our existence. This notification is necessary when a service dies (the other nodes
+	 * must remove from their list) and when is restarted (is necessary add to the list of the other nodes).
+	 * @param url Listening request URL for this node.
+	 */
+	private void registerThisMemberIntoTheGroup(final String url) {
 
-        try {
-            try {
-                /* Search port in URL expression: rmi://<host>:<port>/service_name */
-                int colonPosition = url.indexOf(":");
-                colonPosition = url.indexOf(":", colonPosition + 1);
-                String port = url.substring(colonPosition + 1, url.indexOf("/", colonPosition));
-                LocateRegistry.createRegistry(Integer.parseInt(port));
-            } catch (RemoteException ex) {
-                log.warning("[LOCK] Cannot create a registry, probably already exists one.");
-            }
+		synchronized (members) {
+			for (Member member : members) {
+				try {
+					LockHandlerIntf remote = member.getRemoteReference();
+					remote.suscribe(url);
+				} catch (RemoteException ex) {
+					LOGGER.severe(Messages.getString("MF_CANNOT_SUSCRIBE", member.getUrl())); //$NON-NLS-1$
+				}
+			}
+		}
+	}
 
-            /* Subscribe to service. */
-            Naming.rebind(url, this);
-        } catch (MalformedURLException e) {
-            throw new RemoteException("Incorrect URL " + url);
-        }
-    }
+	/**
+	 * Release the message passed as argument in order to can be retrieved by other members.
+	 * @param fileName ID of the message to be released.
+	 */
+	public void releaseLock(final String fileName) {
+		if (!isSingle) {
+			synchronized (lockFiles) {
+				lockFiles.remove(fileName);
+			}
+		}
+	}
 
-    /**
-     * Retrieve remote references to neighbors.
-     * @param urls URLs of the services to inspect.
-     * @throws RemoteException If the settings of any server are incorrect.
-     */
-    private void getRemoteReferences(final String[] urls) throws RemoteException {
-        LockHandlerIntf interfaceN;
-        boolean gotReference;
+	/**
+	 * Indicate to this server the existence of a new member in the group.
+	 * @param remoteURL remote URL (rmi://host:port/service) of the new member.
+	 */
+	public void suscribe(final String remoteURL) {
 
-        for (int count = 0; count < urls.length; count++) {
-            gotReference = false;
+		try {
+			LockHandlerIntf remoteReference = (LockHandlerIntf) Naming.lookup(remoteURL);
 
-            for (int times = 0; !gotReference && times < NUM_RETRIES; times++) {
-                try {
-                    interfaceN = (LockHandlerIntf) Naming.lookup(urls[count]);
+			synchronized (members) {
+				boolean updated = false;
+				for (Member member : members) {
+					if (remoteURL.equals(member.getUrl())) {
+						member.setRemoteReference(remoteReference);
+						updated = true;
+					}
+				}
 
-                    synchronized (neighborLock) {
-                        if (!neighborURLs.contains(urls[count])) {
-                            neighbors.add(interfaceN);
-                            neighborURLs.add(urls[count]);
-                        }
-                    }
+				/* New member. */
+				if (!updated) {
+					members.add(new Member(remoteURL, remoteReference));
+				}
+			}
 
-                    gotReference = true;
-                } catch (MalformedURLException e) {
-                    throw new RemoteException("incorrect URL " + urls[count]);
-                } catch (RemoteException ex) {
-                    log.severe("[LOCK] Server " + urls[count] + " Not available yet...");
-                } catch (NotBoundException ex) {
-                    log.severe("[LOCK] Server " + urls[count] + " Not available yet...");
-                }
+		} catch (MalformedURLException e) {
+			LOGGER.warning(Messages.getString("MF_INVALID_URL_RECEIVED", remoteURL)); //$NON-NLS-1$
 
-                try {
-                    Thread.sleep(SLEEP_BEFORE_RETRY * (times + 1));
-                } catch (InterruptedException ex) {
-                    log.finest("[LOCK] The wait for remote references retrieval has been interrupted.");
-                }
-            }
+		} catch (RemoteException | NotBoundException e) {
+			LOGGER.warning(Messages.getString("MF_INVALID_URL_RECEIVED", remoteURL)); //$NON-NLS-1$
+		}
+	}
 
-            if (!gotReference) {
-                log.severe("Service " + urls[count] + " IS NOT ACTIVE ");
-            }
-        }
+	/**
+	 * Try to lock the message passed as argument.
+	 * @param fileName Name of the message to lock.
+	 * @return <code>true</code> If the file could be locked <code>false</code> otherwise.
+	 */
+	public boolean tryLock(final String fileName) {
+		boolean canLock = true;
 
-        synchronized (neighborLock) {
-            numberOfNeighbors = neighbors.size();
-        }
-    }
+		if (!isSingle) {
+			synchronized (lockFiles) {
+				tryLockFiles.add(fileName);
+			}
 
-    /**
-     * Notifies the rest of nodes our existence. This notification is necessary
-     * when a service dies (the other nodes must remove from their list) and
-     * when is restarted (is necessary add to the list of the other nodes).
-     * @param url Listening request URL for this node.
-     */
-    private void neighborSubscription(final String url) {
-        LockHandlerIntf interfazN;
-        for (int cont = 0; cont < numberOfNeighbors; cont++) {
-            interfazN = (LockHandlerIntf) neighbors.elementAt(cont);
+			boolean lockedByNeighbor = isLockedByNeighbor(fileName);
 
-            try {
-                interfazN.suscribe(url);
-            } catch (RemoteException ex) {
-                log.severe("[LOCK] CAnnot subscribe to [" + neighborURLs.elementAt(cont) + "]");
-            }
-        }
-    }
+			synchronized (lockFiles) {
+				if (!lockedByNeighbor) {
+					if (tryLockFiles.contains(fileName)) {
+						canLock = true;
+						lockFiles.add(fileName);
+					} else {
+						canLock = false;
+					}
+				} else {
+					canLock = false;
+				}
 
-    /**
-     * Release the message passed as argument in order to can be retrieved by other members.
-     * @param fileName ID of the message to be released.
-     */
-    public void releaseLock(final String fileName) {
-        if (!isSingle) {
-            synchronized (lock) {
-                lockFiles.remove(fileName);
-            }
-        }
-    }
+				tryLockFiles.remove(fileName);
+			}
+		}
 
-    /**
-     * Indicate to this server the existence of a new member into the farm.
-     * @param remoteURL remote URL (rmi://host:port/service) of the new member.
-     */
-    public void suscribe(final String remoteURL) {
+		return canLock;
+	}
 
-        int pos = neighborURLs.indexOf(remoteURL);
+	/**
+	 * Ask neighbors (other group members) whether the file is locked. If any communication problem is found (eg.
+	 * crashed), is removed from group.
+	 * @param fileName file to query.
+	 * @return <code>true</code> If the file is locked by another member. <code>false</code> Otherwise.
+	 */
+	private boolean isLockedByNeighbor(final String fileName) {
+		boolean lockedByNeighbor = false;
 
-        try {
-            synchronized (neighborLock) {
-                if (pos == -1) {    // If reference is nonexistent is added,
-                    neighborURLs.add(remoteURL);
-                    neighbors.add((LockHandlerIntf) Naming.lookup(remoteURL));
-                    numberOfNeighbors++;
-                } else { // If the reference already exists, replace the previous one
-                    neighbors.setElementAt((LockHandlerIntf) Naming.lookup(remoteURL), pos);
-                }
-            }
-        } catch (MalformedURLException ex) {
-            /* Block theoretically unreachable, URL previously checked.  */
-            log.finest("[LOCK] Unable to get reference to the neighbor which is requesting subscription: " + remoteURL);
-        } catch (RemoteException ex) {
-            log.severe("[LOCK] Unable to get reference to the neighbor which is requesting subscription: " + remoteURL);
-        } catch (NotBoundException ex) {
-            log.severe("[LOCK] neighbor which is requesting subscription is not accepting any request or is nonexistent: " + remoteURL);
-        }
-    }
+		int count = 0;
 
-    /**
-     * Try to lock the message passed as argument.
-     * @param fileName Name of the message to lock.
-     * @return <code>true</code> If the file could be locked
-     * <code>false</code> otherwise.
-     */
-    public boolean tryLock(final String fileName) {
-        boolean canLock = true;
+		int numberOfMembers = members.size();
 
-        if (!isSingle) {
-            synchronized (lock) {
-                tryLockFiles.add(fileName);
-            }
+		while (!lockedByNeighbor && (count < numberOfMembers)) {
+			LockHandlerIntf interfaceN = members.get(count).getRemoteReference();
+			boolean success = false;
 
-            boolean lockedByNeighbor = isLockedByNeighbor(fileName);
+			for (int attempt = 0; !success && (attempt < NUM_RETRIES); attempt++) {
+				try {
+					lockedByNeighbor = interfaceN.isLocked(fileName, thisServiceID);
+					count++;
+					success = true;
+				} catch (RemoteException ex) {
+					LOGGER.warning(Messages.getString("MF_MEMBER_NOT_AVAILABLE", members.get(count).getUrl())); //$NON-NLS-1$
+					try {
+						Thread.sleep(SLEEP_BEFORE_RETRY);
+					} catch (InterruptedException ex1) {
+						LOGGER.fine("Interrupted!"); //$NON-NLS-1$
+					}
+				}
+			}
 
-            synchronized (lock) {
-                if (!lockedByNeighbor) {
-                    if (tryLockFiles.contains(fileName)) {
-                        canLock = true;
-                        lockFiles.add(fileName);
-                    } else {
-                        canLock = false;
-                    }
-                } else {
-                    canLock = false;
-                }
+			/*
+			 * If after multiple attempts node does not response is tagged as 'dead' and will no be communicated any
+			 * longer until it is not be subscribed again.
+			 */
+			if (!success) {
+				synchronized (members) {
+					LOGGER.severe(Messages.getString("MF_MEMBER_GONE", members.get(count).getUrl())); //$NON-NLS-1$
+					members.remove(count);
+					numberOfMembers--;
+				}
+			}
+		}
 
-                tryLockFiles.remove(fileName);
-            }
-        }
+		return lockedByNeighbor;
+	}
 
-        return canLock;
-    }
+	/**
+	 * Check whether the message passed as argument is locked by this member. A message is locked if: - Is in the list
+	 * of Locked messages. - Is in the list of desired messages and this server has bigger priority (lower remote ID).
+	 * @param fileName Name of the message to retrieve.
+	 * @param remoteID Remote ID of the asking server.
+	 * @return <code>true</code> if the message is locked by this member <code>false</code> otherwise.
+	 * @throws RemoteException If there is no response from member.
+	 */
+	public boolean isLocked(final String fileName, final int remoteID) throws RemoteException {
+		boolean retValue = false;
 
-    /**
-     * Ask neighbors (other group members) whether the file is locked.
-     * If any communication problem is found (eg. crashed), is removed from group.
-     * @param fileName file to query.
-     * @return <code>true</code> If the file is locked by another member.
-     * <code>false</code> Otherwise.
-     */
-    private boolean isLockedByNeighbor(final String fileName) {
-        boolean lockedByNeighbor = false;
+		synchronized (lockFiles) {
 
-        int count = 0;
+			retValue = (lockFiles.contains(fileName) || (tryLockFiles.contains(fileName) && thisServiceID < remoteID));
 
-        while (!lockedByNeighbor && (count < numberOfNeighbors)) {
-            LockHandlerIntf interfaceN = (LockHandlerIntf) neighbors.elementAt(count);
-            boolean success = false;
+			if (tryLockFiles.contains(fileName) && thisServiceID > remoteID) {
+				tryLockFiles.remove(fileName);
+			}
+		}
 
-            for (int attempt = 0; !success && (attempt < NUM_RETRIES); attempt++) {
-                try {
-                    lockedByNeighbor = interfaceN.isLocked(fileName, thisServiceID);
-                    count++;
-                    success = true;
-                } catch (Exception ex) {
-                    log.severe("\n\n\n[LOCK] Server " + neighborURLs.elementAt(count) + " is not available\n\n\n");
-                    try {
-                        Thread.sleep(SLEEP_BEFORE_RETRY);
-                    } catch (InterruptedException ex1) {
-                        log.severe("\n\n\n[LOCK] Server " + neighborURLs.elementAt(count) + " has been removed from group\n\n\n");
-                    }
-                }
-            }
+		return retValue;
+	}
 
-            /*
-             * If after multiple attempts node does not response
-             * is tagged as 'dead' and will no be communicated
-             * any longer until it is not be subscribed again.
-             */
-            if (!success) {
-                synchronized (neighborLock) {
+	
+	/**
+	 * Stores information about working group members. 
+	 */
+	private class Member {
 
-                    log.warning("\n\n\n[LOCK] Server " + neighborURLs.elementAt(count) + " has been removed from group\n\n\n");
+		/** RMI URL to access to a member. */
+		private String rmiUrl;
 
-                    neighborURLs.removeElementAt(count);
-                    neighbors.removeElementAt(count);
-                    numberOfNeighbors--;
-                }
-            }
-        }
+		/** Remote RMI reference. */	
+		private LockHandlerIntf remoteReference;
 
-        return lockedByNeighbor;
-    }
+		
+		/**
+		 * Creates a new member given its URL and remote interface.
+		 * @param url URL of the member.
+		 * @param remIterf Remote interface.
+		 */
+		public Member(String url, LockHandlerIntf remIterf) {
+			rmiUrl = url;
+			remoteReference = remIterf;
+		}
 
-    /**
-     * Check whether the message passed as argument is locked by the
-     * member into farm.
-     * A message is locked if:
-     * - Is in the list of Locked messages.
-     * - Is in the list of desired messages and this server has bigger priority (lower remote ID).
-     *
-     * @param fileName Name of the message to retrieve.
-     * @param remoteID Remote ID of the asking server.
-     * @return <code>true</code> if the message is locked by
-     * this member <code>false</code> otherwise.
-     * @throws RemoteException If there is no response from member.
-     */
-    public boolean isLocked(final String fileName, final int remoteID) throws RemoteException {
-        synchronized (lock) {
+		/** 
+		 * Sets the remote interface of a member (update)
+		 * @param remoteRef Remote interface of a member.
+		 */
+		public void setRemoteReference(LockHandlerIntf remoteRef) {
+			remoteReference = remoteRef;
+		}
 
-            /* If message is locked and so will be marked. */
-            if (lockFiles.contains(fileName)) {
-                return true;
-            }
+		/** 
+		 * Get the remote interface of a member. 
+		 * @return RMI url of the member.
+		 */
+		public String getUrl() {
+			return rmiUrl;
+		}
 
-            /*
-             * If message is requested by node 1 and node 2 asks for it, priority
-             * will be given to node 1, indicating this way to node 2 that is locked.
-             */
-            if (tryLockFiles.contains(fileName) && thisServiceID < remoteID) {
-                return true;
-            }
-
-            /*
-             * If message is requested by node 1 and node 2 asks for it, is removed from
-             * the request list of node 2 and is processed by node 1.
-             */
-            if (tryLockFiles.contains(fileName) && thisServiceID > remoteID) {
-                tryLockFiles.remove(fileName);
-            }
-        }
-
-        return false;
-    }
+		/**
+		 * Return the remote interface of the member. 
+		 * @return Remote interface.
+		 */
+		public LockHandlerIntf getRemoteReference() {
+			return remoteReference;
+		}		
+	}
 }

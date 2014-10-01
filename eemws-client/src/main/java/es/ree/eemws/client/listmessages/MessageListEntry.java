@@ -24,6 +24,10 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Calendar;
 
+import es.ree.eemws.client.common.Messages;
+import es.ree.eemws.client.exception.ClientException;
+
+
 
 /**
  * Data of the message.
@@ -226,4 +230,48 @@ public final class MessageListEntry implements Serializable {
         owner = inOwner;
     }
 
+    
+    /**
+     * Checks the entry has all its mandatory elements.
+     * Note that is faster to check only one element entry that the whole list against schema.
+     * This method is called only when one entry causes exception (usually because a mandatory element was not provided) 
+     * @throws ClientException If the entry has at least one mandatory element set as <code>null<code>.
+     */
+    public void checkMandatoryElements() throws ClientException {
+    	
+    	if (getCode() == null) {
+			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_CODE")); //$NON-NLS-1$
+		}
+		
+    	String codeStr = code.toString();    	
+    	
+		if (getMessageIdentification() == null) {
+			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_ID", codeStr)); //$NON-NLS-1$
+		}
+		
+		String idMsg = getMessageIdentification();
+		
+		if (getVersion() == null) {
+			idMsg = getMessageIdentification();
+		} else {
+			idMsg = getMessageIdentification() + "." + getVersion();  //$NON-NLS-1$
+		}
+		
+		if (getType() == null) {
+			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_TYPE", codeStr, idMsg)); //$NON-NLS-1$
+		}
+		
+		if (getApplicationStartTime() == null) {
+			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_START_TIME", codeStr, idMsg, getType())); //$NON-NLS-1$
+		}
+		
+		if (getServerTimestamp() == null) {
+			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_SERVER_TIMESTAMP", codeStr, idMsg, getType())); //$NON-NLS-1$
+		}
+		
+		if (getOwner() == null) {
+			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_OWNER", codeStr, idMsg, getType())); //$NON-NLS-1$
+		}
+    }
+    
 }

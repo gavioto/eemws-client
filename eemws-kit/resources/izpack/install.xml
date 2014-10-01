@@ -77,15 +77,16 @@
 			
 			<fileset dir="../../config" targetdir="$INSTALL_PATH/config" override="asktrue"/>
 			
-			<file src="../../certificates/local-cacerts.jks" targetdir="$INSTALL_PATH/certificates"/>
+			<file src="../../certificates/local-cacerts.jks" targetdir="$INSTALL_PATH/certificates" override="asktrue"/>
 
 			<file src="../../../core-kit/target/dependency/eemws-client-1.0.jar" targetdir="$INSTALL_PATH/lib"/>
 			<file src="../../../core-kit/target/dependency/eemws-core-1.0.jar" targetdir="$INSTALL_PATH/lib"/>
 			<file src="../../../core-kit/target/dependency/eemws-utils-1.0.jar" targetdir="$INSTALL_PATH/lib"/>
 			<file src="../../../core-kit/target/core-kit-1.0.jar" targetdir="$INSTALL_PATH/lib"/>
+			
 
-			<file src="../../../../../COPYING" targetdir="$INSTALL_PATH"/>
-			<file src="../../../../../COPYING.LESSER" targetdir="$INSTALL_PATH"/>
+			<file src="../../../../COPYING" targetdir="$INSTALL_PATH"/>
+			<file src="../../../../COPYING.LESSER" targetdir="$INSTALL_PATH"/>
 			
 			<parsable targetfile="$INSTALL_PATH/config/config.properties" type="javaprop"/>
 			<parsable targetfile="$INSTALL_PATH/bin/commEnv.cmd" type="shell" os="windows"/>

@@ -1,3 +1,3 @@
 @echo off
 call commEnv.cmd
-@java %MEM_ARGS% %JAVA_ARGS% es.ree.eemws.kit.cmd.get.Main %*
+@java %MEM_ARGS% %CONSOLE_LOG% es.ree.eemws.kit.cmd.get.Main %*

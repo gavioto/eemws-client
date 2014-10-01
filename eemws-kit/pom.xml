@@ -33,6 +33,7 @@
 					  <configuration>
 						<tasks>
 						  <mkdir dir="${basedir}/target" />
+						  <mkdir dir="${izpack.staging}" />
 						</tasks>
 					  </configuration>
 					</execution>
