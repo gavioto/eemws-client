@@ -21,200 +21,110 @@
 
 package es.ree.eemws.kit.folders;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
-import java.util.Locale;
-import java.util.logging.FileHandler;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 import javax.swing.JOptionPane;
 
+import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.core.utils.config.ConfigException;
 
 /**
- * Application to manage message folders using folders.
- * Messages are saved / retrieved in folders to be
- * generated / sent by e·trans.
+ * Main class.
+ * Creates all the objects and schedules.
  *
  * @author Red Eléctrica de España S.A.U.
  * @version 1.0 09/05/2014
  *
  */
 public final class FolderManager {
+   
+    /** Logging. */
+    private static final Logger LOGGER = Logger.getLogger(FolderManager.class.getName());
 
     /**
-     * Number of milliseconds that the system is waiting for
-     * the expiration of the associated threads to exit.
+     * Main method, creates the application objects and schedules.
+     * @param args Command line parameters (ignored)
      */
-    private static final int THREAD_EXPIRATION_WAIT = 2000;
-    /** logging. */
-    private static Logger log = Logger.getLogger(Thread.currentThread().getStackTrace()[0].getClassName());
-
-    /**
-     * Create all the folder managers and starts application.
-     */
-    public void execApplication() {
-        try {
-            startLogging();
+    public static void main(final String[] args) {
+        
+    	
+    	ScheduledExecutorService scheduler = null;
+    	try {
             Configuration config = new Configuration();
             config.readConfiguration();
             config.validateConfiguration();
-
-            ExecutionControl ce = new ExecutionControl(config);
-            if (ce.alreadyRunning()) {
-                String errMsg = "Other Magic Folder insance already running.";
-
-                if (System.getProperty("folder.intercativo") != null) {
-                    JOptionPane.showMessageDialog(null, errMsg, "Error", JOptionPane.ERROR_MESSAGE);
+            
+            if (ExecutionControl.isRunning(config.getInstanceID())) {
+                if (StatusIcon.isInteractive()) {
+                    JOptionPane.showMessageDialog(null, Messages.getString("MF_ALREADY_RUNNING"), Messages.getString("MF_TITLE_ERROR"), JOptionPane.ERROR_MESSAGE);  //$NON-NLS-1$//$NON-NLS-2$
                 }
-                log.info("[FOLDER]" + errMsg);
+                
+                LOGGER.info(Messages.getString("MF_ALREADY_RUNNING"));  //$NON-NLS-1$
+                StatusIcon.removeIcon();
             } else {
 
                 /* Status images Initialization. */
-                StatusIconFacade.initializeStatusIconFacade(config);
+                StatusIcon.setIdle();
 
-                /* Create lock handler. */
-                LockHandler lh;
-                lh = createLockHandler(config);
+                /* Creates lock handler. */
+                LockHandler lh = new LockHandler(config);
 
-                /* Create input detector only if an input folder is set. */
+            	scheduler = Executors.newScheduledThreadPool(3);
+                
+                /* Creates input detector only if an input folder is set. */
                 if (config.getInputFolder() != null) {
-                    createInputThread(lh, config);
+                	InputTask it = new InputTask(lh, config);
+                	long sleep = config.getSleepTimeInput();
+                	scheduler.scheduleAtFixedRate(it, 0, sleep, TimeUnit.MILLISECONDS);
                 }
 
                 /* Create output detector only if an output folder is set. */
                 if (config.getOutputFolder() != null) {
-                    createOutputThread(lh, config);
+                	OutputTask ot = new OutputTask(lh, config);
+                	long sleep = config.getSleepTimeInput();
+                	scheduler.scheduleAtFixedRate(ot, 0, sleep, TimeUnit.MILLISECONDS);
                 }
 
                 /* Create deletion / backup folder. */
-                createDeletingThread(lh, config);
+                if (config.getBackupFolder() != null) {
+                	DeleteFilesTask dft = new DeleteFilesTask (lh, config);
+                	int numDays = config.getNumOfDaysKept();
+                	scheduler.scheduleAtFixedRate(dft, numDays, numDays, TimeUnit.DAYS);
+                }
 
-                log.info("Application started. Detecting...");
+                LOGGER.info(Messages.getString("MF_RUNNING")); //$NON-NLS-1$
+            
             }
-
-        } catch (ConfigException ex) {
-            log.severe("Configuration error. " + ex.getMessage());
+            
+        } catch (ConfigException | MalformedURLException ex) {
+        	if (scheduler != null) {
+        		scheduler.shutdown();
+        	}
+        	
+        	if (StatusIcon.isInteractive()) {
+                JOptionPane.showMessageDialog(null, Messages.getString("INVALID_CONFIGURATION", ex.getMessage()), Messages.getString("MF_TITLE_ERROR"), JOptionPane.ERROR_MESSAGE);  //$NON-NLS-1$//$NON-NLS-2$
+            }            
+        	LOGGER.log(Level.SEVERE, Messages.getString("INVALID_CONFIGURATION"), ex.getMessage()); //$NON-NLS-1$
+        	
+        	// Force exit
+        	StatusIcon.removeIcon();        	
+        	System.exit(0);
+        	
         } catch (RemoteException ex) {
-            log.severe("Cannot retrieve / register remote references.");
-        } catch (MalformedURLException ex) {
-            log.severe("Cannot retrieve URL for attachment send.");
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        } catch (SecurityException se) {
-            se.printStackTrace();
-        }
-    }
-
-    /**
-     * Creates a thread that will delete all files (output, processed,
-     * temporary, common) which had been created by application when has
-     * passed an interval configurable through the key <code>NUM_DIAS_MANTENER</code>
-     * (default value = 7).
-     *
-     * @param lh Lock manager to synchronize the threads
-     * @param conf Module settings.
-     */
-    private void createDeletingThread(final LockHandler lh, final Configuration conf) {
-        DeleteProcessedFilesThread dPFT = new DeleteProcessedFilesThread(lh, conf);
-        dPFT.start();
-    }
-
-    /**
-     * Create thread for detection / input messages processing.
-     * @param lh Lock manager to synchronize the threads.
-     * @param conf Module settings.
-     * @throws MalformedURLException If cannot obtain an access URL for attachment services.
-     */
-    private void createInputThread(final LockHandler lh, final Configuration conf)  throws MalformedURLException {
-
-        final InputDetectionThread dt = new InputDetectionThread(lh, conf);
-        dt.start();
-
-        Runnable shutdownHook = new Runnable() {
-            public void run() {
-                dt.stopThread();
-
-                while (!dt.isStopped() && !dt.isKillable()) {
-                    try {
-                        Thread.sleep(THREAD_EXPIRATION_WAIT);
-                    } catch (InterruptedException ex) {
-                        log.finest("Input thread interrupted.");
-                    }
-                }
+        	
+        	if (StatusIcon.isInteractive()) {
+                JOptionPane.showMessageDialog(null, Messages.getString("INVALID_CONFIGURATION", ex.getMessage()), Messages.getString("MF_TITLE_ERROR"), JOptionPane.ERROR_MESSAGE);  //$NON-NLS-1$//$NON-NLS-2$
             }
-        };
-
-        Runtime.getRuntime().addShutdownHook(new Thread(shutdownHook));
+        	LOGGER.log(Level.SEVERE, Messages.getString("MF_CANNOT_REACH_REFERENCES"), ex.getMessage()); //$NON-NLS-1$
+        	StatusIcon.removeIcon();
+        } 
     }
-
-    /**
-     * Create thread for detection / output messages processing.
-     * @param lh Lock manager to synchronize the threads.
-     * @param conf Module settings.
-     */
-    private void createOutputThread(final LockHandler lh, final Configuration conf) {
-        final OutputDetectionThread dt = new OutputDetectionThread(lh, conf);
-        dt.start();
-
-        Runnable shutdownHook = new Runnable() {
-            public void run() {
-                dt.stopThread();
-
-                while (!dt.isStopped() && !dt.isKillable()) {
-                    try {
-                        Thread.sleep(THREAD_EXPIRATION_WAIT);
-                    } catch (InterruptedException ex) {
-                        log.finest("Output thread interrupted.");
-                    }
-                }
-            }
-        };
-
-        Runtime.getRuntime().addShutdownHook(new Thread(shutdownHook));
-    }
-
-    /**
-     * Create lock Handler.
-     * @param conf Module configuration.
-     * @return Controller object to synchronize the threads.
-     * @throws RemoteException if cannot create lock manager (cannot get RMI communication).
-     */
-    private LockHandler createLockHandler(final Configuration conf) throws RemoteException {
-        return new LockHandler(conf);
-    }
-
-    /**
-     * Main program. Create an instance of detector.
-     * @param args Commandline arguments -ignored-
-     */
-    public static void main(final String[] args) {
-        Locale.setDefault(Locale.ENGLISH);
-        FolderManager soporte = new FolderManager();
-        soporte.execApplication();
-    }
-
-    /**
-     * Initialize file logging for application.
-     * @throws IOException Exception with the error.
-     */
-    private void startLogging() throws IOException {
-
-        String fileNamePattern = "../logs/magic_folder_%g.txt";
-
-        File f = new File(fileNamePattern);
-        f.getParentFile().mkdirs();
-
-        FileHandler fileHandler = new FileHandler(fileNamePattern, 1000000, 99);
-        fileHandler.setFormatter(new SimpleFormatter());
-
-        log.addHandler(fileHandler);
-        log.setLevel(Level.INFO);
-
-    }
+ 
 }
 

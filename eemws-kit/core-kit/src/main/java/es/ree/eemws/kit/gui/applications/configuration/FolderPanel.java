@@ -244,15 +244,14 @@ public final class FolderPanel extends JFrame {
 
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.setSelectedFile(new File(textField.getText()));
 
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 
             File file = fileChooser.getSelectedFile();
             if (file.isDirectory()) {
 
-                String path = file.getAbsolutePath();
-                path = path.replaceAll("\\\\", "/");
-                textField.setText(path);
+            	textField.setText(changeFileNameSeparator(file.getAbsolutePath()));
 
             } else {
 
@@ -261,6 +260,25 @@ public final class FolderPanel extends JFrame {
         }
     }
 
+    
+    /**
+     * Changes Windows file path (a\b\c) to Unix file path (a/b/c).
+     * @param filename Absolute file name to convert.
+     * @return New file name changing '\' character into '/'
+     */
+    private String changeFileNameSeparator(final String filename) {
+    	String retValue;
+    	
+    	if (filename == null) {
+    		retValue = null;
+    	} else {
+    		retValue = filename.replaceAll("\\\\", "/");
+    	} 
+    	
+    	return retValue;    			
+    }
+    
+    
     /**
      * Load path names of server folders into their respective form fields.
      * @throws ConfigException If settings cannot be read.
@@ -269,11 +287,11 @@ public final class FolderPanel extends JFrame {
 
         Configuration cf = new Configuration();
         cf.readConfiguration();
-        txtInputFolderPath.setText(cf.getInputFolder());
-        txtResponseFolderPath.setText(cf.getResponseFolder());
-        txtProcessedFolderPath.setText(cf.getProcessedFolder());
-        txtOutputFolderPath.setText(cf.getOutputFolder());
-        txtBackupFolderPath.setText(cf.getBackupFolder());
+        txtInputFolderPath.setText(changeFileNameSeparator(cf.getInputFolder()));
+        txtResponseFolderPath.setText(changeFileNameSeparator(cf.getResponseFolder()));
+        txtProcessedFolderPath.setText(changeFileNameSeparator(cf.getProcessedFolder()));
+        txtOutputFolderPath.setText(changeFileNameSeparator(cf.getOutputFolder()));
+        txtBackupFolderPath.setText(changeFileNameSeparator(cf.getBackupFolder()));
     }
 
     /**
@@ -288,11 +306,11 @@ public final class FolderPanel extends JFrame {
             try {
 
                 cf.readConfiguration();
-                cf.setInputFolder(txtInputFolderPath.getText());
-                cf.setResponseFolder(txtResponseFolderPath.getText());
-                cf.setProcessedFolder(txtProcessedFolderPath.getText());
-                cf.setBackupFolder(txtBackupFolderPath.getText());
-                cf.setOutputFolder(txtOutputFolderPath.getText());
+                cf.setInputFolder(changeFileNameSeparator(txtInputFolderPath.getText()));
+                cf.setResponseFolder(changeFileNameSeparator(txtResponseFolderPath.getText()));
+                cf.setProcessedFolder(changeFileNameSeparator(txtProcessedFolderPath.getText()));
+                cf.setBackupFolder(changeFileNameSeparator(txtBackupFolderPath.getText()));
+                cf.setOutputFolder(changeFileNameSeparator(txtOutputFolderPath.getText()));
                 cf.writeConfiguration();
 
             } catch (ConfigException ex) {
@@ -317,38 +335,38 @@ public final class FolderPanel extends JFrame {
             Configuration cf = new Configuration();
             cf.readConfiguration();
 
-            String inputFolderPath = txtInputFolderPath.getText().trim();
+            String inputFolderPath = changeFileNameSeparator(txtInputFolderPath.getText().trim());
             if (inputFolderPath.length() == 0) {
                 inputFolderPath = null;
             }
             cf.setInputFolder(inputFolderPath);
 
-            String responseFolderPath = txtResponseFolderPath.getText().trim();
+            String responseFolderPath = changeFileNameSeparator(txtResponseFolderPath.getText().trim());
             if (responseFolderPath.length() == 0) {
                 responseFolderPath = null;
             }
             cf.setResponseFolder(responseFolderPath);
 
-            String processingFolderPath = txtProcessedFolderPath.getText().trim();
+            String processingFolderPath = changeFileNameSeparator(txtProcessedFolderPath.getText().trim());
             if (processingFolderPath.length() == 0) {
                 processingFolderPath = null;
             }
             cf.setProcessedFolder(processingFolderPath);
 
-            String outputFolderPath = txtOutputFolderPath.getText().trim();
+            String outputFolderPath = changeFileNameSeparator(txtOutputFolderPath.getText().trim());
             if (outputFolderPath.length() == 0) {
                 outputFolderPath = null;
             }
             cf.setOutputFolder(outputFolderPath);
 
-            String backupFolderPath = txtBackupFolderPath.getText().trim();
+            String backupFolderPath = changeFileNameSeparator(txtBackupFolderPath.getText().trim());
             if (backupFolderPath.length() == 0) {
                 backupFolderPath = null;
             }
             cf.setBackupFolder(backupFolderPath);
 
             try {
-                cf.validateFolderSettings();
+                cf.validateConfiguration();
             } catch (ConfigException ex) {
                 ConfigException e = new ConfigException(ex.getMessage());
                 throw e;

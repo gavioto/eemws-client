@@ -66,8 +66,6 @@ public final class RequestSend {
         status = principal.getStatusBar();
         logger = principal.getLogHandle().getLog();
 
-        get.setSignRequest(System.getProperty(Configuration.SIGN_RESQUEST, "TRUE").toUpperCase().trim().equalsIgnoreCase("TRUE"));
-        get.setVerifyResponse(System.getProperty(Configuration.VERIFY_SIGN_RESPONSE, "FALSE").toUpperCase().trim().equalsIgnoreCase("TRUE"));
 
         setEndPoint(url);
     }
@@ -157,7 +155,7 @@ public final class RequestSend {
         status.setStatus("Requesting " + traceMsg);
 
         try {
-            response = get.get(msgType, codigo);
+            response = get.get(codigo);
 
             logger.logMessage(traceMsg + " Retrieving.");
             status.setStatus("Retrieved " + traceMsg);

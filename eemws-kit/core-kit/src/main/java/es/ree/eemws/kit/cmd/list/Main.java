@@ -52,68 +52,67 @@ public final class Main extends ParentMain {
 
 	/** Log messages. */
 	private static final Logger LOGGER = Logger.getLogger(COMMAND_NAME);
-	
+
 	/** Sets text for parameter <code>code</code>. */
 	private static final String PARAMETER_CODE = Messages.getString("PARAMETER_CODE"); //$NON-NLS-1$
-	
+
 	/** Sets text for parameter <code>startTime</code>. */
 	private static final String PARAMETER_START_TIME = Messages.getString("PARAMETER_START_TIME"); //$NON-NLS-1$
-	
+
 	/** Sets text for parameter <code>endTime</code>. */
 	private static final String PARAMETER_END_TIME = Messages.getString("PARAMETER_END_TIME"); //$NON-NLS-1$
-	
+
 	/** Sets text for parameter <code>intervalTime</code>. */
 	private static final String LIST_PARAMETER_INTERVAL_TYPE = Messages.getString("LIST_PARAMETER_INTERVAL_TYPE"); //$NON-NLS-1$
-	
+
 	/** Sets text for parameter <code>msgId</code>. */
 	private static final String PARAMETER_MSG_ID = Messages.getString("PARAMETER_MSG_ID"); //$NON-NLS-1$
-	
+
 	/** Sets text for parameter <code>msgType</code>. */
 	private static final String LIST_PARAMETER_MSG_TYPE = Messages.getString("LIST_PARAMETER_MSG_TYPE"); //$NON-NLS-1$
-	
+
 	/** Sets text for parameter <code>owner</code>. */
 	private static final String LIST_PARAMETER_MSG_OWNER = Messages.getString("LIST_PARAMETER_MSG_OWNER"); //$NON-NLS-1$
-	
+
 	/** Sets text for parameter <code>url</code>. */
 	private static final String PARAMETER_URL = Messages.getString("PARAMETER_URL"); //$NON-NLS-1$
 
-    /** Size of the field Code. */
-    private static final int CODE_SIZE = 20;
+	/** Size of the field Code. */
+	private static final int CODE_SIZE = 20;
 
-    /** Size of the field  MessageIdentification.Version. */
-    private static final int MESSAGE_IDENTIFICATION_VERSION_SIZE = 40;
+	/** Size of the field MessageIdentification.Version. */
+	private static final int MESSAGE_IDENTIFICATION_VERSION_SIZE = 40;
 
-    /** Size of the field Status. */
-    private static final int STATUS_SIZE = 6;
+	/** Size of the field Status. */
+	private static final int STATUS_SIZE = 6;
 
-    /** Size of the field Type. */
-    private static final int TYPE_SIZE = 50;
+	/** Size of the field Type. */
+	private static final int TYPE_SIZE = 50;
 
-    /** Size of the field Owner. */
-    private static final int OWNER_SIZE = 20;
+	/** Size of the field Owner. */
+	private static final int OWNER_SIZE = 20;
 
-    /** Empty string for string formart. */
-    private static final String EMPTY_STRING;
+	/** Empty string for string formart. */
+	private static final String EMPTY_STRING;
 
 	/** Date format with minutes. */
-    private static final String DATE_FORMAT_MINUTES = "dd-MM-yyyy HH:mm"; //$NON-NLS-1$
-	
-    /** Date format with seconds. */
-    private static final String DATE_FORMAT_SECONDS = "dd-MM-yyyy HH:mm:ss"; //$NON-NLS-1$
-    
-    /* Inicialices empty string. */
-    static {
-    	
-    	int maxSize = Math.max(Math.max(Math.max(Math.max(CODE_SIZE,  MESSAGE_IDENTIFICATION_VERSION_SIZE), STATUS_SIZE), TYPE_SIZE), OWNER_SIZE);
-    	
-    	StringBuilder sb = new StringBuilder(maxSize);
-    	for (int cont = 0; cont < maxSize; cont++) {
-    		sb.append(' ');
-    	}
-    	EMPTY_STRING = sb.toString();
-    }
-    
-    
+	private static final String DATE_FORMAT_MINUTES = "dd-MM-yyyy HH:mm"; //$NON-NLS-1$
+
+	/** Date format with seconds. */
+	private static final String DATE_FORMAT_SECONDS = "dd-MM-yyyy HH:mm:ss"; //$NON-NLS-1$
+
+	/* Inicialices empty string. */
+	static {
+
+		int maxSize = Math.max(Math.max(Math.max(Math.max(CODE_SIZE, MESSAGE_IDENTIFICATION_VERSION_SIZE), STATUS_SIZE), TYPE_SIZE), OWNER_SIZE);
+
+		StringBuilder sb = new StringBuilder(maxSize);
+		for (int cont = 0; cont < maxSize; cont++) {
+			sb.append(' ');
+		}
+		EMPTY_STRING = sb.toString();
+	}
+
 	/**
 	 * Main. Execute the list command.
 	 * @param args command line arguments.
@@ -121,7 +120,7 @@ public final class Main extends ParentMain {
 	public static void main(final String[] args) {
 
 		String urlEndPoint = ""; //$NON-NLS-1$
-		
+
 		try {
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_PATTERN);
@@ -131,7 +130,7 @@ public final class Main extends ParentMain {
 			Long lCode = null;
 
 			List<String> arguments = new ArrayList<>(Arrays.asList(args));
-			
+
 			String startTime = readParameter(arguments, PARAMETER_START_TIME);
 			String endTime = readParameter(arguments, PARAMETER_END_TIME);
 			intervalType = readParameter(arguments, LIST_PARAMETER_INTERVAL_TYPE);
@@ -144,7 +143,7 @@ public final class Main extends ParentMain {
 			if (!arguments.isEmpty()) {
 				throw new IllegalArgumentException(Messages.getString("UNKNOWN_PARAMETERS", arguments.toString())); //$NON-NLS-1$
 			}
-			
+
 			if (code == null) {
 
 				String sSysdate = sdf.format(Calendar.getInstance().getTime());
@@ -209,22 +208,22 @@ public final class Main extends ParentMain {
 		} catch (ClientException e) {
 
 			LOGGER.severe(e.getMessage());
-			
+
 		} catch (MalformedURLException e) {
-			
+
 			LOGGER.severe(Messages.getString("INVALID_URL", urlEndPoint)); //$NON-NLS-1$
 
 		} catch (ConfigException e) {
-			
+
 			LOGGER.severe(Messages.getString("INVALID_CONFIGURATION", e.getMessage())); //$NON-NLS-1$
-            
-        	/* Shows stack trace only for debug. Don't bother the user with this details. */
+
+			/* Shows stack trace only for debug. Don't bother the user with this details. */
 			LOGGER.log(Level.FINE, Messages.getString("INVALID_CONFIGURATION", e.getMessage()), e); //$NON-NLS-1$
-			
+
 		} catch (IllegalArgumentException e) {
 
 			LOGGER.info(e.getMessage());
-			LOGGER.info(Messages.getString("LIST_USAGE", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE,  //$NON-NLS-1$
+			LOGGER.info(Messages.getString("LIST_USAGE", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE, //$NON-NLS-1$
 					PARAMETER_MSG_ID, LIST_PARAMETER_MSG_TYPE, LIST_PARAMETER_MSG_OWNER, PARAMETER_URL, new Date()));
 		}
 	}
@@ -232,16 +231,16 @@ public final class Main extends ParentMain {
 	/**
 	 * This method shows the results.
 	 * @param response List of the message listings.
+	 * @throws ClientException If the server returns an invalid message list entry.
 	 */
-	private static void showResults(final List<MessageListEntry> response) {
+	private static void showResults(final List<MessageListEntry> response) throws ClientException {
 
 		if (response != null && !response.isEmpty()) {
-			
-			
-		    SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_MINUTES);
-		    
-		    SimpleDateFormat sdfTimestamp = new SimpleDateFormat(DATE_FORMAT_SECONDS);
-		  
+
+			SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_MINUTES);
+
+			SimpleDateFormat sdfTimestamp = new SimpleDateFormat(DATE_FORMAT_SECONDS);
+
 			StringBuilder sb = new StringBuilder();
 			sb.append(Messages.getString("LIST_OUTPUT_HEADER")); //$NON-NLS-1$
 
@@ -250,20 +249,42 @@ public final class Main extends ParentMain {
 
 			for (MessageListEntry msgData : response) {
 
+				msgData.checkMandatoryElements();
+				
 				sb.append("\n"); //$NON-NLS-1$
 				sb.append(completeStringWithBlanks(msgData.getCode().toString(), CODE_SIZE));
 				sb.append(" "); //$NON-NLS-1$
-				sb.append(completeStringWithBlanks(msgData.getMessageIdentification() + "." + msgData.getVersion(), MESSAGE_IDENTIFICATION_VERSION_SIZE)); //$NON-NLS-1$
+
+				if (msgData.getVersion() == null) { // Version is optional
+					sb.append(completeStringWithBlanks(msgData.getMessageIdentification(), MESSAGE_IDENTIFICATION_VERSION_SIZE));
+				} else {
+					sb.append(completeStringWithBlanks(msgData.getMessageIdentification() + "." + msgData.getVersion(), MESSAGE_IDENTIFICATION_VERSION_SIZE)); //$NON-NLS-1$
+				}
+
 				sb.append(" "); //$NON-NLS-1$
-				sb.append(completeStringWithBlanks(msgData.getStatus(), STATUS_SIZE));
+				
+				if (msgData.getStatus() == null) { // Status is optional
+					sb.append(completeStringWithBlanks("", STATUS_SIZE)); //$NON-NLS-1$
+				} else {
+					sb.append(completeStringWithBlanks(msgData.getStatus(), STATUS_SIZE));
+				}
+				
 				sb.append(" "); //$NON-NLS-1$
 				sb.append(sdf.format(msgData.getApplicationStartTime().getTime()));
 				sb.append(" - "); //$NON-NLS-1$
-				sb.append(sdf.format(msgData.getApplicationEndTime().getTime()));
+				
+				if (msgData.getApplicationEndTime() == null) { // End date is optional
+					sb.append(completeStringWithBlanks("", DATE_FORMAT_MINUTES.length())); //$NON-NLS-1$
+				} else {
+					sb.append(sdf.format(msgData.getApplicationEndTime().getTime()));
+				}
+				
 				sb.append(" "); //$NON-NLS-1$
 				sb.append(sdfTimestamp.format(msgData.getServerTimestamp().getTime()));
+				
 				sb.append(" "); //$NON-NLS-1$
 				sb.append(completeStringWithBlanks(msgData.getType(), TYPE_SIZE));
+				
 				sb.append(" "); //$NON-NLS-1$
 				sb.append(completeStringWithBlanks(msgData.getOwner(), OWNER_SIZE));
 
@@ -277,7 +298,6 @@ public final class Main extends ParentMain {
 			sb.append(Messages.getString("LIST_NUM_OF_MESSAGES")); //$NON-NLS-1$
 			sb.append(" "); //$NON-NLS-1$
 			sb.append(Messages.getString("LIST_MAX_CODE", String.valueOf(maxCode))); //$NON-NLS-1$
-			
 
 			LOGGER.info(sb.toString());
 
@@ -285,20 +305,21 @@ public final class Main extends ParentMain {
 
 			LOGGER.info(Messages.getString("LIST_NO_MESSAGES")); //$NON-NLS-1$
 		}
-	}
-	 
-    /**
-     * This method completes string with blanks.
-     * @param value Value of the string.
-     * @param size Size of the final string.
-     * @return String with blanks.
-     */
-    private static StringBuilder completeStringWithBlanks(final String value, final int size) {
 
-        StringBuilder sb = new StringBuilder(value);
-        sb.append(EMPTY_STRING);
-        sb.setLength(size);
-        
-        return sb;
-    }
+	}
+
+	/**
+	 * This method completes string with blanks.
+	 * @param value Value of the string.
+	 * @param size Size of the final string.
+	 * @return String with blanks.
+	 */
+	private static StringBuilder completeStringWithBlanks(final String value, final int size) {
+
+		StringBuilder sb = new StringBuilder(value);
+		sb.append(EMPTY_STRING);
+		sb.setLength(size);
+
+		return sb;
+	}
 }

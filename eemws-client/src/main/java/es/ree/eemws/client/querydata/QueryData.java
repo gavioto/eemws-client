@@ -18,12 +18,14 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
+
 package es.ree.eemws.client.querydata;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-
-import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Map;
 
 import _504.iec62325.wss._1._0.MsgFaultMsg;
 import ch.iec.tc57._2011.schema.message.HeaderType;
@@ -45,30 +47,33 @@ import es.ree.eemws.core.utils.xml.XMLGregorianCalendarFactory;
 public final class QueryData extends ParentClient {
 
     /** Verb of the action. */
-    private static final String VERB = "get";
+    private static final String VERB = "get"; //$NON-NLS-1$
 
     /** Noun of the action. */
-    private static final String NOUN = "QueryData";
+    private static final String NOUN = "QueryData"; //$NON-NLS-1$
 
     /** Name of the DataType option. */
-    private static final String DATA_TYPE_OPTION = "DataType";
+    private static final String DATA_TYPE_OPTION = "DataType"; //$NON-NLS-1$
+    
+    /** QueryData request messages are not signed. */
+    private static final boolean SIGN_REQUEST = false;
 
-    /** Name of the AreaCode option. */
-    private static final String AREA_CODE_OPTION = "AreaCode";
+    /** QueryData response messages signature are validated. */
+	private static final boolean VERIFY_RESPONSE = true;
 
     /**
      * Constructor.
      */
     public QueryData() {
 
-        setSignRequest(false);
-        setVerifyResponse(true);
+        setSignRequest(SIGN_REQUEST);
+        setVerifyResponse(VERIFY_RESPONSE);
     }
 
     /**
-     * This method can be used by clients to request specific data from the server using different query parameters.
+     * Invoke the QueryData operation with no parameters (just the query identification).
      * @param dataType Indicates the type of data being requested.
-     * @return String with the XML message.
+     * @return String with the payload message.
      * @throws ClientException Exception with the error.
      */
     public String query(final String dataType) throws ClientException {
@@ -77,28 +82,26 @@ public final class QueryData extends ParentClient {
     }
 
     /**
-     * This method can be used by clients to request specific data from the server using different query parameters.
+     * Invoke the QueryData operation with start time parameter.
      * @param dataType Indicates the type of data being requested.
-     * @param startTime Specifies that the returned message should only include data whose Application Date is after the provided.
-     * @return String with the XML message.
+     * @param startTime Specifies that the returned message should only include data whose Application Date is after the given date.
+     * @return String with the payload message.
      * @throws ClientException Exception with the error.
      */
-    public String query(final String dataType, final Date startTime)
-            throws ClientException {
+    public String query(final String dataType, final Date startTime) throws ClientException {
 
         return query(dataType, startTime, null, null);
     }
 
     /**
-     * This method can be used by clients to request specific data from the server using different query parameters.
+     * Invoke the QueryData operation with start and end time parameters.
      * @param dataType Indicates the type of data being requested.
-     * @param startTime Specifies that the returned message should only include data whose Application Date is after the provided.
-     * @param endTime Specifies that the returned message should only include data whose Application Date is before the provided date.
-     * @return String with the XML message.
+     * @param startTime Specifies that the returned message should only include data whose Application Date is after the given date
+     * @param endTime Specifies that the returned message should only include data whose Application Date is before the given date.
+     * @return String with the payload message.
      * @throws ClientException Exception with the error.
      */
-    public String query(final String dataType, final Date startTime, final Date endTime)
-            throws ClientException {
+    public String query(final String dataType, final Date startTime, final Date endTime) throws ClientException {
 
         return query(dataType, startTime, endTime, null);
     }
@@ -106,18 +109,17 @@ public final class QueryData extends ParentClient {
     /**
      * This method can be used by clients to request specific data from the server using different query parameters.
      * @param dataType Indicates the type of data being requested.
-     * @param startTime Specifies that the returned message should only include data whose Application Date is after the provided.
-     * @param endTime Specifies that the returned message should only include data whose Application Date is before the provided date.
-     * @param areaCode Specifies that the returned data should be relevant to the provided Area.
+     * @param startTime Specifies that the returned message should only include data whose Application Date is after the given date. (Can be <code>null</code>). 
+     * @param endTime Specifies that the returned message should only include data whose Application Date is before the given date. (Can be <code>null</code>).
+     * @param others Specifies others parameters to the query. The parameters are expressed as a key-value pairs, where the value is optional.
      * @return String with the XML message.
      * @throws ClientException Exception with the error.
      */
-    public String query(final String dataType, final Date startTime, final Date endTime, final String areaCode)
-            throws ClientException {
+    public String query(final String dataType, final Date startTime, final Date endTime, final HashMap<String, String> others) throws ClientException {
 
         try {
 
-            RequestMessage requestMessage = createRequest(dataType, startTime, endTime, areaCode);
+            RequestMessage requestMessage = createRequest(dataType, startTime, endTime, others);
             ResponseMessage responseMessage = sendMessage(requestMessage);
             return getPrettyPrintPayloadMessage(responseMessage);
 
@@ -132,10 +134,10 @@ public final class QueryData extends ParentClient {
      * @param dataType Indicates the type of data being requested.
      * @param startTime Specifies that the returned message should only include data whose Application Date is after the provided.
      * @param endTime Specifies that the returned message should only include data whose Application Date is before the provided date.
-     * @param areaCode Specifies that the returned data should be relevant to the provided Area.
+     * @param others Specifies that the returned data should be relevant to the provided Area.
      * @return Request message.
      */
-    private RequestMessage createRequest(final String dataType, final Date startTime, final Date endTime, final String areaCode) {
+    private RequestMessage createRequest(final String dataType, final Date startTime, final Date endTime, final HashMap<String, String> others) {
 
         RequestMessage message = new RequestMessage();
 
@@ -145,28 +147,30 @@ public final class QueryData extends ParentClient {
         RequestType resquest = new RequestType();
 
         if (startTime != null) {
-
-            XMLGregorianCalendar xmlStartTime = XMLGregorianCalendarFactory.getInstance(startTime);
-            resquest.setStartTime(xmlStartTime);
+            
+            resquest.setStartTime(XMLGregorianCalendarFactory.getInstance(startTime));
         }
 
         if (endTime != null) {
-
-            XMLGregorianCalendar xmlEndTime = XMLGregorianCalendarFactory.getInstance(endTime);
-            resquest.setEndTime(xmlEndTime);
+            
+            resquest.setEndTime(XMLGregorianCalendarFactory.getInstance(endTime));
         }
 
         List<OptionType> options = resquest.getOptions();
         OptionType option = createOption(DATA_TYPE_OPTION, dataType);
         options.add(option);
 
-        if (areaCode != null) {
-
-            option = createOption(AREA_CODE_OPTION, areaCode);
-            options.add(option);
+        if (others != null) {
+        	Iterator<Map.Entry<String, String>> itr = others.entrySet().iterator();
+        	
+        	while (itr.hasNext()) {
+        		Map.Entry<String, String> me = itr.next();
+        		options.add(createOption(me.getKey(), me.getValue()));
+        	}
         }
 
         message.setRequest(resquest);
+
         return message;
     }
 }

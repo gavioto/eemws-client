@@ -109,8 +109,6 @@ public final class SendHandle implements ServiceMenuListener {
 
             String urlEndPoint = config.getUrlEndPoint().toURI().toString();
 
-            put.setSignRequest(System.getProperty(Configuration.SIGN_RESQUEST, "TRUE").toUpperCase().trim().equalsIgnoreCase("TRUE"));
-            put.setVerifyResponse(System.getProperty(Configuration.VERIFY_SIGN_RESPONSE, "FALSE").toUpperCase().trim().equalsIgnoreCase("TRUE"));
             put.setEndPoint(urlEndPoint);
 
         } catch (Exception e) {

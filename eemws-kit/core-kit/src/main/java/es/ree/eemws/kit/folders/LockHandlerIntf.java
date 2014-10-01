@@ -25,9 +25,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 /**
- * Processes that must synchronize to service farm
- * must implement this interface.
- *
+ * Remote interface to communicate working group.
+ * 
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 29/05/2014
  *
@@ -42,12 +41,10 @@ public interface LockHandlerIntf extends Remote {
     void suscribe(String url) throws RemoteException;
 
     /**
-     * Check with another service whether the file name passed as
-     * argument is locked.
+     * Check with another service whether the given file name is locked.
      * @param fileName Name of the file to check.
      * @param remoteId ID for the remote service to check with
-     * @return <code>true</code> IF the file is locked by the
-     * service<code>false</code> otherwise.
+     * @return <code>true</code> IF the file is locked by the service<code>false</code> otherwise.
      * @throws RemoteException If remote call fails.
      */
     boolean isLocked(String fileName, int remoteId) throws RemoteException;

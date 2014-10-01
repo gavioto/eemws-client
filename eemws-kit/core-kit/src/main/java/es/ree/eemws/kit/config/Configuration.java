@@ -39,40 +39,28 @@ import es.ree.eemws.kit.common.Messages;
 public class Configuration {
 
     /** Mapping key to {@link #url}. */
-    public static final String WEBSERVICE_URL_KEY = "WEBSERVICES.URL";
-
-    /** Mapping key to {@link #signResquest}. */
-    public static final String SIGN_RESQUEST = "SIGN_RESQUEST";
-
-    /** Mapping key to {@link #verifySignResponse}. */
-    public static final String VERIFY_SIGN_RESPONSE = "VERIFY_SIGN_RESPONSE";
+    public static final String WEBSERVICE_URL_KEY = "WEBSERVICES.URL"; //$NON-NLS-1$
 
     /** Mapping key to {@link #keyStoreFile}. */
-    private static final String KEY_STORE_FILE_KEY = "javax.net.ssl.keyStore";
+    private static final String KEY_STORE_FILE_KEY = "javax.net.ssl.keyStore"; //$NON-NLS-1$
 
     /** Mapping key to {@link #keyStorePassword}. */
-    private static final String KEY_STORE_PASSWORD_KEY = "javax.net.ssl.keyStorePassword";
+    private static final String KEY_STORE_PASSWORD_KEY = "javax.net.ssl.keyStorePassword"; //$NON-NLS-1$
 
     /** Mapping key to {@link #proxyHost}. */
-    private static final String PROXY_HOST_KEY = "https.proxyHost";
+    private static final String PROXY_HOST_KEY = "https.proxyHost"; //$NON-NLS-1$
 
     /** Mapping key to {@link #proxyPort}. */
-    private static final String PROXY_PORT_KEY = "https.proxyPort";
+    private static final String PROXY_PORT_KEY = "https.proxyPort"; //$NON-NLS-1$
 
     /** Mapping key to {@link #proxyUser}. */
-    private static final String PROXY_USER_KEY = "https.proxyUser";
+    private static final String PROXY_USER_KEY = "https.proxyUser"; //$NON-NLS-1$
 
     /** Mapping key to {@link #proxyPassword}. */
-    private static final String PROXY_PASSWORD_KEY = "https.proxyPassword";
+    private static final String PROXY_PASSWORD_KEY = "https.proxyPassword"; //$NON-NLS-1$
 
     /** URL for the end point. */
     private String url = null;
-
-    /** Indicate whether Service call is signed. */
-    private boolean signResquest = true;
-
-    /** Indicate whether Service call is signed. */
-    private boolean verifySignResponse = true;
 
     /** Path to Key store file. */
     private String keyStoreFile;
@@ -93,7 +81,7 @@ public class Configuration {
     private String proxyPassword;
 
     /** Path to configuration file. */
-    public static final String CONFIG_FILE = "config.properties";
+    public static final String CONFIG_FILE = "config.properties"; //$NON-NLS-1$
 
     /**
      * Read system settings.
@@ -114,11 +102,8 @@ public class Configuration {
         proxyUser = cm.getValue(PROXY_USER_KEY);
         proxyPassword = cm.getValue(PROXY_PASSWORD_KEY);
         
-        signResquest = cm.getValue(SIGN_RESQUEST, "TRUE").equalsIgnoreCase("TRUE");
-        verifySignResponse = cm.getValue(VERIFY_SIGN_RESPONSE, "FALSE").equalsIgnoreCase("TRUE");
-
         if (!hasMinimumConfiguration()) {
-            throw new ConfigException(Messages.getString("kit.gui.editor.35"));
+            throw new ConfigException(Messages.getString("kit.gui.editor.35")); //$NON-NLS-1$
         }
 
     }
@@ -148,10 +133,7 @@ public class Configuration {
             fileContent = writeValue(keyStoreFile, cm.getValue(KEY_STORE_FILE_KEY), KEY_STORE_FILE_KEY, fileContent);
             fileContent = writeValue(keyStorePassword, cm.getValue(KEY_STORE_PASSWORD_KEY), KEY_STORE_PASSWORD_KEY, fileContent);
 
-            fileContent = writeValue(Boolean.toString(signResquest), cm.getValue(SIGN_RESQUEST), SIGN_RESQUEST, fileContent);
-            fileContent = writeValue(Boolean.toString(verifySignResponse), cm.getValue(VERIFY_SIGN_RESPONSE), VERIFY_SIGN_RESPONSE, fileContent);
-
-            FileUtil.write(FileUtil.getFullPathOfResoruce(configPath), fileContent);
+             FileUtil.write(FileUtil.getFullPathOfResoruce(configPath), fileContent);
 
         } catch (IOException ex) {
 
@@ -227,7 +209,7 @@ public class Configuration {
 
                     } else {
 
-                        content = content.substring(0, pos3) + "#" + key + content.substring(pos2);
+                        content = content.substring(0, pos3) + "#" + key + content.substring(pos2); //$NON-NLS-1$
                     }
 
                     hasChanged = true;
@@ -239,7 +221,7 @@ public class Configuration {
 
                         if (newValue != null) {
 
-                            content = content.substring(0, pos3) + key + "=" + newValue
+                            content = content.substring(0, pos3) + key + "=" + newValue //$NON-NLS-1$
                                     + content.substring(pos2);
                         }
 
@@ -253,51 +235,14 @@ public class Configuration {
             /* If file does not contain the key is added at the end of the file*/
             if (!hasChanged) {
 
-                content = content + "\n" + key + "=" + newValue + "\n";
+                content = content + "\n" + key + "=" + newValue + "\n"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             }
         }
 
         return content;
     }
 
-    /**
-     * Indicate whether a document must be signed.
-     * @return status.
-     */
-    public final boolean isSignResquest() {
-
-        return signResquest;
-    }
-
-    /**
-     * Set whether document must be signed.
-     * @param aSignResquest status
-     */
-    public final void setSignResquest(final boolean aSignResquest) {
-
-        signResquest = aSignResquest;
-    }
-
-    /**
-     * Indicate whether the response must be signed.
-     * @return status.
-     */
-    public final boolean isVerifySignResponse() {
-
-        return verifySignResponse;
-    }
-
-    /**
-     * Set whether the response must be signed.
-     * @param aVerifySignResponse status.
-     */
-    public final void setVerifySignResponse(final boolean aVerifySignResponse) {
-
-        verifySignResponse = aVerifySignResponse;
-    }
-
-
-
+  
     /**
      * Return host name for the proxy server.
      * @return host name for the proxy server
@@ -485,6 +430,6 @@ public class Configuration {
      */
     private boolean isEmpty(final String st) {
 
-        return (st == null || "".equals(st.trim()));
+        return (st == null || "".equals(st.trim())); //$NON-NLS-1$
     }
 }
