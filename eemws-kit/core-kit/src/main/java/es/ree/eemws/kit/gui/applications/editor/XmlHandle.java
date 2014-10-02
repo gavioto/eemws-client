@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 
@@ -39,7 +39,7 @@ import es.ree.eemws.kit.gui.common.Constants;
 /**
  * XML display format related tasks.
  *
- * @author Red Eléctrica de España, S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  * @version 1.0 07/08/2014
  */
 public final class XmlHandle {
@@ -98,7 +98,7 @@ public final class XmlHandle {
         documentHandle = mainWindow.getDocumentHandle();
         log = mainWindow.getLogHandle().getLog();
         tabSpaces = "";
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int cont = 0; cont < TAB_SIZE; cont++) {
             buf.append(" ");
         }
@@ -210,13 +210,13 @@ public final class XmlHandle {
             try {
                 mainWindow.enableScreen(false);
                 String[] text = XMLUtil.prettyPrint(documentHandle.getPlainText()).toString().split("<");
-                StringBuffer output = new StringBuffer();
-                StringBuffer current;
+                StringBuilder output = new StringBuilder();
+                StringBuilder current;
 
                 output.append(GENERAL_FORMAT);
 
                 for (int cont = 1; cont < text.length; cont++) {
-                    current = new StringBuffer(text[cont].replaceAll(" ", HTML_SPACES).replaceFirst("\\n", "\n<br>"));
+                    current = new StringBuilder(text[cont].replaceAll(" ", HTML_SPACES).replaceFirst("\\n", "\n<br>"));
 
                     int posToken = applyLabelFormat(current, 0);
                     int len = current.length();
@@ -279,7 +279,7 @@ public final class XmlHandle {
      * @param tokenPosition Format will be applied starting from this position.
      * @return New position to be formatted.
      */
-    private int applyLabelFormat(final StringBuffer current, final int tokenPosition) {
+    private int applyLabelFormat(final StringBuilder current, final int tokenPosition) {
         int spacePosition = current.indexOf("&", tokenPosition);
         int closePosition = current.indexOf(">", tokenPosition);
         int position;
@@ -315,7 +315,7 @@ public final class XmlHandle {
      * @param tokenPosition Position of the token to be formated.
      * @return New position for token search.
      */
-    private int applyAttributeFormat(final StringBuffer current, final int tokenPosition) {
+    private int applyAttributeFormat(final StringBuilder current, final int tokenPosition) {
 
         int returnPosition = tokenPosition;
         int position = returnPosition;
@@ -342,7 +342,7 @@ public final class XmlHandle {
      * @param quoteToken Token value to be highlighted.
      * @return New position for token search.
      */
-    private int applyStringFormat(final StringBuffer current, final int tokenPosition, final String quoteToken) {
+    private int applyStringFormat(final StringBuilder current, final int tokenPosition, final String quoteToken) {
         int position = current.indexOf(quoteToken, tokenPosition + 1) + 1;
 
         current.insert(tokenPosition, STRING_FORMAT);

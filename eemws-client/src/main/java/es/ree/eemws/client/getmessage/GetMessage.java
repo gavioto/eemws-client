@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 package es.ree.eemws.client.getmessage;
@@ -36,7 +36,7 @@ import es.ree.eemws.client.exception.ClientException;
 /**
  * Retrieves the message according to the given parameters (filters).
  *
- * @author Red Eléctrica de España S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a S.A.U.
  * @version 1.0 13/06/2014
  */
 public final class GetMessage extends ParentClient {
@@ -123,7 +123,7 @@ public final class GetMessage extends ParentClient {
      * @param messageVersion Specifies the Message Version of the requested message. If more than one message in the server have the same
      *                       MessageIdentification and MessageVersion, the most recent one will be returned.
      * @param code Specifies the internal identification number of the requested message.
-     * @param queue Indicates that the server will decide which message will be returned. Its value shall be “NEXT”.
+     * @param queue Indicates that the server will decide which message will be returned. Its value shall be <code>NEXT</code>.
      * @return String with the XML message.
      * @throws ClientException Exception with the error.
      */
@@ -147,7 +147,7 @@ public final class GetMessage extends ParentClient {
      * @param messageVersion Specifies the Message Version of the requested message. If more than one message in the server have the same
      *                       MessageIdentification and MessageVersion, the most recent one will be returned.
      * @param code Specifies the internal identification number of the requested message.
-     * @param queue Indicates that the server will decide which message will be returned. Its value shall be “NEXT”.
+     * @param queue Indicates that the server will decide which message will be returned. Its value shall be <code>NEXT</code>.
      * @return Request message.
      */
     private RequestMessage createRequest(final String messageIdentification, final Integer messageVersion, final Long code, final String queue) {
