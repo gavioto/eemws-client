@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 package es.ree.eemws.kit.gui.applications.editor;
@@ -31,7 +31,7 @@ import javax.swing.JScrollPane;
 /**
  * Document management.
  *
- * @author Red Eléctrica de España S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a S.A.U.
  * @version 1.0 13/06/2014
  */
 public final class DocumentHandle {
@@ -94,7 +94,7 @@ public final class DocumentHandle {
      * @param contentType Content type.
      * @param cannotUndo Indicate whether undo can be done after text loading.
      */
-    private void open(final StringBuffer content, final String contentType, final boolean cannotUndo) {
+    private void open(final StringBuilder content, final String contentType, final boolean cannotUndo) {
 
         if (cannotUndo) {
 
@@ -120,7 +120,7 @@ public final class DocumentHandle {
      * Display content applying an XML-convenient formatting.
      * @param content Content to be displayed.
      */
-    public void openXml(final StringBuffer content) {
+    public void openXml(final StringBuilder content) {
 
         open(content, XML_TYPE, false);
     }
@@ -130,7 +130,7 @@ public final class DocumentHandle {
      * this way cannot be undone.
      * @param content Text to be displayed on text area.
      */
-    public void openIrreversible(final StringBuffer content) {
+    public void openIrreversible(final StringBuilder content) {
 
         open(content, PLAIN_TEXT_TYPE, true);
     }
@@ -140,7 +140,7 @@ public final class DocumentHandle {
      * this way can be undone.
      * @param content Text to be displayed/edited on text area.
      */
-    public void openReversible(final StringBuffer content) {
+    public void openReversible(final StringBuilder content) {
 
         open(content, PLAIN_TEXT_TYPE, false);
     }
@@ -150,7 +150,7 @@ public final class DocumentHandle {
      * @param buf String to check.
      * @return <code>true</code> if is XML. <code>false</code> otherwise.
      */
-    private boolean isXML(final StringBuffer buf) {
+    private boolean isXML(final StringBuilder buf) {
 
         String header;
         if (buf.length() < MESSAGE_HEADER) {
@@ -185,7 +185,7 @@ public final class DocumentHandle {
             header = document.getText().substring(0, MESSAGE_HEADER);
         }
 
-        return isXML(new StringBuffer(header));
+        return isXML(new StringBuilder(header));
     }
 
     /**

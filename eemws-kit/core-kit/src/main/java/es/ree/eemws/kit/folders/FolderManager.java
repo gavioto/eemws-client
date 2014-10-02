@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 
@@ -38,7 +38,7 @@ import es.ree.eemws.core.utils.config.ConfigException;
  * Main class.
  * Creates all the objects and schedules.
  *
- * @author Red Eléctrica de España S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a S.A.U.
  * @version 1.0 09/05/2014
  *
  */

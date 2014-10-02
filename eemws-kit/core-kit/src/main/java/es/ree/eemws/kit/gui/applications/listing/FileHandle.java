@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 package es.ree.eemws.kit.gui.applications.listing;
@@ -39,7 +39,7 @@ import es.ree.eemws.kit.gui.common.Constants;
 /**
  * File management for save retrieved messages.
  *
- * @author Red Eléctrica de España, S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  * @version 1.0 02/06/2014
  */
 public final class FileHandle {
@@ -175,7 +175,7 @@ public final class FileHandle {
                     logger.logMessage("Backup created " + nomBackup);
                 } else {
                     int answer = JOptionPane.showConfirmDialog(mainWindow,
-                            "File " + file.getName() + " already exist. \n¿Replace?",
+                            "File " + file.getName() + " already exist.\nReplace?",
                             "Replace existing file",
                             JOptionPane.YES_NO_OPTION,
                             JOptionPane.WARNING_MESSAGE);
@@ -200,7 +200,7 @@ public final class FileHandle {
      */
     public void exitApplication() {
         int answer = JOptionPane.showConfirmDialog(mainWindow,
-                "¿Exit application?",
+                "Exit application?",
                 "Confirm:",
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE);

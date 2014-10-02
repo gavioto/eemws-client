@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 package es.ree.eemws.kit.gui.applications.listing;
@@ -31,7 +31,7 @@ import javax.swing.table.DefaultTableCellRenderer;
  * Class to format table cells.
  * Table is is shown in striped table format, status values are shown in green / red.
  *
- * @author Red Eléctrica de España, S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  * @version 1.0 02/06/2014
  */
 public class TableCellRender extends DefaultTableCellRenderer {
