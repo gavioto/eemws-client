@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 
 <installation version="5.0" xmlns:izpack="http://izpack.org/schema/installation"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -10,7 +10,7 @@
 		<appversion>1.0</appversion>
 		<url>http://www.ree.es</url>
 		<authors>
-			<author name="Red Eléctrica de España" email="soportesios@ree.es"/>
+			<author name="Red ElÃ©ctrica de EspaÃ±a" email="soportesios@ree.es"/>
 		</authors>
 		<run-privileged condition="izpack.windowsinstall.vista|izpack.windowsinstall.7"/>
 	</info>

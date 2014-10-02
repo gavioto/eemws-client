@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 package es.ree.eemws.kit.folders;
@@ -35,7 +35,7 @@ import es.ree.eemws.kit.common.Messages;
 /**
  * Magic folder configuration settings.
  * 
- * @author Red Eléctrica de España, S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  * @version 1.0 09/05/2014
  */
 public final class Configuration extends es.ree.eemws.kit.config.Configuration {
@@ -152,7 +152,7 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
 	 */
 	public void validateConfiguration() throws ConfigException {
 
-		StringBuffer msgErr = new StringBuffer();
+		StringBuilder msgErr = new StringBuilder();
 
 		inputFolder = validateFolder(msgErr, inputFolder, INPUT_FOLDER_KEY);
 		outputFolder = validateFolder(msgErr, outputFolder, OUTPUT_FOLDER_KEY);
@@ -252,7 +252,7 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
 	 * @param folderID Type of folder to be validated.
 	 * @return Path without spaces, replacing "\" by "/" and removing the last occurrence of "\" if necessary.
 	 */
-	private String validateFolder(final StringBuffer msgErr, final String folderPath, final String folderID) {
+	private String validateFolder(final StringBuilder msgErr, final String folderPath, final String folderID) {
 
 		String newFolderID = folderPath;
 

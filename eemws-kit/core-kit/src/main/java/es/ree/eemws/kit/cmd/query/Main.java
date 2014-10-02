@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 package es.ree.eemws.kit.cmd.query;
@@ -42,7 +42,7 @@ import es.ree.eemws.kit.common.Messages;
 /**
  * Main class to get messages.
  * 
- * @author Red Eléctrica de España S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a S.A.U.
  * @version 1.0 13/06/2014
  */
 public final class Main extends ParentMain {
@@ -86,26 +86,36 @@ public final class Main extends ParentMain {
 
 			List<String> arguments = new ArrayList<>(Arrays.asList(args));
 
-			/* Query dataType is the first parameter, with no prefix and is mandatory. */
+			
 			if (arguments.isEmpty()) {
 				throw new IllegalArgumentException(Messages.getString("INCORRECT_PARAMETERS_1")); //$NON-NLS-1$
 			}
-			
+						
 			String startTime = readParameter(arguments, PARAMETER_START_TIME);
 			String endTime = readParameter(arguments, PARAMETER_END_TIME);
 			String dataType = readParameter(arguments, QUERY_PARAMETER_ID);
 			urlEndPoint = readParameter(arguments, PARAMETER_URL);
 			outputFile = readParameter(arguments, PARAMETER_OUT_FILE);
+		
+			if (dataType == null) {
+				throw new IllegalArgumentException(Messages.getString("QUERY_INCORRECT_QUERY_ID", QUERY_PARAMETER_ID)); //$NON-NLS-1$
+			}
+			
 			HashMap<String, String> others = new HashMap<>();
 			
-			int len = others.size();
+			int len = arguments.size();
 			for (int cont = 0; cont < len; cont++) {
 				
 				String key = arguments.get(cont);
 				if (key.startsWith(PARAMETER_PREFIX)) {
+					key = key.substring(1); // remove prefix, keep just the name
+					if (key.length() == 0) { 
+						throw new IllegalArgumentException(Messages.getString("QUERY_INCORRECT_PARAMETER_ID")); //$NON-NLS-1$
+					}
+					
 					if ((cont + 1) < len) {
 						String value = arguments.get(cont + 1);
-						
+
 						if (value.startsWith(PARAMETER_PREFIX)) { // Next value is other parameter not a value
 							others.put(key, null);
 						} else {
@@ -115,6 +125,7 @@ public final class Main extends ParentMain {
 					} else { // last parameter, with no value
 						others.put(key, null);
 					}
+
 				} else {
 					throw new IllegalArgumentException(Messages.getString("QUERY_INCORRECT_PARAMETER_LIST", key)); //$NON-NLS-1$
 				}
@@ -178,7 +189,7 @@ public final class Main extends ParentMain {
 		} catch (IllegalArgumentException e) {
 
 			LOGGER.info(e.getMessage());
-			LOGGER.info(Messages.getString("QUERY_USAGE", PARAMETER_START_TIME, PARAMETER_END_TIME, PARAMETER_OUT_FILE, PARAMETER_URL, new Date())); //$NON-NLS-1$
+			LOGGER.info(Messages.getString("QUERY_USAGE", QUERY_PARAMETER_ID, PARAMETER_START_TIME, PARAMETER_END_TIME, PARAMETER_OUT_FILE, PARAMETER_URL, new Date())); //$NON-NLS-1$
 
 		} catch (IOException e) {
 

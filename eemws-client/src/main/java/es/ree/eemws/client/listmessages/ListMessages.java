@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 package es.ree.eemws.client.listmessages;
@@ -53,7 +53,7 @@ import es.ree.eemws.core.utils.xml.XMLGregorianCalendarFactory;
 /**
  * Obtain a list of available messages for the client according to a given filter.
  *
- * @author Red Eléctrica de España S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a S.A.U.
  * @version 1.0 13/06/2014
  */
 public final class ListMessages extends ParentClient {
@@ -143,7 +143,7 @@ public final class ListMessages extends ParentClient {
      * @param intervalType Indicates whether the StartTime and EndTime refer to Application TimeInterval or to Server Timestamp.
      *                     Permitted values: "Application" (default), "Server".
      * @param messageIdentification Specifies that the list of messages returned should only include messages whose Message Identification
-     *                              is compliant with the pattern provided in this parameter. (“*” can be used as a wildcard).
+     *                              is compliant with the pattern provided in this parameter. ("*" can be used as a wildcard).
      * @param msgType Specifies that the list of messages returned should only include messages of the provided type.
      * @param owner Specifies that the list of messages returned should only include messages belonging to the provided Owner.
      * @return List of data message.
@@ -175,7 +175,7 @@ public final class ListMessages extends ParentClient {
      *             This means that the list will contain messages that are newer to the given one.
      *             For optimization purposes, if this filter is used, only messages available since the 00.00 of D-1 (day before) are guaranteed to be included in the response list
      * @param messageIdentification Specifies that the list of messages returned should only include messages whose Message Identification
-     *                              is compliant with the pattern provided in this parameter. (“*” can be used as a wildcard).
+     *                              is compliant with the pattern provided in this parameter. ("*" can be used as a wildcard).
      * @param msgType Specifies that the list of messages returned should only include messages of the provided type.
      * @param owner Specifies that the list of messages returned should only include messages belonging to the provided Owner.
      * @return List of data message.
@@ -199,7 +199,7 @@ public final class ListMessages extends ParentClient {
      * @param intervalType Indicates whether the StartTime and EndTime refer to Application TimeInterval or to Server Timestamp.
      *                     Permitted values: "Application" (default), "Server".
      * @param messageIdentification Specifies that the list of messages returned should only include messages whose Message Identification
-     *                              is compliant with the pattern provided in this parameter. (“*” can be used as a wildcard).
+     *                              is compliant with the pattern provided in this parameter. ("*" can be used as a wildcard).
      * @param msgType Specifies that the list of messages returned should only include messages of the provided type.
      * @param owner Specifies that the list of messages returned should only include messages belonging to the provided Owner.
      * @return List of data message.
@@ -237,7 +237,7 @@ public final class ListMessages extends ParentClient {
      * @param intervalType Indicates whether the StartTime and EndTime refer to Application TimeInterval or to Server Timestamp.
      *                     Permitted values: "Application" (default), "Server".
      * @param messageIdentification Specifies that the list of messages returned should only include messages whose Message Identification
-     *                              is compliant with the pattern provided in this parameter. (“*” can be used as a wildcard).
+     *                              is compliant with the pattern provided in this parameter. ("*" can be used as a wildcard).
      * @param msgType Specifies that the list of messages returned should only include messages of the provided type.
      * @param owner Specifies that the list of messages returned should only include messages belonging to the provided Owner.
      * @return Request message.

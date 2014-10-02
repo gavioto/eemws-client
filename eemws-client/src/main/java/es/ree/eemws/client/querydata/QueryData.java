@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 
@@ -41,7 +41,7 @@ import es.ree.eemws.core.utils.xml.XMLGregorianCalendarFactory;
 /**
  * Query Data Service can be used by clients to request specific data from the server using different query parameters.
  *
- * @author Red Eléctrica de España S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a S.A.U.
  * @version 1.0 13/06/2014
  */
 public final class QueryData extends ParentClient {
@@ -148,12 +148,12 @@ public final class QueryData extends ParentClient {
 
         if (startTime != null) {
             
-            resquest.setStartTime(XMLGregorianCalendarFactory.getInstance(startTime));
+            resquest.setStartTime(XMLGregorianCalendarFactory.getGMTInstance(startTime));
         }
 
         if (endTime != null) {
             
-            resquest.setEndTime(XMLGregorianCalendarFactory.getInstance(endTime));
+            resquest.setEndTime(XMLGregorianCalendarFactory.getGMTInstance(endTime));
         }
 
         List<OptionType> options = resquest.getOptions();
