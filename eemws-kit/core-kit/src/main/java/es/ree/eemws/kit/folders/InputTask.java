@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 package es.ree.eemws.kit.folders;
@@ -34,7 +34,7 @@ import es.ree.eemws.core.utils.file.FileUtil;
 /**
  * InputTask. Checks for files in the input folder, read them and send to the server.
  * 
- * @author Red Eléctrica de España, S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  * @version 1.0 29/05/2014
  */
 public final class InputTask implements Runnable {
@@ -86,7 +86,7 @@ public final class InputTask implements Runnable {
 		putMessage.setEndPoint(endPoint);
 
 		if (LOGGER.isLoggable(Level.CONFIG)) {
-			StringBuffer msg = new StringBuffer();
+			StringBuilder msg = new StringBuilder();
 			msg.append("\n").append(Messages.getString("MF_CONFIG_INPUT_FOLDER", inputFolderPath));  //$NON-NLS-1$//$NON-NLS-2$
 			
 			if (responseFolderPath != null) {
@@ -100,7 +100,7 @@ public final class InputTask implements Runnable {
 			msg.append("\n").append(Messages.getString("MF_CONFIG_DELAY_TIME", config.getSleepTimeInput()));  //$NON-NLS-1$//$NON-NLS-2$
 			msg.append("\n").append(Messages.getString("MF_CONFIG_URL", endPoint.toString()));  //$NON-NLS-1$//$NON-NLS-2$
 			
-			LOGGER.config(msg.toString());
+			LOGGER.info(msg.toString());
 		}
 	}
 

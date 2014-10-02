@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2014 Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -15,7 +15,7 @@
  * http://www.gnu.org/licenses/.
  *
  * Any redistribution and/or modification of this program has to make
- * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
+ * reference to Red ElÃ©ctrica de EspaÃ±a, S.A.U. as the copyright owner of
  * the program.
  */
 package es.ree.eemws.kit.gui.applications.editor;
@@ -51,7 +51,7 @@ import es.ree.eemws.kit.gui.applications.Logger;
 /**
  * Processing of File actions.
  *
- * @author Red Eléctrica de España, S.A.U.
+ * @author Red ElÃ©ctrica de EspaÃ±a, S.A.U.
  * @version 1.0 09/05/2014
  */
 public final class FileHandle extends DropTargetAdapter {
@@ -213,7 +213,7 @@ public final class FileHandle extends DropTargetAdapter {
 
             try {
 
-                documentHandle.openIrreversible(new StringBuffer(FileUtil.readUTF8(file.getAbsolutePath())));
+                documentHandle.openIrreversible(new StringBuilder(FileUtil.readUTF8(file.getAbsolutePath())));
                 log.logMessage(Messages.getString("kit.gui.editor.47") + " " + file.getAbsolutePath());
                 mainWindow.setTitle("[" + file.getName() + "]");
                 currentFile = file;
@@ -327,7 +327,7 @@ public final class FileHandle extends DropTargetAdapter {
 
         if (hasUserPermission()) {
 
-            documentHandle.openIrreversible(new StringBuffer(""));
+            documentHandle.openIrreversible(new StringBuilder(""));
             mainWindow.setTitle("[" + NEW_FILE + "]");
             log.logMessage(NEW_FILE + ".");
             currentFile = null;

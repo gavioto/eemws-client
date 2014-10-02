@@ -8,6 +8,7 @@
     <name>eemws-kit</name>
 	
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<izpack.version>5.0.0-rc1</izpack.version>
 		<izpack.staging>${basedir}/resources/izpack/staging</izpack.staging>
       <!-- Explicit redefine needed in order for izpack to see it during install.xml properties substitution -->
