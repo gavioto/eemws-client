@@ -77,7 +77,7 @@
 			
 			<fileset dir="../../config" targetdir="$INSTALL_PATH/config" override="asktrue"/>
 			
-			<file src="../../certificates/local-cacerts.jks" targetdir="$INSTALL_PATH/certificates"/>
+			<file src="../../certificates/local-cacerts.jks" targetdir="$INSTALL_PATH/certificates" override="asktrue"/>
 
 			<file src="../../../core-kit/target/dependency/eemws-client-@{project.version}.jar" targetdir="$INSTALL_PATH/lib"/>
 			<file src="../../../core-kit/target/dependency/eemws-core-@{project.version}.jar" targetdir="$INSTALL_PATH/lib"/>
