@@ -85,23 +85,22 @@ public final class InputTask implements Runnable {
 
 		putMessage.setEndPoint(endPoint);
 
-		if (LOGGER.isLoggable(Level.CONFIG)) {
-			StringBuilder msg = new StringBuilder();
-			msg.append("\n").append(Messages.getString("MF_CONFIG_INPUT_FOLDER", inputFolderPath));  //$NON-NLS-1$//$NON-NLS-2$
+		
+		StringBuilder msg = new StringBuilder();
+		msg.append("\n").append(Messages.getString("MF_CONFIG_INPUT_FOLDER", inputFolderPath));  //$NON-NLS-1$//$NON-NLS-2$
 			
-			if (responseFolderPath != null) {
-				msg.append("\n").append(Messages.getString("MF_CONFIG_ACK_FOLDER", responseFolderPath));  //$NON-NLS-1$//$NON-NLS-2$
-			}
-			
-			if (processedFolderPath != null) {
-				msg.append("\n").append(Messages.getString("MF_CONFIG_PROCESSED_FOLDER", processedFolderPath));  //$NON-NLS-1$//$NON-NLS-2$
-			}
-
-			msg.append("\n").append(Messages.getString("MF_CONFIG_DELAY_TIME", config.getSleepTimeInput()));  //$NON-NLS-1$//$NON-NLS-2$
-			msg.append("\n").append(Messages.getString("MF_CONFIG_URL", endPoint.toString()));  //$NON-NLS-1$//$NON-NLS-2$
-			
-			LOGGER.info(msg.toString());
+		if (responseFolderPath != null) {
+			msg.append("\n").append(Messages.getString("MF_CONFIG_ACK_FOLDER", responseFolderPath));  //$NON-NLS-1$//$NON-NLS-2$
 		}
+			
+		if (processedFolderPath != null) {
+			msg.append("\n").append(Messages.getString("MF_CONFIG_PROCESSED_FOLDER", processedFolderPath));  //$NON-NLS-1$//$NON-NLS-2$
+		}
+
+		msg.append("\n").append(Messages.getString("MF_CONFIG_DELAY_TIME_I", config.getSleepTimeInput()));  //$NON-NLS-1$//$NON-NLS-2$
+		msg.append("\n").append(Messages.getString("MF_CONFIG_URL_I", endPoint.toString()));  //$NON-NLS-1$//$NON-NLS-2$
+			
+		LOGGER.info(msg.toString());
 	}
 
 	/**
@@ -183,9 +182,11 @@ public final class InputTask implements Runnable {
 		if (isComplete(fullFileName)) {
 
 			try {
-
+				
+				LOGGER.info(Messages.getString("MF_SENDING_MESSAGE", fileName)); //$NON-NLS-1$
 				String response = putMessage.put(FileUtil.readUTF8(fullFileName));
-
+				LOGGER.info(Messages.getString("MF_SENT_MESSAGE", fileName)); //$NON-NLS-1$
+				
 				/* Incoming message is saved in Processed folder. */
 				String processedFilePath = processedFolderPath + File.separator + fileName;
 				execContext = Messages.getString("MF_SAVING_PROCESS_FOLDER", fullFileName, processedFilePath); //$NON-NLS-1$

@@ -84,6 +84,7 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 
 		if (serviceID == null || membersRmiUrls == null || membersRmiUrls.size() == ONLY_ONE_SERVER) {
 			isSingle = true;
+			LOGGER.info(Messages.getString("MF_STAND_ALONE")); //$NON-NLS-1$
 		} else {
 			isSingle = false;
 			lockFiles = new ArrayList<>();
@@ -93,10 +94,12 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 			String thisServerURL = membersRmiUrls.get(thisServiceID - 1);
 			createRMIRegistry(thisServerURL);
 			membersRmiUrls.remove(thisServerURL);
-			getRemoteReferences(membersRmiUrls);
-
-			/* Notifying the rest of neighbors our existence. */
-			registerThisMemberIntoTheGroup(thisServerURL);
+			
+			LOGGER.info(Messages.getString("MF_SEARCHING_MEMBERS", String.valueOf(membersRmiUrls.size()))); //$NON-NLS-1$
+			
+			getRemoteReferences(membersRmiUrls, thisServerURL);
+			
+			LOGGER.info(Messages.getString("MF_GROUP_LISTEINGN_URL", thisServerURL)); //$NON-NLS-1$
 		}
 	}
 
@@ -131,7 +134,7 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 	 * @param urls URLs of the services to inspect.
 	 * @throws RemoteException If the settings of any server are incorrect.
 	 */
-	private void getRemoteReferences(List<String> membersRmiUrls) throws RemoteException {
+	private void getRemoteReferences(final List<String> membersRmiUrls, final String thisMemberUrl) throws RemoteException {
 
 		boolean gotReference;
 
@@ -139,16 +142,23 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 
 			gotReference = false;
 
+			LOGGER.info(Messages.getString("MF_CONNECTING_WITH_MEMBER", memberUrl)); //$NON-NLS-1$
+			
 			for (int times = 0; !gotReference && times < NUM_RETRIES; times++) {
+				
 				try {
 					LockHandlerIntf interfaceN = (LockHandlerIntf) Naming.lookup(memberUrl);
-
+					
+					interfaceN.suscribe(thisMemberUrl);
+					
+					Member mem = new Member(memberUrl, interfaceN);
+					
 					synchronized (members) {
-						if (!membersRmiUrls.contains(memberUrl)) {
-							members.add(new Member(memberUrl, interfaceN));
+						if (!members.contains(mem)) {
+							members.add(mem);
 						}
 					}
-
+										
 					gotReference = true;
 				} catch (MalformedURLException e) {
 					throw new RemoteException(Messages.getString("MF_INVALID_MEMBER_CONFIGURATION", memberUrl)); //$NON-NLS-1$
@@ -165,25 +175,6 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 
 			if (!gotReference) {
 				LOGGER.warning(Messages.getString("MF_MEMBER_NOT_AVAILABLE", memberUrl)); //$NON-NLS-1$
-			}
-		}
-	}
-
-	/**
-	 * Notifies the rest of nodes our existence. This notification is necessary when a service dies (the other nodes
-	 * must remove from their list) and when is restarted (is necessary add to the list of the other nodes).
-	 * @param url Listening request URL for this node.
-	 */
-	private void registerThisMemberIntoTheGroup(final String url) {
-
-		synchronized (members) {
-			for (Member member : members) {
-				try {
-					LockHandlerIntf remote = member.getRemoteReference();
-					remote.suscribe(url);
-				} catch (RemoteException ex) {
-					LOGGER.severe(Messages.getString("MF_CANNOT_SUSCRIBE", member.getUrl())); //$NON-NLS-1$
-				}
 			}
 		}
 	}
@@ -213,6 +204,7 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 				boolean updated = false;
 				for (Member member : members) {
 					if (remoteURL.equals(member.getUrl())) {
+						LOGGER.info(Messages.getString("MF_UPDATE_MEMBER", remoteURL)); //$NON-NLS-1$
 						member.setRemoteReference(remoteReference);
 						updated = true;
 					}
@@ -220,6 +212,7 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 
 				/* New member. */
 				if (!updated) {
+					LOGGER.info(Messages.getString("MF_NEW_MEMBER", remoteURL)); //$NON-NLS-1$
 					members.add(new Member(remoteURL, remoteReference));
 				}
 			}
