@@ -180,14 +180,17 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
 			msgErr.append("\n").append(Messages.getString("MF_UNABLE_TO_START", INPUT_FOLDER_KEY, OUTPUT_FOLDER_KEY)); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 
-		for (String memberHostAndPort : membersRmiUrls) {
-			int colonPosition = memberHostAndPort.indexOf(":"); //$NON-NLS-1$
+		for (String memberRmiUrl : membersRmiUrls) {
+			
+			String hostPort = memberRmiUrl.substring(RMI_URL_PROTOCOL.length(), memberRmiUrl.indexOf(SERVICE_NAME) - 1); 
+			
+			int colonPosition = hostPort.indexOf(":"); //$NON-NLS-1$
 			if (colonPosition == -1) {
-				msgErr.append("\n").append(Messages.getString("MF_MF_INVALID_MEMBER_URL", memberHostAndPort)); //$NON-NLS-1$//$NON-NLS-2$
+				msgErr.append("\n").append(Messages.getString("MF_MF_INVALID_MEMBER_URL", hostPort)); //$NON-NLS-1$//$NON-NLS-2$
 			} else {
 				String port = ""; //$NON-NLS-1$
 				try {
-					port = memberHostAndPort.substring(colonPosition + 1);
+					port = hostPort.substring(colonPosition + 1);
 					Integer.parseInt(port);
 				} catch (NumberFormatException ex) {
 					msgErr.append("\n").append(Messages.getString("MF_INVALID_MEMBER_PORT", port)); //$NON-NLS-1$//$NON-NLS-2$

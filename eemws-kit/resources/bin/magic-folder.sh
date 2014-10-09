@@ -1,4 +1,5 @@
 #!/bin/sh
+. ./commEnv.sh
 if [ ! -d ../log ] ; then
         cd ..
         mkdir log
