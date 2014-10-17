@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import es.ree.eemws.client.exception.ClientException;
+import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.client.querydata.QueryData;
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.core.utils.file.FileUtil;
@@ -136,7 +136,7 @@ public final class Main extends ParentMain {
 				try {
 					dateStartTime = sdf.parse(startTime);
 				} catch (ParseException e) {
-					throw new IllegalArgumentException(Messages.getString("QUERY_INCORRECT_DATE_FORMAT", PARAMETER_START_TIME, startTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
+					throw new IllegalArgumentException(Messages.getString("INCORRECT_DATE_FORMAT", PARAMETER_START_TIME, startTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
 				}
 			}
 
@@ -145,7 +145,7 @@ public final class Main extends ParentMain {
 				try {
 					dateEndTime = sdf.parse(endTime);
 				} catch (ParseException e) {
-					throw new IllegalArgumentException(Messages.getString("QUERY_INCORRECT_DATE_FORMAT", PARAMETER_END_TIME, endTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
+					throw new IllegalArgumentException(Messages.getString("INCORRECT_DATE_FORMAT", PARAMETER_END_TIME, endTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
 				}
 			}
 

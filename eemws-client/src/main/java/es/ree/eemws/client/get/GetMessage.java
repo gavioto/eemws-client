@@ -18,7 +18,7 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.client.getmessage;
+package es.ree.eemws.client.get;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ import ch.iec.tc57._2011.schema.message.RequestType;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
 import es.ree.eemws.client.common.Messages;
 import es.ree.eemws.client.common.ParentClient;
-import es.ree.eemws.client.exception.ClientException;
+import es.ree.eemws.client.common.ClientException;
 
 
 /**

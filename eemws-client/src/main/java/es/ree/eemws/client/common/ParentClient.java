@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.List;
 
 import javax.xml.namespace.QName;
@@ -43,9 +44,10 @@ import ch.iec.tc57._2011.schema.message.OptionType;
 import ch.iec.tc57._2011.schema.message.PayloadType;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
-import es.ree.eemws.client.exception.ClientException;
-import es.ree.eemws.client.handler.SendHandler;
+import es.ree.eemws.client.common.ClientException;
+import es.ree.eemws.client.common.SendHandler;
 import es.ree.eemws.core.utils.xml.XMLElementUtil;
+import es.ree.eemws.core.utils.xml.XMLGregorianCalendarFactory;
 import es.ree.eemws.core.utils.xml.XMLUtil;
 
 
@@ -172,6 +174,7 @@ public abstract class ParentClient {
 
     /**
      * This method creates the header of the message.
+     * The returned header includes the "Timestamp" element with the current date.
      * @param verb Verb of the message.
      * @param noun Noun of the message.
      * @return Header of the message.
@@ -181,6 +184,7 @@ public abstract class ParentClient {
         HeaderType header = new HeaderType();
         header.setVerb(verb);
         header.setNoun(noun);
+        header.setTimestamp(XMLGregorianCalendarFactory.getGMTInstanceMs(new Date()));
         return header;
     }
 

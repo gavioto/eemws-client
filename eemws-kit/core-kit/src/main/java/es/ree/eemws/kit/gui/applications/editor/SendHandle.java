@@ -37,14 +37,14 @@ import javax.xml.ws.WebServiceException;
 
 import org.w3c.dom.Element;
 
-import es.ree.eemws.client.exception.ClientException;
-import es.ree.eemws.client.putmessage.PutMessage;
+import es.ree.eemws.client.common.ClientException;
+import es.ree.eemws.client.put.PutMessage;
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.core.utils.xml.XMLElementUtil;
 import es.ree.eemws.core.utils.xml.XMLUtil;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.config.Configuration;
-import es.ree.eemws.kit.gui.applications.Logger;
+import es.ree.eemws.kit.gui.common.Logger;
 import es.ree.eemws.kit.gui.common.ServiceMenuListener;
 
 

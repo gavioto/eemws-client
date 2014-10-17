@@ -18,14 +18,14 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.client.listmessages;
+package es.ree.eemws.client.list;
 
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Calendar;
 
 import es.ree.eemws.client.common.Messages;
-import es.ree.eemws.client.exception.ClientException;
+import es.ree.eemws.client.common.ClientException;
 
 
 

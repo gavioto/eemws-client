@@ -18,7 +18,7 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -34,16 +34,16 @@ import javax.swing.table.AbstractTableModel;
 public final class ListTableModel extends AbstractTableModel implements TableModelListener {
 
     /** Class ID. */
-    private static final long serialVersionUID = 6177656234370478043L;
+    private static final long serialVersionUID = 1L;
 
-    /** Column visibility status. */
+	/** Column visibility status. */
     private boolean[] visible = new boolean[ColumnsId.values().length];
 
-    /** Shown data. */
+    /** Data. */
     private Object[][] data = new Object[0][0];
 
     /**
-     * Constructor. Create a new instance of model setting all columns visible.
+     * Constructor. Creates a new instance of model setting all columns visible.
      */
     public ListTableModel() {
         for (int cont = 0; cont < visible.length; cont++) {
@@ -52,24 +52,24 @@ public final class ListTableModel extends AbstractTableModel implements TableMod
     }
 
     /**
-     * Set column visibility, according to an array passed as parameter.
+     * Sets column visibility, according to an array passed as parameter.
      *
-     * @param visibilidad
-     *            Array containing visibility statuses <code>true</code> visible
+     * @param vis Array containing visibility statuses <code>true</code> visible
      *            <code>false</code> hidden.
      */
-    public void setVisible(final boolean[] visibilidad) {
+    public void setVisible(final boolean[] vis) {
         for (int cont = 0; cont < visible.length; cont++) {
-            visible[cont] = visibilidad[cont];
+            visible[cont] = vis[cont];
         }
         fireTableStructureChanged();
     }
 
     /**
-     * Return number of visible columns.
+     * Returns number of visible columns.
      *
      * @return Number of visible columns.
      */
+    @Override
     public int getColumnCount() {
         int numVisible = 0;
         for (boolean b : visible) {
@@ -82,22 +82,23 @@ public final class ListTableModel extends AbstractTableModel implements TableMod
     }
 
     /**
-     * Return number of data in model.
+     * Returns number of data in model.
      *
      * @return number of date in model.
      */
+    @Override
     public int getRowCount() {
         return data.length;
     }
 
     /**
-     * Return Name of the column which index is passed as parameter. Visibility
+     * Returns the name of the column which index is passed as parameter. Visibility
      * status is taken into account.
      *
-     * @param col
-     *            column index.
+     * @param col column index.
      * @return Column name.
      */
+    @Override
     public String getColumnName(final int col) {
         int numVisible = -1;
         int numCol = -1;
@@ -109,19 +110,18 @@ public final class ListTableModel extends AbstractTableModel implements TableMod
             }
         }
 
-        return ColumnsId.values()[numCol].getName();
+        return ColumnsId.values()[numCol].getText();
     }
 
     /**
-     * Return the value shown in the cell which coordinates are passed as
+     * Returns the value shown in the cell which coordinates are passed as
      * parameters.
      *
-     * @param row
-     *            Row to which requested cell belongs.
-     * @param col
-     *            Column to which requested cell belongs.
+     * @param row Row to which requested cell belongs.
+     * @param col Column to which requested cell belongs.
      * @return Cell value (row, column).
      */
+    @Override
     public Object getValueAt(final int row, final int col) {
         int numVisible = -1;
         int numCol = -1;
@@ -137,13 +137,11 @@ public final class ListTableModel extends AbstractTableModel implements TableMod
     }
 
     /**
-     * Return the value shown in the cell which coordinates are passed as
+     * Returns the value shown in the cell which coordinates are passed as
      * parameters, without considering the visibility status of columns.
      *
-     * @param row
-     *            Row to which requested cell belongs.
-     * @param col
-     *            Column to which requested cell belongs.
+     * @param row Data array row value.
+     * @param col Data array column value.
      * @return Cell value (row, column).
      */
     public Object getAbsoluteValueAt(final int row, final int col) {
@@ -151,10 +149,9 @@ public final class ListTableModel extends AbstractTableModel implements TableMod
     }
 
     /**
-     * Set values to be shown on table.
+     * Sets values to be shown on table.
      *
-     * @param values
-     *            Values to be shown on table.
+     * @param values Values to be shown on table.
      */
     public void setValues(final Object[][] values) {
         data = values;
@@ -162,10 +159,9 @@ public final class ListTableModel extends AbstractTableModel implements TableMod
     }
 
     /**
-     * Notify change on table.
+     * Notifies changes on table.
      *
-     * @param e
-     *            Table model event.
+     * @param e Table model event.
      */
     @Override
     public void tableChanged(final TableModelEvent e) {
@@ -182,10 +178,13 @@ public final class ListTableModel extends AbstractTableModel implements TableMod
      */
     @Override
     public Class<?> getColumnClass(final int col) {
+    	Class<?> retValue;
         if (data.length > 0) {
-            return data[0][col].getClass();
+        	retValue =  data[0][col].getClass();
         } else {
-            return super.getColumnClass(col);
+        	retValue = super.getColumnClass(col);
         }
+        
+        return retValue;
     }
 }

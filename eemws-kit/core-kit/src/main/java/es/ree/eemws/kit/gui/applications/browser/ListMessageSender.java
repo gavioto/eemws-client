@@ -19,7 +19,7 @@
  * the program.
  */
 
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
 
 import java.net.URL;
 import java.util.List;
@@ -27,11 +27,11 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import es.ree.eemws.client.exception.ClientException;
-import es.ree.eemws.client.listmessages.ListMessages;
-import es.ree.eemws.client.listmessages.MessageListEntry;
-import es.ree.eemws.kit.config.Configuration;
-import es.ree.eemws.kit.gui.applications.Logger;
+import es.ree.eemws.client.common.ClientException;
+import es.ree.eemws.client.list.ListMessages;
+import es.ree.eemws.client.list.MessageListEntry;
+import es.ree.eemws.kit.common.Messages;
+import es.ree.eemws.kit.gui.common.Logger;
 
 /**
  * Class responsible for sending list messages to server.
@@ -41,13 +41,13 @@ import es.ree.eemws.kit.gui.applications.Logger;
  * @version 1.0 02/06/2014
  *
  */
-public final class ListSend {
+public final class ListMessageSender {
 
     /** Listing object. */
     private ListMessages list;
 
     /** Reference to main window. */
-    private Lists mainWindow;
+    private Browser mainWindow;
 
     /** Reference to status bar. */
     private StatusBar status;
@@ -60,15 +60,10 @@ public final class ListSend {
      * @param url Access URL to the target system.
      * @param main Reference to main class.
      */
-    public ListSend(final URL url, final Lists main) {
+    public ListMessageSender(final URL url, final Browser main) {
 
         list = new ListMessages();
         list.setEndPoint(url);
-        
-        // XXX By default neither list request nor response has signature. Anyway, a special paremeters for this operation could be created.
-        // list.setSignRequest(System.getProperty(Configuration.SIGN_RESQUEST, "TRUE").toUpperCase().trim().equalsIgnoreCase("TRUE"));
-        // list.setVerifyResponse(System.getProperty(Configuration.VERIFY_SIGN_RESPONSE, "FALSE").toUpperCase().trim().equalsIgnoreCase("TRUE"));
-
         mainWindow = main;
         status = main.getStatusBar();
         logger = main.getLogHandle().getLog();
@@ -110,7 +105,7 @@ public final class ListSend {
     }
 
     /**
-     * Get the filter settings to be used for listing.
+     * Gets the filter settings to be used for listing.
      * @return Filter settings to be used for listing.
      */
     private FilterData getFilterData() {
@@ -118,9 +113,8 @@ public final class ListSend {
         try {
             filterData = mainWindow.getFilter().getFilterData();
         } catch (FilterException ex) {
-            JOptionPane.showMessageDialog(mainWindow,
-                    "Check filter values. \n" + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(mainWindow, Messages.getString("BROWSER_CHECK_FILTER_ERROR_MSG", ex.getMessage()),  //$NON-NLS-1$
+            		Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ 
         }
 
         return filterData;
@@ -141,7 +135,7 @@ public final class ListSend {
             List<MessageListEntry> messageList = null;
 
             try {
-                if (filterData.getFilterType() == 0) {
+                if (filterData.isFilterByCode()) {
                     messageList = list.list(filterData.getCode(),
                             filterData.getMessageID(),
                             filterData.getType(),
@@ -159,32 +153,28 @@ public final class ListSend {
                 data = toArray(messageList);
 
                 if (len == 0) {
-                    String msg = "No messages found for entered filter values "
-                            + filterData.toString();
-                            logger.logMessage(msg);
-                            status.setStatus(msg);
-                            JOptionPane.showMessageDialog(mainWindow,
-                                    "No messages found for entered filter values ",
-                                    "Check filter values", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    String s = "";
-                    if (len > 1) {
-                        s = "s";
-                    }
-
-                    String msg = len + " message" + s + " found.";
+                    String msg = Messages.getString("BROWSER_STATUS_NO_MESSAGES_RETRIEVED"); //$NON-NLS-1$
                     logger.logMessage(msg);
                     status.setStatus(msg);
+                    JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("BROWSER_NO_MESSAGES_TITLE"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
+                } else {                    
+                	String msg = Messages.getString("BROWSER_STATUS_MESSAGES_RETRIEVED", len); //$NON-NLS-1$
+                	status.setStatus(msg);
+                	logger.logMessage(msg);
                 }
 
             } catch (ClientException ex) {
                 JOptionPane.showMessageDialog(mainWindow,
-                        "Cannot retrieve list.\n" + ex.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                        Messages.getString("BROWSER_UNABLE_TO_LIST", ex.getMessage()), //$NON-NLS-1$
+                        Messages.getString("MSG_ERROR_TITLE"),  //$NON-NLS-1$
+                        JOptionPane.ERROR_MESSAGE);
+                logger.logMessage(Messages.getString("BROWSER_UNABLE_TO_LIST", ex.getMessage())); //$NON-NLS-1$
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(mainWindow,
-                        "Cannot retrieve list.\n" + e.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+            	JOptionPane.showMessageDialog(mainWindow,
+                        Messages.getString("BROWSER_UNABLE_TO_BROWSER_UNKNOW"), //$NON-NLS-1$
+                        Messages.getString("MSG_ERROR_TITLE"),  //$NON-NLS-1$
+                        JOptionPane.ERROR_MESSAGE);
+            	logger.logException(Messages.getString("BROWSER_UNABLE_TO_BROWSER_UNKNOW"), e); //$NON-NLS-1$
             }
         }
 

@@ -18,7 +18,9 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
+
+import es.ree.eemws.kit.common.Messages;
 
 
 /**
@@ -30,11 +32,14 @@ package es.ree.eemws.kit.gui.applications.listing;
 public final class MessageStatus  {
 
     /** String which states correct status. */
-    private static final String STATUS_OK = "OK";
+    private static final String STATUS_OK = "OK"; //$NON-NLS-1$
 
-    /** String which states incorrect status. */
-    private static final String STATUS_NO_OK = "FAILED";
-
+    /** Text to be shown for status "ok". */
+    private static final String STATUS_OK_TEXT = Messages.getString("BROWSER_STATUS_OK"); //$NON-NLS-1$
+ 
+    /** Text to be shown for status "failed". */
+    private static final String STATUS_FAILED_TEXT = Messages.getString("BROWSER_STATUS_FAILED"); //$NON-NLS-1$
+    
     /** Message status. */
     private boolean status;
 
@@ -59,7 +64,7 @@ public final class MessageStatus  {
 
 
     /**
-     * Indicate whether the message is correct or not.
+     * Indicates whether the message is correct or not.
      * @return <code>true</code> If correct. <code>false</code> otherwise.
      */
     public boolean isOk() {
@@ -68,14 +73,20 @@ public final class MessageStatus  {
     }
 
     /**
-     * Return message status as a String.
+     * Returns message status as a String. Note that the returned
+     * text is a human readable text. For a "Ok" message the returned
+     * text could be "Correct". The returned text dependes on the
+     * <code>messages.properties</code> file (see project resource's)
      * @return Message status as a String.
      */
+    @Override
     public String toString() {
 
-        String retValue = STATUS_OK;
-        if (!status) {
-            retValue = STATUS_NO_OK;
+        String retValue;
+        if (status) {
+            retValue = STATUS_OK_TEXT;
+        } else {
+        	retValue = STATUS_FAILED_TEXT;
         }
 
         return retValue;

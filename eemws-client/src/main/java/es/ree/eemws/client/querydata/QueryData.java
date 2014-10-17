@@ -34,7 +34,7 @@ import ch.iec.tc57._2011.schema.message.RequestMessage;
 import ch.iec.tc57._2011.schema.message.RequestType;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
 import es.ree.eemws.client.common.ParentClient;
-import es.ree.eemws.client.exception.ClientException;
+import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.core.utils.xml.XMLGregorianCalendarFactory;
 
 

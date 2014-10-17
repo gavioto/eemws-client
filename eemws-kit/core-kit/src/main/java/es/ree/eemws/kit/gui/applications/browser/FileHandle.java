@@ -18,13 +18,12 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -32,26 +31,28 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 import es.ree.eemws.core.utils.file.FileUtil;
-import es.ree.eemws.kit.gui.applications.Logger;
-import es.ree.eemws.kit.gui.common.Constants;
-
+import es.ree.eemws.kit.common.Messages;
+import es.ree.eemws.kit.gui.common.Logger;
 
 /**
- * File management for save retrieved messages.
+ * File management.
  *
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 02/06/2014
  */
 public final class FileHandle {
 
+	/** Xml file extension. */
+	private static final String XML_FILE_EXTENSION = ".xml"; //$NON-NLS-1$
+	
     /** Reference to main window. */
-    private Lists mainWindow;
+    private Browser mainWindow;
 
     /** Logging object. */
     private Logger logger;
 
     /** Preset saving folder, prevents asking user every time. */
-    private String storeFolder = "";
+    private String storeFolder = ""; //$NON-NLS-1$
 
     /** Save As... dialogue */
     private JFileChooser fcFileChooser = new JFileChooser();
@@ -63,43 +64,39 @@ public final class FileHandle {
     private JCheckBoxMenuItem cbmiStoreAuto = new JCheckBoxMenuItem();
 
     /**
-     * Create a new instance of File settings manager.
+     * Creates a new instance of File settings manager.
      * @param window Reference to the main window.
      */
-    public FileHandle(final Lists window) {
+    public FileHandle(final Browser window) {
         mainWindow = window;
         logger = mainWindow.getLogHandle().getLog();
     }
 
     /**
-     * Get File menu.
+     * Gets File menu.
      * @return 'File' menu option.
      */
     public JMenu getMenu() {
 
         /* Create backup option. */
-        cbmiBackupAuto.setText("Automatically create backup");
+        cbmiBackupAuto.setText(Messages.getString("BROWSER_FILE_BACKUP_MENU_ENTRY")); //$NON-NLS-1$
+        cbmiBackupAuto.setMnemonic(Messages.getString("BROWSER_FILE_BACKUP_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         cbmiBackupAuto.setSelected(false);
-        cbmiBackupAuto.setMnemonic('b');
-        cbmiBackupAuto.setToolTipText("If a retieved file already exists in the system, a backup file will be created");
-
+        
         /* 'save automatically' option. */
-        cbmiStoreAuto = new JCheckBoxMenuItem("Automatically save in default folder",
-                new ImageIcon(getClass().getResource(Constants.ICON_SAVE)));
+        cbmiStoreAuto = new JCheckBoxMenuItem(Messages.getString("BROWSER_FILE_SET_FOLDER_MENU_ENTRY")); //$NON-NLS-1$
+        cbmiStoreAuto.setMnemonic(Messages.getString("BROWSER_FILE_SET_FOLDER_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         cbmiStoreAuto.setSelected(false);
         cbmiStoreAuto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 selectFolder();
             }
         });
-        cbmiStoreAuto.setMnemonic('G');
-        cbmiStoreAuto.setToolTipText("Prevents asking for destination folder every time time a message is retrieved.");
 
         /* 'exit' option. */
         JMenuItem miExit = new JMenuItem();
-        miExit.setText("Exit");
-        miExit.setMnemonic('S');
-        miExit.setToolTipText("Exits application");
+        miExit.setText(Messages.getString("BROWSER_FILE_EXIT_MENU_ENTRY")); //$NON-NLS-1$
+        miExit.setMnemonic(Messages.getString("BROWSER_FILE_EXIT_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         miExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 exitApplication();
@@ -108,8 +105,8 @@ public final class FileHandle {
 
         /* 'file' menu. */
         JMenu mnFileMenu = new JMenu();
-        mnFileMenu.setText("File");
-        mnFileMenu.setMnemonic('r');
+        mnFileMenu.setText(Messages.getString("BROWSER_FILE_MENU_ENTRY")); //$NON-NLS-1$
+        mnFileMenu.setMnemonic(Messages.getString("BROWSER_FILE_EXIT_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         mnFileMenu.add(cbmiBackupAuto);
         mnFileMenu.add(cbmiStoreAuto);
         mnFileMenu.addSeparator();
@@ -119,7 +116,7 @@ public final class FileHandle {
     }
 
     /**
-     * Open a dialog window to set a folder for Retrieved messages,
+     * Opens a dialog window to set a folder to save retrieved messages,
      * thus user will not be asked every time a message is retrieved.
      */
     private void selectFolder() {
@@ -147,7 +144,7 @@ public final class FileHandle {
     public void saveFile(final String idMensaje, final String response) throws IOException {
 
         String fileName = idMensaje;
-        fileName += ".xml";
+        fileName += XML_FILE_EXTENSION;
 
         int returnVal;
         if (cbmiStoreAuto.isSelected()) {
@@ -163,7 +160,7 @@ public final class FileHandle {
             File file;
 
             if (cbmiStoreAuto.isSelected()) {
-                file = new File(storeFolder + "/" + fileName);
+                file = new File(storeFolder + File.separator + fileName);
             } else {
                 file = fcFileChooser.getSelectedFile();
             }
@@ -172,17 +169,16 @@ public final class FileHandle {
             if (file.exists()) {
                 if (cbmiBackupAuto.isSelected()) {
                     String nomBackup = FileUtil.createBackup(file.getAbsolutePath());
-                    logger.logMessage("Backup created " + nomBackup);
+                    logger.logMessage(Messages.getString("BROWSER_FILE_BACKUP_CREATED", nomBackup)); //$NON-NLS-1$
                 } else {
                     int answer = JOptionPane.showConfirmDialog(mainWindow,
-                            "File " + file.getName() + " already exist.\nReplace?",
-                            "Replace existing file",
+                            Messages.getString("BROWSER_FILE_REPLACE_FILE", file.getName()),  //$NON-NLS-1$
+                            Messages.getString("BROWSER_FILE_REPLACE_FILE_TITLE"), //$NON-NLS-1$
                             JOptionPane.YES_NO_OPTION,
                             JOptionPane.WARNING_MESSAGE);
 
                     if (answer != JOptionPane.OK_OPTION) {
-                        logger.logMessage("Cannot replace "
-                                + file.getName() + ". Mesage not saved.");
+                        logger.logMessage(Messages.getString("BROWSER_FILE_NO_REPLACE", file.getName())); //$NON-NLS-1$
                         save = false;
                     }
                 }
@@ -190,18 +186,18 @@ public final class FileHandle {
 
             if (save) {
                 FileUtil.writeUTF8(file.getAbsolutePath(), response);
-                logger.logMessage("Saving message " + file.getName());
+                logger.logMessage(Messages.getString("BROWSER_FILE_FILE_SAVED", file.getName())); //$NON-NLS-1$
             }
         }
     }
 
     /**
-     * Ask for user confirmation before exiting application.
+     * Asks for user confirmation before exiting application.
      */
     public void exitApplication() {
         int answer = JOptionPane.showConfirmDialog(mainWindow,
-                "Exit application?",
-                "Confirm:",
+                Messages.getString("BROWSER_FILE_EXIT_APPLICATION"), //$NON-NLS-1$
+                Messages.getString("BROWSER_FILE_EXIT_APPLICATION_TITLE"), //$NON-NLS-1$
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
 

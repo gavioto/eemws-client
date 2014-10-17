@@ -18,7 +18,7 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.client.exception;
+package es.ree.eemws.client.common;
 
 import java.util.List;
 

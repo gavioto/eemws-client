@@ -28,8 +28,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import es.ree.eemws.kit.common.Messages;
-import es.ree.eemws.kit.gui.applications.Logger;
-import es.ree.eemws.kit.gui.applications.LoggerListener;
+import es.ree.eemws.kit.gui.common.Logger;
+import es.ree.eemws.kit.gui.common.LoggerListener;
 
 
 /**

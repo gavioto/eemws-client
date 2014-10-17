@@ -18,7 +18,7 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
 
 
 /**
@@ -33,7 +33,7 @@ public class FilterException extends RuntimeException {
     private static final long serialVersionUID = 5346790433959607361L;
 
     /**
-     * Constructor. Create a new Filter Exception containing the text
+     * Constructor. Creates a new Filter Exception containing the text
      * passed as argument.
      * @param text Explanatory text about error.
      */

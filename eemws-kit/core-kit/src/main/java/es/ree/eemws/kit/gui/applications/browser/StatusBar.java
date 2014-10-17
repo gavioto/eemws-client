@@ -20,7 +20,7 @@
  */
 
 
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
 
 import java.awt.BorderLayout;
 
@@ -29,8 +29,10 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 
+import es.ree.eemws.kit.common.Messages;
+
 /**
- * Simple status bar for application.
+ * Simple status bar.
  *
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 02/06/2014
@@ -39,13 +41,13 @@ import javax.swing.border.EtchedBorder;
 public final class StatusBar {
 
     /** Default text for status bar. */
-    private static final String DEFAULT_STATUS = "Ready";
+    private static final String DEFAULT_STATUS = Messages.getString("BROWSER_STATUS_READY"); //$NON-NLS-1$
 
     /** Label containing current status text. */
     private JLabel lblStatus = null;
 
     /**
-     * Return status bar panel.
+     * Returns status bar panel.
      * @return status bar panel.
      */
     public JPanel getPanel() {
@@ -67,7 +69,7 @@ public final class StatusBar {
      * @param status Status text.
      */
     public void setStatus(final String status) {
-        lblStatus.setText(" " + status);
+        lblStatus.setText(" " + status); //$NON-NLS-1$
     }
 
 }
