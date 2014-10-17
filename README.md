@@ -6,8 +6,8 @@ You will also need the artifacts at [eemws-core](https://bitbucket.org/smree/eem
 ### What is this repository for? ###
 
 * **eemws-client** includes client classes to invoke the eem web services
-* **eemws-kit** includes command line utilities to invoke the eem web services.
-* Version **1.0-m3**
+* **eemws-kit** includes command line utilities to invoke the eem web services, as well as several GUI applications (browser, editor, ...).
+* Version **1.0-m4**
 
 ### Who do I talk to? ###
 
