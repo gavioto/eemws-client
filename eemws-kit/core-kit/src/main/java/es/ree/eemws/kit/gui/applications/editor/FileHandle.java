@@ -45,7 +45,7 @@ import javax.swing.KeyStroke;
 
 import es.ree.eemws.core.utils.file.FileUtil;
 import es.ree.eemws.kit.common.Messages;
-import es.ree.eemws.kit.gui.applications.Logger;
+import es.ree.eemws.kit.gui.common.Logger;
 
 
 /**

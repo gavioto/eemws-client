@@ -18,18 +18,22 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.kit.gui.applications;
 
+package es.ree.eemws.client.list;
 
 /**
- * LoggerListener allows graphical applications to be aware
- * of changes on log window.
+ * Possible values for the interval time type.
  *
  * @author Red Eléctrica de España S.A.U.
  * @version 1.0 13/06/2014
  */
-public interface LoggerListener {
 
-    /** Notifies closing of Log window. */
-    void logWindowIsClosing();
+public enum IntervalTimeType {
+
+	Application, // Application time interval-
+	Server;      // Server timestap time interval.
+	
+   /** Default interval type. */
+    public static final IntervalTimeType DEFAULT_INTERVAL_TYPE = IntervalTimeType.Application;
+
 }

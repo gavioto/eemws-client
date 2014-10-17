@@ -18,34 +18,33 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
 
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
-import es.ree.eemws.client.exception.ClientException;
-import es.ree.eemws.client.getmessage.GetMessage;
-import es.ree.eemws.kit.config.Configuration;
-import es.ree.eemws.kit.gui.applications.Logger;
+import es.ree.eemws.client.common.ClientException;
+import es.ree.eemws.client.get.GetMessage;
+import es.ree.eemws.kit.common.Messages;
+import es.ree.eemws.kit.gui.common.Logger;
 
 
 /**
- * Send 'Get' message to server.
+ * Sends 'Get' message to server.
  *
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 09/05/2014
  */
-public final class RequestSend {
+public final class GetMessageSender {
 
     /** Message request object. */
     private GetMessage get;
 
     /** Reference to main window. */
-    private Lists mainWindow;
+    private Browser mainWindow;
 
     /** Reference to status bar. */
     private StatusBar status;
@@ -54,11 +53,11 @@ public final class RequestSend {
     private Logger logger;
 
     /**
-     * Constructor, create new instance of request messages handler.
+     * Constructor. Creates new instance of request messages handler.
      * @param url URL to which requests are sent.
      * @param principal Reference to main window.
      */
-    public RequestSend(final URL url, final Lists principal) {
+    public GetMessageSender(final URL url, final Browser principal) {
 
         get = new GetMessage();
         mainWindow = principal;
@@ -71,7 +70,7 @@ public final class RequestSend {
     }
 
     /**
-     * Set URL of the system to which requests are made.
+     * Sets URL of the system to which requests are made.
      * @param url URL of the system to which requests are made.
      */
     public void setEndPoint(final URL url) {
@@ -80,7 +79,7 @@ public final class RequestSend {
     }
 
     /**
-     * Retrieve currently selected message/s.
+     * Retrieves currently selected message/s.
      */
     public void retrieve() {
         DataTable dataTable = mainWindow.getDataTable();
@@ -90,17 +89,19 @@ public final class RequestSend {
         if (len == 0) {
             String msg;
             if (dataTable.getModel().getRowCount() == 0) {
-                msg = "No messages to retrieve.";
+                msg = Messages.getString("BROWSER_NO_MESSAGES_TO_GET"); //$NON-NLS-1$
             } else {
-                msg = "Select any file to retrive messages.";
+            	msg = Messages.getString("BROWSER_SELECT_MESSAGES_TO_GET"); //$NON-NLS-1$
             }
             logger.logMessage(msg);
             status.setStatus(msg);
             JOptionPane.showMessageDialog(mainWindow, msg,
-                    "Information", JOptionPane.INFORMATION_MESSAGE);
+            		Messages.getString("MSG_INFO_TITLE"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
         } else {
             if (len > 1) {
-                logger.logMessage(" Request " + len + " messages");
+            	String msg = Messages.getString("BROWSER_RETRIEVING_SEVERAL_MESSAGES", len); //$NON-NLS-1$
+                logger.logMessage(msg);
+                status.setStatus(msg);
                 mainWindow.enableScreen(false);
                 for (int cont = 0; cont < len; cont++) {
                      retieveWhenDisabled(dataTable.getSelectedRows()[cont]);
@@ -109,11 +110,13 @@ public final class RequestSend {
             } else {
             	mainWindow.enableScreen(false);
                 int row = dataTable.getSelectedRow();
-                String id = (String) dataTable.getModel().getAbsoluteValueAt(row, ColumnsId.ID.ordinal());
+                Long codigo = ((BigInteger) dataTable.getModel().getAbsoluteValueAt(row, ColumnsId.CODE.ordinal())).longValue();
 
+                String idMensaje = getMessageId(row, dataTable);
+                
                 int answer = JOptionPane.showConfirmDialog(mainWindow,
-                        "Retrieve message " + id + "?",
-                        "Confirm:", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                        Messages.getString("BROWSER_RETRIEVE_MESSAGE_CONFIRMATION", idMensaje, codigo), //$NON-NLS-1$
+                        Messages.getString("MSG_CONFIRM_TITLE"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$
 
                 if (answer == JOptionPane.OK_OPTION) {
                 	retieveWhenDisabled(row);
@@ -124,19 +127,7 @@ public final class RequestSend {
     }
 
     /**
-     * Retrieve message relative to a row index.
-     * @param row Row index.
-     */
-    private void retrieve(final int row) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                retieveWhenDisabled(row);
-            }
-        });
-    }
-
-    /**
-     * Perform the message retrieval once the graphic components are disabled.
+     * Performs the message retrieval once the graphic components are disabled.
      * @param row Row index.
      * @see {@link #retrieve(int)}.
      */
@@ -144,41 +135,55 @@ public final class RequestSend {
 
         DataTable dataTable = mainWindow.getDataTable();
 
-        String idMensaje = (String) dataTable.getModel().getAbsoluteValueAt(row, ColumnsId.ID.ordinal());
-        String msgType = (String) dataTable.getModel().getAbsoluteValueAt(row, ColumnsId.TYPE.ordinal());
+        String idMensaje = getMessageId(row, dataTable);
+        
         Long codigo = ((BigInteger) dataTable.getModel().getAbsoluteValueAt(row, ColumnsId.CODE.ordinal())).longValue();
 
         String response = null;
-        String traceMsg = "[" + idMensaje + " (" + codigo + ")]";
-
-        logger.logMessage(traceMsg + " Requesting....");
-        status.setStatus("Requesting " + traceMsg);
+        
+        String msg = Messages.getString("BROWSER_RETRIEVING_FILE", idMensaje, codigo); //$NON-NLS-1$
+        
+        logger.logMessage(msg);
+        status.setStatus(msg);
 
         try {
             response = get.get(codigo);
-
-            logger.logMessage(traceMsg + " Retrieving.");
-            status.setStatus("Retrieved " + traceMsg);
+            
+            msg = Messages.getString("BROWSER_RETRIEVED_FILE", idMensaje, codigo); //$NON-NLS-1$
+            
+            logger.logMessage(msg);
+            status.setStatus(msg);
 
             FileHandle ficheroHandle = mainWindow.getFileHandle();
             ficheroHandle.saveFile(idMensaje, response);
         } catch (ClientException e) {
-            Throwable cause = e.getCause();
-            String detalle = "";
-            if (cause != null) {
-                detalle = cause.getMessage();
-            }
-            String msg = "Cannot retrieve message! " + traceMsg;
-            status.setStatus(msg);
-            logger.logMessage(msg + " " + e.getMessage() + detalle);
-            JOptionPane.showMessageDialog(mainWindow, msg + "\n" + detalle, "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (IOException e) {
-            String msg = "Cannot save file!. Cause: " + e.getMessage();
+        	msg = Messages.getString("BROWSER_UNABLE_TO_GET", e.getMessage()); //$NON-NLS-1$
             status.setStatus(msg);
             logger.logMessage(msg);
-            JOptionPane.showMessageDialog(mainWindow, msg, "Error", JOptionPane.ERROR_MESSAGE);
-        } finally {
-            // mainWindow.enableScreen(true);
-        }
+            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+        } catch (IOException e) {
+            msg = Messages.getString("UNABLE_TO_WRITE", idMensaje); //$NON-NLS-1$
+            status.setStatus(msg);
+            logger.logMessage(msg);
+            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+        } 
     }
+    
+    /**
+     * Returns message identification as <id> + "." + <version>. If the message has no version only the <id>
+     * part will be returned.
+     * @param row Table view row number.
+     * @param dataTable Data table.
+     * @return Identification of the message that appears at row <code>row</code>
+     */
+
+	private String getMessageId(final int row, DataTable dataTable) {
+		String idMensaje = (String) dataTable.getModel().getAbsoluteValueAt(row, ColumnsId.ID.ordinal());
+        BigInteger version = (BigInteger) dataTable.getModel().getAbsoluteValueAt(row, ColumnsId.VERSION.ordinal());
+        
+        if (version != null) {
+        	idMensaje = idMensaje + "." + version.toString(); //$NON-NLS-1$
+        }
+		return idMensaje;
+	}
 }

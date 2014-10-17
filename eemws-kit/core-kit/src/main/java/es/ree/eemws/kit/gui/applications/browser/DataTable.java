@@ -18,22 +18,21 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
-import java.util.prefs.Preferences;
 
-import javax.swing.ButtonGroup;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import es.ree.eemws.kit.common.Messages;
 
 
 /**
@@ -53,48 +52,39 @@ public final class DataTable {
     /** Constant referring to 'Invert Selection'. */
     public static final int SELECTION_INVERT = 3;
 
-    /** Mapping key to 'display striped rows' preference setting. */
-    private static final String ZEBRA_STRIP_KEY = "ZEBRA_STRIP_KEY";
-
-    /** Default value for 'display striped rows' preference [true]. */
-    private static final boolean ZEBRA_STRIP_VALUE = true;
-
     /** Scrollable container for table. */
     private JScrollPane pnlScrollableTableArea;
 
-    /** List table itself. */
+    /** List table. */
     private JTable tblListTable;
 
     /** Table model. */
     private ListTableModel tableModel;
 
     /** Reference to main window. */
-    private Lists mainWindow;
+    private Browser mainWindow;
 
     /** Status bar. */
     private StatusBar statusBar;
 
     /** Object for message request. */
-    private RequestSend requestSend;
-
-    /** Object for saving status references. */
-    private Preferences preferences;
+    private GetMessageSender requestSend;
 
     /**
      * Constructor. Initialize graphical elements on screen
      * @param window Reference to main window.
      */
-    public DataTable(final Lists window) {
+    public DataTable(final Browser window) {
 
         mainWindow = window;
-        preferences = Preferences.userNodeForPackage(getClass());
         statusBar = mainWindow.getStatusBar();
         requestSend = mainWindow.getRequestSend();
 
         tableModel = new ListTableModel();
         tblListTable = new JTable(tableModel);
         tblListTable.setAutoCreateRowSorter(true);
-
+        tblListTable.setDefaultRenderer(Object.class, new TableStrippedCellRender());
+        tblListTable.setDefaultRenderer(java.math.BigInteger.class, new TableStrippedCellRender());
         tblListTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         tblListTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(final MouseEvent e) {
@@ -111,16 +101,13 @@ public final class DataTable {
 
         });
 
-        boolean verPijama = preferences.getBoolean(ZEBRA_STRIP_KEY, ZEBRA_STRIP_VALUE);
-        setZebraStrip(verPijama);
-
         pnlScrollableTableArea = new JScrollPane();
         pnlScrollableTableArea.getViewport().add(tblListTable);
 
     }
 
     /**
-     * Enable / disable data table.
+     * Enables / disables data table.
      *
      * @param value <code>true</code> Enable table. <code>false</code> disable.
      */
@@ -130,7 +117,7 @@ public final class DataTable {
     }
 
     /**
-     * Return model associated to table.
+     * Returns model associated to table.
      * @return Model associated to table.
      */
     public ListTableModel getModel() {
@@ -138,54 +125,15 @@ public final class DataTable {
     }
 
     /**
-     * Add visualization options to the menu passed as parameter.
-     * @param menuVer Visualization options menu.
-     */
-    public void getVisualizationMenu(final JMenu menuVer) {
-        JMenu menuZebraStrip = new JMenu("Zebra-strip table");
-
-        menuVer.add(menuZebraStrip);
-
-        JRadioButtonMenuItem miZebraStrip = new JRadioButtonMenuItem("Zebra-strip rows");
-        miZebraStrip.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                setZebraStrip(true);
-            }
-        });
-        miZebraStrip.setSelected(true);
-
-        JRadioButtonMenuItem miSameColor = new JRadioButtonMenuItem("Same color rows");
-        miSameColor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                setZebraStrip(false);
-            }
-        });
-
-        ButtonGroup bg = new ButtonGroup();
-        bg.add(miZebraStrip);
-        bg.add(miSameColor);
-
-
-        boolean zebraStripViewStatus = preferences.getBoolean(ZEBRA_STRIP_KEY, ZEBRA_STRIP_VALUE);
-
-        miZebraStrip.setSelected(zebraStripViewStatus);
-        miSameColor.setSelected(!zebraStripViewStatus);
-
-        menuZebraStrip.add(miZebraStrip);
-        menuZebraStrip.add(miSameColor);
-    }
-
-
-    /**
-     * Return date selection menu.
+     * Returns date selection menu.
      * @return Actions menu.
      */
     public JMenu getSelectionMenu() {
 
         /* Select All. */
         JMenuItem miSelectAll = new JMenuItem();
-        miSelectAll.setText("Select All");
-        miSelectAll.setMnemonic('A');
+        miSelectAll.setText(Messages.getString("BROWSER_SELECT_ALL_MENU_ENTRY")); //$NON-NLS-1$
+        miSelectAll.setMnemonic(Messages.getString("BROWSER_SELECT_ALL_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         miSelectAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 tableSelection(DataTable.SELECTION_ALL);
@@ -194,8 +142,8 @@ public final class DataTable {
 
         /* Remove selecion. */
         JMenuItem miSelectNone = new JMenuItem();
-        miSelectNone.setText("Clear selection");
-        miSelectNone.setMnemonic('e');
+        miSelectNone.setText(Messages.getString("BROWSER_SELECT_NONE_MENU_ENTRY")); //$NON-NLS-1$
+        miSelectNone.setMnemonic(Messages.getString("BROWSER_SELECT_NONE_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         miSelectNone.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 tableSelection(DataTable.SELECTION_NONE);
@@ -204,8 +152,8 @@ public final class DataTable {
 
         /* Invert selection. */
         JMenuItem miSelectInvert = new JMenuItem();
-        miSelectInvert.setText("Invert selection");
-        miSelectInvert.setMnemonic('I');
+        miSelectInvert.setText(Messages.getString("BROWSER_SELECT_INVERT_MENU_ENTRY")); //$NON-NLS-1$
+        miSelectInvert.setMnemonic(Messages.getString("BROWSER_SELECT_INVERT_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         miSelectInvert.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 tableSelection(DataTable.SELECTION_INVERT);
@@ -214,8 +162,8 @@ public final class DataTable {
 
         /* Select option. */
         JMenu mnSelectionMenu = new JMenu();
-        mnSelectionMenu.setText("Select");
-        mnSelectionMenu.setMnemonic('S');
+        mnSelectionMenu.setText(Messages.getString("BROWSER_SELECT_MENU_ENTRY")); //$NON-NLS-1$
+        mnSelectionMenu.setMnemonic(Messages.getString("BROWSER_SELECT_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         mnSelectionMenu.add(miSelectAll);
         mnSelectionMenu.add(miSelectNone);
         mnSelectionMenu.add(miSelectInvert);
@@ -224,62 +172,30 @@ public final class DataTable {
     }
 
     /**
-     * Show / hide 'striped rows' visualization (zebra striped).
-     * @param ver <code>true</code> Enable 'striped rows'
-     * visualization. <code>false</code> otherwise.
-     */
-    private void setZebraStrip(final boolean ver) {
-        if (ver) {
-            tblListTable.setDefaultRenderer(Object.class, new TableStrippedCellRender());
-            tblListTable.setDefaultRenderer(java.math.BigInteger.class, new TableStrippedCellRender());
-
-        } else {
-            tblListTable.setDefaultRenderer(Object.class, new TableCellRender());
-            tblListTable.setDefaultRenderer(java.math.BigInteger.class, new TableCellRender());
-        }
-
-        tblListTable.repaint();
-        preferences.putBoolean(ZEBRA_STRIP_KEY, ver);
-    }
-
-    /**
-     * Change status bar text according to
-     * the selection performed on table.
+     * Changes status bar text according to table's status (num rows, num of selected rows)
      */
     private void changeSelectionStatus() {
         int totalRowNum = tableModel.getRowCount();
-
-        String sTotal = "";
-        if (totalRowNum > 1) {
-            sTotal = "s";
-        }
-
-        StringBuilder msg = new StringBuilder();
-        msg.append(totalRowNum);
-        msg.append(" Message");
-        msg.append(sTotal);
-        msg.append(" listed");
-
         int numSelectedRows = tblListTable.getSelectedRowCount();
-        if (numSelectedRows > 0) {
-            String stPluralSuffix = "";
-            if (numSelectedRows > 1) {
-                stPluralSuffix = "s";
-            }
-            msg.append(" (");
-            msg.append(numSelectedRows);
-            msg.append(" message");
-            msg.append(stPluralSuffix);
-            msg.append(" selected");
-            msg.append(").");
+               
+        if (totalRowNum == 1) {
+        	if (numSelectedRows == 0) {
+        		statusBar.setStatus(Messages.getString("BROWSER_STATUS_MESSAGE")); //$NON-NLS-1$
+         	} else {
+         		statusBar.setStatus(Messages.getString("BROWSER_STATUS_MESSAGE_SELECTED")); //$NON-NLS-1$
+         	}
+        } else {
+        	if (numSelectedRows == 0) {
+        		statusBar.setStatus(Messages.getString("BROWSER_STATUS_MESSAGES", totalRowNum)); //$NON-NLS-1$
+        	} else {
+        		statusBar.setStatus(Messages.getString("BROWSER_STATUS_MESSAGES_SELECTED", totalRowNum, numSelectedRows)); //$NON-NLS-1$
+        	}
         }
-
-        statusBar.setStatus(msg.toString());
     }
 
 
     /**
-     * Select table elements according to the entered mode
+     * Selects table elements according to the entered mode
      * <li>mode=1: Select all elements in table.
      * <li>mode=2: Clear current selection.
      * <li>mode=3: Invert selection.
@@ -308,7 +224,7 @@ public final class DataTable {
     }
 
     /**
-     * Return number of selected rows in table.
+     * Returns number of selected rows in table.
      *
      * Is necessary to perform a conversion from view to model to prevent problems related to order.
      * @return Number of files selected on table.
@@ -325,7 +241,7 @@ public final class DataTable {
     }
 
     /**
-     * Get index of the selected file.
+     * Gets index of the selected file.
      * Is necessary to perform a conversion from view to model to prevent problems related to order.
      * @return index of the selected file on table.
      */
@@ -334,7 +250,7 @@ public final class DataTable {
     }
 
     /**
-     * Set data to be shown on table.
+     * Sets data to be shown on table.
      * @param data Data to be shown on table.
      */
     public void setData(final Object[][] data) {
@@ -342,7 +258,7 @@ public final class DataTable {
     }
 
     /**
-     * Indicate whether the table is empty.
+     * Indicates whether the table is empty.
      * @return <code>true</code> If table is empty. <code>false</code> otherwise.
      */
     public boolean isEmpty() {
@@ -358,16 +274,17 @@ public final class DataTable {
     }
 
     /**
-     * Adjust the table size according to the values passed as parameters.
+     * Adjusts the table size according to the values passed as parameters.
      * @param width Width of the main window.
      * @param height Height  of the main window.
      * @param isFilterVisible Indicates whether the data filter is visible.
+     * TODO Avoid magic numbers!
      */
     public void adjustTableSize(final int width, final int height, final boolean isFilterVisible) {
         if (isFilterVisible) {
-            pnlScrollableTableArea.setBounds(2, 166, width - 24, height - 250);
+            pnlScrollableTableArea.setBounds(2, 166, width - 30, height - 250);
         } else {
-            pnlScrollableTableArea.setBounds(2, 6, width - 24, height - 90);
+            pnlScrollableTableArea.setBounds(2, 6, width - 30, height - 90);
         }
         tblListTable.repaint();
     }

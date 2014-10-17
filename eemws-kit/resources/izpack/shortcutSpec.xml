@@ -13,16 +13,16 @@
     </shortcut>
 
     <shortcut name="Message editor" target="$INSTALL_PATH/bin/editor.cmd" commandLine=""
-        workingDirectory="$INSTALL_PATH/bin" description="Send and retrieve messages"
+        workingDirectory="$INSTALL_PATH/bin" description="Message editor"
         iconFile="$INSTALL_PATH/bin/editor.ico" iconIndex="0" initialState="normal" programGroup="yes"
         desktop="yes" applications="no" startMenu="no" startup="no">
 
         <createForPack name="Core"/>
     </shortcut>
 
-    <shortcut name="List and request" target="$INSTALL_PATH/bin/lists.cmd" commandLine=""
-        workingDirectory="$INSTALL_PATH/bin" description="List and request messages"
-        iconFile="$INSTALL_PATH/bin/lists.ico" iconIndex="0" initialState="normal" programGroup="yes"
+    <shortcut name="Browser" target="$INSTALL_PATH/bin/browser.cmd" commandLine=""
+        workingDirectory="$INSTALL_PATH/bin" description="Browser"
+        iconFile="$INSTALL_PATH/bin/browser.ico" iconIndex="0" initialState="normal" programGroup="yes"
         desktop="no" applications="no" startMenu="no" startup="no">
 
         <createForPack name="Core"/>

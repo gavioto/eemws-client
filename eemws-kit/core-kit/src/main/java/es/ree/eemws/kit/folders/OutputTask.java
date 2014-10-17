@@ -29,10 +29,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import es.ree.eemws.kit.common.Messages;
-import es.ree.eemws.client.exception.ClientException;
-import es.ree.eemws.client.getmessage.GetMessage;
-import es.ree.eemws.client.listmessages.ListMessages;
-import es.ree.eemws.client.listmessages.MessageListEntry;
+import es.ree.eemws.client.common.ClientException;
+import es.ree.eemws.client.get.GetMessage;
+import es.ree.eemws.client.list.ListMessages;
+import es.ree.eemws.client.list.MessageListEntry;
 import es.ree.eemws.core.utils.file.FileUtil;
 
 /**
@@ -90,13 +90,13 @@ public final class OutputTask implements Runnable {
 		get = new GetMessage();
 		get.setEndPoint(endPoint);
 
-		if (LOGGER.isLoggable(Level.CONFIG)) {
-			StringBuilder msg = new StringBuilder();
-			msg.append(Messages.getString("MF_CONFIG_OUTPUT_FOLDER", outputFolder)); //$NON-NLS-1$
-			msg.append(Messages.getString("MF_CONFIG_OUTPUT_URL", endPoint.toString())); //$NON-NLS-1$
-
-			LOGGER.info(msg.toString());
-		}
+		
+		StringBuilder msg = new StringBuilder();
+		msg.append("\n").append(Messages.getString("MF_CONFIG_OUTPUT_FOLDER", outputFolder)); //$NON-NLS-1$ //$NON-NLS-2$
+		msg.append("\n").append(Messages.getString("MF_CONFIG_OUTPUT_URL_O", endPoint.toString())); //$NON-NLS-1$ //$NON-NLS-2$
+		msg.append("\n").append(Messages.getString("MF_CONFIG_DELAY_TIME_O", config.getSleepTimeOutput()));  //$NON-NLS-1$//$NON-NLS-2$
+		
+		LOGGER.info(msg.toString());
 	}
 
 	/**
@@ -112,8 +112,25 @@ public final class OutputTask implements Runnable {
 
 		if (lockFile && !FileUtil.exists(outputFolder + File.separator + fileName)) {
 
+			StringBuilder messageIdVersionCode = new StringBuilder();
+			messageIdVersionCode.append(mle.getMessageIdentification());
+			
+			
 			try {
+				if (mle.getVersion() == null) {
+					LOGGER.log(Level.SEVERE, Messages.getString("MF_RETRIEVING_MESSAGE_WO_VERSION", String.valueOf(code), mle.getMessageIdentification())); //$NON-NLS-1$
+				} else {
+					LOGGER.log(Level.SEVERE, Messages.getString("MF_RETRIEVING_MESSAGE", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
+				}
+				
 				String response = get.get(code);
+				
+				if (mle.getVersion() == null) {
+					LOGGER.log(Level.SEVERE, Messages.getString("MF_RETRIEVED_MESSAGE_WO_VERSION", String.valueOf(code), mle.getMessageIdentification())); //$NON-NLS-1$
+				} else {
+					LOGGER.log(Level.SEVERE, Messages.getString("MF_RETRIEVED_MESSAGE", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
+				}
+				
 				File tmpFile;
 				tmpFile = File.createTempFile(TMP_PREFIX, null, new File(outputFolder));
 				FileUtil.write(tmpFile.getAbsolutePath(), response);

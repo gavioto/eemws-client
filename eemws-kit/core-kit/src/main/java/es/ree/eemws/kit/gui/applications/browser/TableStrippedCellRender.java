@@ -19,26 +19,29 @@
  * the program.
  */
 
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 
 /**
- * Class to format table cells.
+ * Table render. Provides the style to the list data.
  * Table is is shown in striped table format, status values are shown in green / red.
  *
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 02/06/2014
  */
 
-public final class TableStrippedCellRender extends TableCellRender {
+public final class TableStrippedCellRender extends DefaultTableCellRenderer {
 
-    /** Class ID. */
-    private static final long serialVersionUID = 1637294076635324355L;
-
+	/** Class ID. */
+	private static final long serialVersionUID = -4925006304780209445L;
+     
     /** Selected background color. */
     private static final Color BACKGROUND_COLOR_SELECTED_ITEM = new Color(49, 106, 197);
 
@@ -79,7 +82,13 @@ public final class TableStrippedCellRender extends TableCellRender {
     private static final Color TEXT_COLOR_INCORRECT_ITEM_SELECTED = new Color(255, 255, 128);
 
     /** Text color for selected incorrect status cell. */
-    protected static final Color BACKGROUND_COLOR_INCORRECT_ITEM_SELECTED = new Color(208, 44, 216);
+    private static final Color BACKGROUND_COLOR_INCORRECT_ITEM_SELECTED = new Color(208, 44, 216);
+    
+    /** Output format for Date Objects. */
+    private SimpleDateFormat sdfDateTime = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); //$NON-NLS-1$
+
+    /** Text to be shown when the retrieved value is <code>null</code>. */
+    private static final String NULL_STR = ""; //$NON-NLS-1$
 
     /**
      * Retrieve a cell formatted according to entered values.
@@ -131,5 +140,20 @@ public final class TableStrippedCellRender extends TableCellRender {
 
         return cell;
     }
-
+    
+    /**
+     * Format date values preventing being taken as strings by Table comparator.
+     * @param value value to be shown on cell.
+     */
+    public final void setValue(final Object value) {
+        if (value != null) {
+            if (value instanceof Calendar) {
+                setText(sdfDateTime.format(((Calendar) value).getTime()));
+            } else {
+                super.setValue(value);
+            }
+        } else {
+            setText(NULL_STR);
+        }
+    }
 }

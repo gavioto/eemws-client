@@ -18,12 +18,10 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.client.listmessages;
+package es.ree.eemws.client.list;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -45,7 +43,7 @@ import ch.iec.tc57._2011.schema.message.ResponseMessage;
 import es.ree.eemws.client.common.ConstantMessage;
 import es.ree.eemws.client.common.Messages;
 import es.ree.eemws.client.common.ParentClient;
-import es.ree.eemws.client.exception.ClientException;
+import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.core.utils.xml.XMLElementUtil;
 import es.ree.eemws.core.utils.xml.XMLGregorianCalendarFactory;
 
@@ -81,12 +79,7 @@ public final class ListMessages extends ParentClient {
 
     /** Noun of the response. */
     private static final String RESPONSE_NOUN = "MessageList"; //$NON-NLS-1$
-
-    private static final List<String> INTERVAL_TYPES_VALUES = Collections.unmodifiableList(Arrays.asList(new String[] {"Application", "Server"})); //$NON-NLS-1$ //$NON-NLS-2$
-    
-    /** Default interval type (to be used with interval time). */
-    private static final String DEFAULT_INTERVAL_TYPE = INTERVAL_TYPES_VALUES.get(0);
-
+ 
 	/** List request messages are not signed by default. */
     private static final boolean SIGN_REQUEST = false;
 
@@ -128,7 +121,7 @@ public final class ListMessages extends ParentClient {
      * @return List of data message.
      * @throws ClientException Exception with the error.
      */
-    public List<MessageListEntry> list(final Date startTime, final Date endTime, final String intervalType)
+    public List<MessageListEntry> list(final Date startTime, final Date endTime, final IntervalTimeType intervalType)
             throws ClientException {
 
         return list(startTime, endTime, intervalType, null, null, null);
@@ -149,7 +142,7 @@ public final class ListMessages extends ParentClient {
      * @return List of data message.
      * @throws ClientException Exception with the error.
      */
-    public List<MessageListEntry> list(final Date startTime, final Date endTime, final String intervalType, final String messageIdentification, final String msgType, final String owner)
+    public List<MessageListEntry> list(final Date startTime, final Date endTime, final IntervalTimeType intervalType, final String messageIdentification, final String msgType, final String owner)
             throws ClientException {
 
         return list(null, startTime, endTime, intervalType, messageIdentification, msgType, owner);
@@ -208,7 +201,7 @@ public final class ListMessages extends ParentClient {
     private List<MessageListEntry> list(final Long code,
             final Date startTime,
             final Date endTime,
-            final String intervalType,
+            final IntervalTimeType intervalType,
             final String messageIdentification,
             final String msgType,
             final String owner) throws ClientException {
@@ -246,7 +239,7 @@ public final class ListMessages extends ParentClient {
     private RequestMessage createRequest(final Long code,
             final Date startTime,
             final Date endTime,
-            final String intervalType,
+            final IntervalTimeType intervalType,
             final String messageIdentification,
             final String msgType,
             final String owner) throws ClientException {
@@ -279,18 +272,9 @@ public final class ListMessages extends ParentClient {
                 
             /* Interval type only applies with time intervals. */
             if (intervalType == null) {
-            	
-            	options.add(createOption(REQUEST_INTERVAL_TYPE_OPTION, DEFAULT_INTERVAL_TYPE));
-            
+            	options.add(createOption(REQUEST_INTERVAL_TYPE_OPTION, IntervalTimeType.DEFAULT_INTERVAL_TYPE.name()));
             } else {
-            
-            	if (INTERVAL_TYPES_VALUES.contains(intervalType)) {
-            	
-            		options.add(createOption(REQUEST_INTERVAL_TYPE_OPTION, intervalType));
-            	} else {
-            		
-            		 throw new ClientException(Messages.getString("LIST_INVALID_INTERVAL_TYPE", intervalType, INTERVAL_TYPES_VALUES.toString())); //$NON-NLS-1$
-            	}
+            	options.add(createOption(REQUEST_INTERVAL_TYPE_OPTION, intervalType.toString()));
             }
         }
 
@@ -310,6 +294,7 @@ public final class ListMessages extends ParentClient {
         }
 
         requestMessage.setRequest(resquest);
+        
         return requestMessage;
     }
 

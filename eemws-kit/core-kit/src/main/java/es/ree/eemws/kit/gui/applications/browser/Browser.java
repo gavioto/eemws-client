@@ -19,7 +19,7 @@
  * the program.
  */
 
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
@@ -32,7 +32,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.WindowEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Locale;
+
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
@@ -43,45 +43,46 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.MenuElement;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.config.Configuration;
-import es.ree.eemws.kit.gui.applications.Logger;
 import es.ree.eemws.kit.gui.applications.editor.ServiceMenu;
 import es.ree.eemws.kit.gui.common.Constants;
+import es.ree.eemws.kit.gui.common.Logger;
 import es.ree.eemws.kit.gui.common.ServiceMenuListener;
 
 /**
- * Implements graphic interface for message listing and retrieval.
+ * Implements graphic interface for list & get.
  *
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 09/05/2014
  *
  */
-public final class Lists extends JFrame implements ServiceMenuListener {
+public final class Browser extends JFrame implements ServiceMenuListener {
 
     /** Class ID. */
-    private static final long serialVersionUID = 3814363426669389598L;
+	private static final long serialVersionUID = 519657632922916947L;
 
-    /** Default window width. */
+	/** Default window width. */
     private static final int DEFAULT_WINDOW_WIDTH = 520;
 
     /** Default window height. */
     private static final int DEFAULT_WINDOW_HEIGHT = 500;
 
     /** Key to store window height as preference. */
-    private static final String WINDOW_HEIGHT_KEY = "WINDOW_HEIGHT_KEY";
+    private static final String WINDOW_HEIGHT_KEY = "WINDOW_HEIGHT_KEY"; //$NON-NLS-1$
 
     /** Key to store window width as preference. */
-    private static final String WINDOW_WIDTH_KEY = "WINDOW_WIDTH_KEY";
+    private static final String WINDOW_WIDTH_KEY = "WINDOW_WIDTH_KEY"; //$NON-NLS-1$
 
     /** Key to store horizontal position of window preference. */
-    private static final String WINDOW_LEFT_KEY = "WINDOW_LEFT_KEY";
+    private static final String WINDOW_LEFT_KEY = "WINDOW_LEFT_KEY"; //$NON-NLS-1$
 
     /** Key to store vertical position of window preference. */
-    private static final String WINDOW_TOP_KEY = "WINDOW_TOP_KEY";
+    private static final String WINDOW_TOP_KEY = "WINDOW_TOP_KEY"; //$NON-NLS-1$
 
     /** Log window. */
     private Logger log;
@@ -105,10 +106,10 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     private String endPoint;
 
     /** Listing class. */
-    private ListSend listSend = null;
+    private ListMessageSender listSend = null;
 
     /** Request class. */
-    private RequestSend requestSend = null;
+    private GetMessageSender requestSend = null;
 
     /** Service menu. */
     private ServiceMenu serviceMenu = null;
@@ -123,65 +124,51 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     private Preferences preferences;
 
     /**
-     * Main program, initializes listing application and display on screen.
+     * Main program, initializes  application and display on screen.
      * @param args Arguments -ignored-
      */
     public static void main(final String[] args) {
 
-        Locale.setDefault(Locale.ENGLISH);
-
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            Lists b = new Lists();
+            Browser b = new Browser();
             b.setVisible(true);
-        } catch (Exception ex) {
-
-            ex.printStackTrace();
-
-            /*
-             * ClassNotFoundException, InstantiationException,
-             * IllegalAccessException, UnsupportedLookAndFeelException
-             *
-             * Theoretically unreachable, implementing "Look&Feel" native class
-             * should be always supported.
-             *
-             */
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             JOptionPane.showMessageDialog(null,
-                    "Cannot initialize graphic elements.\n",
-                    "Error",
+                    Messages.getString("GUI_NO_GUI"), //$NON-NLS-1$
+                    Messages.getString("GUI_NO_GUI_TITLE"), //$NON-NLS-1$
                     JOptionPane.ERROR_MESSAGE);
         }
 
     }
 
     /**
-     * Constructor. Read settings and invoke the method which arranges graphic
-     * elements.
+     * Constructor. Reads settings and invoke the method which arranges graphic elements.
      * <b>Important:</b> If object cannot be created application will exit.
      */
-    public Lists() {
-        super("List and retrieve messages");
+    public Browser() {
+        super(Messages.getString("BROWSER_MAIN_WINDOW_TITLE")); //$NON-NLS-1$
 
         try {
             preferences = Preferences.userNodeForPackage(getClass());
             Configuration cf = new Configuration();
             cf.readConfiguration();
             if (!cf.hasMinimumConfiguration()) {
-                throw new ConfigException(Messages.getString("kit.gui.configuration.67"));
+                throw new ConfigException(Messages.getString("GUI_NO_CONFIGURATION")); //$NON-NLS-1$
             }
             endPoint = cf.getUrlEndPoint().toString();
-            requestSend = new RequestSend(cf.getUrlEndPoint(), this);
-            listSend = new ListSend(cf.getUrlEndPoint(), this);
+            requestSend = new GetMessageSender(cf.getUrlEndPoint(), this);
+            listSend = new ListMessageSender(cf.getUrlEndPoint(), this);
             jbInit();
 
         } catch (ConfigException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, ex.getMessage(), Messages.getString("GUI_NO_CONFIGURATION_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
             System.exit(1);
         }
     }
 
     /**
-     * Configure and create application graphic elements.
+     * Configures and creates application graphic elements.
      */
     private void jbInit() {
 
@@ -193,24 +180,21 @@ public final class Lists extends JFrame implements ServiceMenuListener {
         log = logHandle.getLog();
 
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(Constants.ICON_PATH)));
-
-        /* Menu construction. */
+       
         JMenu mnService = getServiceMenu();
-
-        JMenu mnView = new JMenu("View");
-        mnView.setMnemonic('V');
+        JMenu mnView = new JMenu(Messages.getString("BROWSER_VIEW_MENU_ITEM")); //$NON-NLS-1$
+        mnView.setMnemonic(Messages.getString("BROWSER_VIEW_MENU_ITEM_HK").charAt(0)); //$NON-NLS-1$
         columnVisibilityHandler.getMenu(mnView);
         filter.getMenu(mnView);
-        dataTable.getVisualizationMenu(mnView);
-
+        
         menuBar.add(fileHandle.getMenu());
         menuBar.add(mnView);
         menuBar.add(dataTable.getSelectionMenu());
         menuBar.add(logHandle.getMenu());
         menuBar.add(mnService);
 
-        JLabel lblLeftMargin = new JLabel("  ");
-        JLabel lblRightMargin = new JLabel("  ");
+        JLabel lblLeftMargin = new JLabel("  "); //$NON-NLS-1$
+        JLabel lblRightMargin = new JLabel("  "); //$NON-NLS-1$
 
         JPanel pnlCenterPanel = new JPanel();
         pnlCenterPanel.setLayout(null);
@@ -253,7 +237,7 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     }
 
     /**
-     * Modify size of filter panel and table to fit in the main window when it is resized.
+     * Modifies size of filter panel and table to fit in the main window when it is resized.
      * This method is also invoked in case of modifying visibility status of panel to
      * rearrange the size of the data grid.
      */
@@ -273,7 +257,7 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     }
 
     /**
-     * Return the Service menu.
+     * Returns the Service menu.
      * @return Menu entry containing settings for server and service.
      */
     private JMenu getServiceMenu() {
@@ -287,7 +271,7 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     }
 
     /**
-     * Set the application end point. If point set is settlement and 'incremental mode' is
+     * Sets the application end point. If point set is settlement and 'incremental mode' is
      * selected. The change will be rejected.
      * @param endp point to which messages are sent (environment + service).
      */
@@ -306,7 +290,7 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     }
 
     /**
-     * Enable / disable elements on screen.
+     * Enables / disables elements on screen.
      * @param enableValue <code>true</code> enable,
      * <code>false</code> disable.
      */
@@ -323,7 +307,7 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     }
 
     /**
-     * Enable / Disable main menu elements.
+     * Enables / Disables main menu elements.
      * @param enableValue <code>true</code> enable,
      * <code>false</code> disable.
      */
@@ -337,7 +321,7 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     }
 
     /**
-     * Get data table.
+     * Gets data table.
      * @return Data table.
      */
     public DataTable getDataTable() {
@@ -345,7 +329,7 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     }
 
     /**
-     * Get File handler.
+     * Gets File handler.
      * @return File handler.
      */
     public FileHandle getFileHandle() {
@@ -353,7 +337,7 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     }
 
     /**
-     * Get Filter elements.
+     * Gets Filter elements.
      * @return Filter elements.
      */
     public Filter getFilter() {
@@ -361,7 +345,7 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     }
 
     /**
-     * Get status bar.
+     * Gets status bar.
      * @return Status bar.
      */
     public StatusBar getStatusBar() {
@@ -369,7 +353,7 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     }
 
     /**
-     * Get Log window.
+     * Gets Log window.
      * @return Log window.
      */
     public LogHandle getLogHandle() {
@@ -377,18 +361,18 @@ public final class Lists extends JFrame implements ServiceMenuListener {
     }
 
     /**
-     * Get message request object.
+     * Gets message request object.
      * @return Message request object.
      */
-    public RequestSend getRequestSend() {
+    public GetMessageSender getRequestSend() {
         return requestSend;
     }
 
     /**
-     * Return List sending object.
-     * @return list sending object.
+     * Returns List message sender object.
+     * @return list List message sender object.
      */
-    public ListSend getListSend() {
+    public ListMessageSender getListSend() {
         return listSend;
     }
 }
