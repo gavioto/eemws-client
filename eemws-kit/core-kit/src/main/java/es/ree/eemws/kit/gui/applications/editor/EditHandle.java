@@ -50,7 +50,7 @@ import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 
 import es.ree.eemws.kit.common.Messages;
-import es.ree.eemws.kit.gui.applications.Logger;
+import es.ree.eemws.kit.gui.common.Logger;
 import es.ree.eemws.kit.gui.common.Constants;
 
 

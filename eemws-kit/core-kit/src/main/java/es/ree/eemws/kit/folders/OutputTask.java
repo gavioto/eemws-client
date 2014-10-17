@@ -29,10 +29,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import es.ree.eemws.kit.common.Messages;
-import es.ree.eemws.client.exception.ClientException;
-import es.ree.eemws.client.getmessage.GetMessage;
-import es.ree.eemws.client.listmessages.ListMessages;
-import es.ree.eemws.client.listmessages.MessageListEntry;
+import es.ree.eemws.client.common.ClientException;
+import es.ree.eemws.client.get.GetMessage;
+import es.ree.eemws.client.list.ListMessages;
+import es.ree.eemws.client.list.MessageListEntry;
 import es.ree.eemws.core.utils.file.FileUtil;
 
 /**

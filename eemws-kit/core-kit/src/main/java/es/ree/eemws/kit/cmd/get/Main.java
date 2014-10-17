@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import es.ree.eemws.client.exception.ClientException;
-import es.ree.eemws.client.getmessage.GetMessage;
+import es.ree.eemws.client.common.ClientException;
+import es.ree.eemws.client.get.GetMessage;
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.core.utils.file.FileUtil;
 import es.ree.eemws.kit.cmd.ParentMain;
@@ -105,7 +105,7 @@ public final class Main extends ParentMain {
 				try {
 					lCode = Long.valueOf(code);
 				} catch (NumberFormatException e) {
-					throw new IllegalArgumentException(Messages.getString("GET_INCORRECT_PARAMETERS_3", code)); //$NON-NLS-1$
+					throw new IllegalArgumentException(Messages.getString("INCORRECT_CODE", code)); //$NON-NLS-1$
 				}
 
 			} else if (queue != null) {

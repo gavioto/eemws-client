@@ -18,17 +18,18 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
-import es.ree.eemws.kit.gui.applications.Logger;
-import es.ree.eemws.kit.gui.applications.LoggerListener;
-
+import es.ree.eemws.kit.common.Messages;
+import es.ree.eemws.kit.gui.common.Logger;
+import es.ree.eemws.kit.gui.common.LoggerListener;
 
 /**
  * Log Window management.
@@ -39,7 +40,7 @@ import es.ree.eemws.kit.gui.applications.LoggerListener;
 public final class LogHandle implements LoggerListener {
 
     /** Log menu item, is modified depending on status Log status. */
-    private JMenuItem miShowLog = new JMenuItem();
+    private JCheckBoxMenuItem miShowLog = new JCheckBoxMenuItem();
 
     /** Log window. */
     private Logger log;
@@ -48,7 +49,7 @@ public final class LogHandle implements LoggerListener {
     private JMenu mnLogMenu = new JMenu();
 
     /**
-     * Create new instance of Log window.
+     * Creates new instance of Log window.
      */
     public LogHandle() {
         log = new Logger(this);
@@ -56,60 +57,39 @@ public final class LogHandle implements LoggerListener {
     }
 
     /**
-     * Retrieve "Actions" menu.
-     * @return "Actions" Menu for main Options bar.
+     * Retrieves "Log" menu.
+     * @return "Log" menu.
      */
     public JMenu getMenu() {
 
         JMenuItem miDeleteLog = new JMenuItem();
 
-        miDeleteLog.setText("Delete Log");
-        miDeleteLog.setMnemonic('D');
+        miDeleteLog.setText(Messages.getString("BROWSER_LOG_CLEAR_MENU_ITEM")); //$NON-NLS-1$
+        miDeleteLog.setMnemonic(Messages.getString("BROWSER_LOG_CLEAR_MENU_ITEM_HK").charAt(0)); //$NON-NLS-1$
         miDeleteLog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-                deleteLog();
+                log.deleteLog();
             }
         });
-        miShowLog.setText("Show Log");
-        miShowLog.setMnemonic('S');
+        miShowLog.setText(Messages.getString("BROWSER_LOG_SHOW_MENU_ITEM")); //$NON-NLS-1$
+        miShowLog.setMnemonic(Messages.getString("BROWSER_LOG_SHOW_MENU_ITEM_HK").charAt(0)); //$NON-NLS-1$
         miShowLog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-                toggleLogMenuItemText();
+            	log.setVisible(miShowLog.isSelected());
             }
         });
 
-        mnLogMenu.setText("Log");
-        mnLogMenu.setMnemonic('L');
+        mnLogMenu.setText(Messages.getString("BROWSER_LOG_MENU_ITEM")); //$NON-NLS-1$
+        mnLogMenu.setMnemonic(Messages.getString("BROWSER_LOG_MENU_ITEM_HK").charAt(0)); //$NON-NLS-1$
         mnLogMenu.add(miShowLog);
         mnLogMenu.add(miDeleteLog);
 
         return mnLogMenu;
     }
 
+   
     /**
-     * Display / hide Log window depending on whether log
-     * window is active or not.
-     * Change Text on Menu item: Show Log / Hide Log.
-     */
-    private void toggleLogMenuItemText() {
-        if (log.isVisible()) {
-            log.setVisible(false);
-            miShowLog.setText("Show Log");
-        } else {
-            log.setVisible(true);
-            miShowLog.setText("Hide Log");
-        }
-    }
-
-    /**
-     * Delete log messages.
-     */
-    private void deleteLog() {
-        log.deleteLog();
-    }
-
-    /**
-     * Retrieve reference to log Window.
+     * Retrieves reference to log Window.
      * @return Reference to log Window.
      */
     public Logger getLog() {
@@ -117,15 +97,15 @@ public final class LogHandle implements LoggerListener {
     }
 
     /**
-     * Invoked by window when closing, swaps items
-     * Hide log / Show log.
+     * Invoked by window when closing.
      */
+    @Override
     public void logWindowIsClosing() {
-        miShowLog.setText("Show Log");
+        miShowLog.setSelected(false);
     }
 
     /**
-     * Enable / disable graphic values.
+     * Enables / disables graphic values.
      * @param activeValue <code>true</code> Enable.
      * <code>false</code> disable.
      */

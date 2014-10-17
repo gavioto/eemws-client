@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import es.ree.eemws.client.exception.ClientException;
-import es.ree.eemws.client.putmessage.PutMessage;
+import es.ree.eemws.client.common.ClientException;
+import es.ree.eemws.client.put.PutMessage;
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.core.utils.file.FileUtil;
 import es.ree.eemws.kit.cmd.ParentMain;

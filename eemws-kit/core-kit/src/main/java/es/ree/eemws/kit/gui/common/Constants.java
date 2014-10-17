@@ -22,7 +22,7 @@ package es.ree.eemws.kit.gui.common;
 
 
 /**
- * Common constatnts for Connection Kit classes.
+ * Common constants for GUI classes
  *
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 09/05/2014
@@ -38,35 +38,35 @@ public final class Constants {
     }
 
     /** Path to the images folder. */
-    private static final String IMG_PATH = "/images/";
+    private static final String IMG_PATH = "/images/"; //$NON-NLS-1$
 
     /** Path to the logo image. */
-    public static final String ICON_PATH = IMG_PATH + "app_icon.png";
+    public static final String ICON_PATH = IMG_PATH + "app_icon.png"; //$NON-NLS-1$
 
     /** Path to the Open file image. */
-    public static final String ICON_OPEN = IMG_PATH + "open.gif";
+    public static final String ICON_OPEN = IMG_PATH + "open.gif"; //$NON-NLS-1$
 
     /** Path to the send image. */
-    public static final String ICON_SEND = IMG_PATH + "send.gif";
+    public static final String ICON_SEND = IMG_PATH + "send.gif"; //$NON-NLS-1$
 
     /** Path to the save image. */
-    public static final String ICON_SAVE = IMG_PATH + "save.gif";
+    public static final String ICON_SAVE = IMG_PATH + "save.gif"; //$NON-NLS-1$
 
     /** Path to the save as image. */
-    public static final String ICON_SAVE_AS = IMG_PATH + "save_as.gif";
+    public static final String ICON_SAVE_AS = IMG_PATH + "save_as.gif"; //$NON-NLS-1$
 
     /** Path to the new image. */
-    public static final String ICON_NEW = IMG_PATH + "new.gif";
+    public static final String ICON_NEW = IMG_PATH + "new.gif"; //$NON-NLS-1$
 
     /** Path to the go image. */
-    public static final String ICON_GO = IMG_PATH + "go.gif";
+    public static final String ICON_GO = IMG_PATH + "go.gif"; //$NON-NLS-1$
 
     /** Path to the find image. */
-    public static final String ICON_FIND = IMG_PATH + "find.gif";
+    public static final String ICON_FIND = IMG_PATH + "find.gif"; //$NON-NLS-1$
 
     /** Path to the format image. */
-    public static final String ICON_FORMAT = IMG_PATH + "format.gif";
+    public static final String ICON_FORMAT = IMG_PATH + "format.gif"; //$NON-NLS-1$
 
     /** Path to the validate image. */
-    public static final String ICON_VALIDATE = IMG_PATH + "validate.gif";
+    public static final String ICON_VALIDATE = IMG_PATH + "validate.gif"; //$NON-NLS-1$
 }

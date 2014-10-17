@@ -18,7 +18,7 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -27,6 +27,8 @@ import java.util.prefs.Preferences;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+
+import es.ree.eemws.kit.common.Messages;
 
 
 /**
@@ -37,8 +39,8 @@ import javax.swing.JMenuItem;
  */
 public final class ColumnVisibilityHandle {
 
-    /** Column visibility in classic display. */
-    private static final boolean[] CLASSIC_VIEW = {true, true, true, true, false, false, false, false, false};
+    /** Column visibility in "simple" display. */
+    private static final boolean[] SIMPLE_VIEW = {true, true, true, true, false, false, false, false, false};
 
     /** Menu element array containing column visibility status.*/
     private JCheckBoxMenuItem[] arColumnsMenuItem;
@@ -58,58 +60,61 @@ public final class ColumnVisibilityHandle {
         preferences = Preferences.userNodeForPackage(getClass());
     }
 
-
     /**
      * Add visualization options to the menu passed as parameter.
      * @param menuVer Visualization option main menu.
      */
     public void getMenu(final JMenu menuVer) {
 
-        JMenu mnColumnMenu = new JMenu("Columns");
-        mnColumnMenu.setMnemonic('m');
+        JMenu mnColumnMenu = new JMenu(Messages.getString("BROWSER_COLUMN_MENU_ENTRY")); //$NON-NLS-1$
+        mnColumnMenu.setMnemonic(Messages.getString("BROWSER_COLUMN_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         menuVer.add(mnColumnMenu);
 
 
-        JMenuItem miClassicView = new JMenuItem("Classic");
-        miClassicView.setMnemonic('C');
-        miClassicView.setSelected(true);
-        miClassicView.addActionListener(new java.awt.event.ActionListener() {
+        JMenuItem simpleView = new JMenuItem(Messages.getString("BROWSER_SIMPLE_VIEW")); //$NON-NLS-1$
+        simpleView.setMnemonic(Messages.getString("BROWSER_SIMPLE_VIEW_HK").charAt(0)); //$NON-NLS-1$
+        simpleView.setSelected(true);
+        simpleView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-                classicView();
+                simpleView();
             }
         });
 
 
-        JMenuItem miCompleteView = new JMenuItem("Complete");
-        miCompleteView.setMnemonic('o');
-        miCompleteView.setSelected(false);
-        miCompleteView.addActionListener(new java.awt.event.ActionListener() {
+        JMenuItem fullView = new JMenuItem(Messages.getString("BROWSER_FULL_VIEW")); //$NON-NLS-1$
+        fullView.setMnemonic(Messages.getString("BROWSER_FULL_VIEW_HK").charAt(0)); //$NON-NLS-1$
+        fullView.setSelected(false);
+        fullView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-                completeView();
+                fullView();
             }
         });
 
-        mnColumnMenu.add(miClassicView);
-        mnColumnMenu.add(miCompleteView);
+        mnColumnMenu.add(simpleView);
+        mnColumnMenu.add(fullView);
         mnColumnMenu.addSeparator();
-
 
         int len = ColumnsId.values().length;
         arColumnsMenuItem = new JCheckBoxMenuItem[len];
+        
+        /* 
+         * Creates menu entry for each column name. Sets the hot key for each menu entry
+         * avoiding the use of any previous used hot key.
+         */
         ArrayList<Character> alMnemonics  = new ArrayList<Character>();
-        alMnemonics.add('C');
-        alMnemonics.add('o');
+        alMnemonics.add(Messages.getString("BROWSER_SIMPLE_VIEW_HK").charAt(0)); //$NON-NLS-1$
+        alMnemonics.add(Messages.getString("BROWSER_FULL_VIEW_HK").charAt(0)); //$NON-NLS-1$
         for (int cont = 0; cont < len; cont++) {
             arColumnsMenuItem[cont] = new JCheckBoxMenuItem();
-            String name = ColumnsId.values()[cont].getName();
-            arColumnsMenuItem[cont].setText(name);
-            name = name.replaceAll(" ", "").replaceAll("/.", "");
-            int nameLength = name.length();
-            boolean visible = preferences.getBoolean(ColumnsId.values()[cont].name(), CLASSIC_VIEW[cont]);
+            String text = ColumnsId.values()[cont].getText();
+            arColumnsMenuItem[cont].setText(text);
+            text = text.replaceAll(" ", "").replaceAll("/.", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            int nameLength = text.length();
+            boolean visible = preferences.getBoolean(ColumnsId.values()[cont].name(), SIMPLE_VIEW[cont]);
             arColumnsMenuItem[cont].setSelected(visible);
             boolean found = false;
             for (int cha = 0; !found && cha < nameLength; cha++) {
-                char caracter = name.charAt(cha);
+                char caracter = text.charAt(cha);
                 if (!alMnemonics.contains(caracter)) {
                     found = true;
                     alMnemonics.add(caracter);
@@ -129,22 +134,21 @@ public final class ColumnVisibilityHandle {
 
 
     /**
-     * Modify visualization status using the "classic view".
-     * (columns which were shown on previous program versions).
+     * Modify visualization status using the "simple view".
      */
-    private void classicView() {
+    private void simpleView() {
 
-        for (int cont = 0; cont < CLASSIC_VIEW.length; cont++) {
-            arColumnsMenuItem[cont].setSelected(CLASSIC_VIEW[cont]);
+        for (int cont = 0; cont < SIMPLE_VIEW.length; cont++) {
+            arColumnsMenuItem[cont].setSelected(SIMPLE_VIEW[cont]);
         }
 
         updateColumnVisibility();
     }
 
     /**
-     * Modify visualization status showing all available columnS.
+     * Modify visualization status showing all available columns.
      */
-    private void completeView() {
+    private void fullView() {
         int len = arColumnsMenuItem.length;
         for (int cont = 0; cont < len; cont++) {
             arColumnsMenuItem[cont].setSelected(true);

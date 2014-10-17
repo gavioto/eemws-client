@@ -20,10 +20,12 @@
  */
 
 
-package es.ree.eemws.kit.gui.applications.listing;
+package es.ree.eemws.kit.gui.applications.browser;
+
+import es.ree.eemws.kit.common.Messages;
 
 /**
- * Enumeration containing column names on list.
+ * Enumeration with the message list table view columns.
  *
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 02/06/2014
@@ -32,48 +34,48 @@ package es.ree.eemws.kit.gui.applications.listing;
 public enum ColumnsId {
 
     /** Column Code. */
-    CODE("Code"),
+    CODE(Messages.getString("BROWSER_COLUMN_CODE")), //$NON-NLS-1$
 
     /** Column Id. */
-    ID("ID"),
+    ID(Messages.getString("BROWSER_COLUMN_ID")), //$NON-NLS-1$
 
     /** Column Version. */
-    VERSION("Version"),
+    VERSION(Messages.getString("BROWSER_COLUMN_VERSION")), //$NON-NLS-1$
 
     /** Column Status. */
-    STATUS("Status"),
+    STATUS(Messages.getString("BROWSER_COLUMN_STATUS")), //$NON-NLS-1$
 
     /** Column Start Time. */
-    APPLICATION_ST_TIME("Appl. Start Time"),
+    APPLICATION_ST_TIME(Messages.getString("BROWSER_COLUMN_APPLICATION_ST_TIME")), //$NON-NLS-1$
 
     /** Column End Time. */
-    APPLICATION_END_TIME("Appl. End Time"),
+    APPLICATION_END_TIME(Messages.getString("BROWSER_COLUMN_APPLICATION_END_TIME")), //$NON-NLS-1$
 
     /** Column Server Timestamp. */
-    SERVER_TIMESTAMP("Server Timestamp"),
+    SERVER_TIMESTAMP(Messages.getString("BROWSER_COLUMN_SERVER_TIMESTAMP")), //$NON-NLS-1$
 
     /** Column Type. */
-    TYPE("Type"),
+    TYPE(Messages.getString("BROWSER_COLUMN_MSG_TYPE")), //$NON-NLS-1$
 
     /** Column Owner. */
-    OWNER("Owner");
+    OWNER(Messages.getString("BROWSER_COLUMN_OWNER")); //$NON-NLS-1$
 
-    /** Column name (visible). */
-    private final String columnName;
+    /** Column text (visible text). */
+    private final String columnText;
 
     /**
-     * Constructor. Sets the visible name of column.
-     * @param name Visible name of column.
+     * Constructor. Sets the visible text column.
+     * @param text Visible text column.
      */
-    private ColumnsId(final String name) {
-        columnName = name;
+    private ColumnsId(final String text) {
+        columnText = text;
     }
 
     /**
-     * Return the visible name of column.
-     * @return Visible name of column.
+     * Return the visible text column.
+     * @return Visible text column.
      */
-    public String getName() {
-        return columnName;
+    public String getText() {
+        return columnText;
     }
 }

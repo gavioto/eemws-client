@@ -27,8 +27,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import es.ree.eemws.kit.common.Messages;
-import es.ree.eemws.client.exception.ClientException;
-import es.ree.eemws.client.putmessage.PutMessage;
+import es.ree.eemws.client.common.ClientException;
+import es.ree.eemws.client.put.PutMessage;
 import es.ree.eemws.core.utils.file.FileUtil;
 
 /**
