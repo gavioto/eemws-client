@@ -42,198 +42,201 @@ import es.ree.eemws.core.utils.security.SignatureVerificationException;
 import es.ree.eemws.core.utils.soap.SOAPUtil;
 import es.ree.eemws.core.utils.xml.XMLUtil;
 
-
 /**
  * This class handle the send of message to the web service.
- *
+ * 
  * @author Red Eléctrica de España S.A.U.
  * @version 1.0 13/06/2014
  */
 public final class SendHandler implements SOAPHandler<SOAPMessageContext> {
 
-    /** Tag that contain the message IEC 61968-100. */
-    private static final String TAG_MSG_IEC_100 = "Body"; //$NON-NLS-1$
+	/** Tag that contain the message IEC 61968-100. */
+	private static final String TAG_MSG_IEC_100 = "Body"; //$NON-NLS-1$
 
-    /** Tag name of the Verb of the message IEC 61968-100. */
-    private static final String TAG_MSG_VERB = "Verb"; //$NON-NLS-1$
+	/** Tag name of the Verb of the message IEC 61968-100. */
+	private static final String TAG_MSG_VERB = "Verb"; //$NON-NLS-1$
 
-    /** Tag name of the Noun of the message IEC 61968-100. */
-    private static final String TAG_MSG_NOUN = "Noun"; //$NON-NLS-1$
+	/** Tag name of the Noun of the message IEC 61968-100. */
+	private static final String TAG_MSG_NOUN = "Noun"; //$NON-NLS-1$
 
-    /** Tag name of the Payload of the message IEC 61968-100. */
-    private static final String TAG_MSG_PAYLOAD = "Payload"; //$NON-NLS-1$
+	/** Tag name of the Payload of the message IEC 61968-100. */
+	private static final String TAG_MSG_PAYLOAD = "Payload"; //$NON-NLS-1$
 
-    /** Sign request. */
-    private boolean signRequest;
+	/** Sign request. */
+	private boolean signRequest;
 
-    /** Verify response. */
-    private boolean verifyResponse;
+	/** Verify response. */
+	private boolean verifyResponse;
 
-    /** Certificate to sign request. */
-    private X509Certificate certificate = null;
+	/** Certificate to sign request. */
+	private X509Certificate certificate = null;
 
-    /** Private key of the certificate. */
-    private PrivateKey privateKey = null;
+	/** Private key of the certificate. */
+	private PrivateKey privateKey = null;
 
-    /** Data of the message. */
-    private MessageData messageData = null;
+	/** Data of the message. */
+	private MessageData messageData = null;
 
-    /** Log messages. */
-    private Logger logger = Logger.getLogger(getClass().getName());
+	/** Log messages. */
+	private Logger logger = Logger.getLogger(getClass().getName());
 
-    /**
-     * Constructor.
-     * @param bSignRequest Sign request.
-     * @param bVerifyResponse Verify response.
-     * @param inMessageData Data of the message.
-     */
-    public SendHandler(final boolean bSignRequest, final boolean bVerifyResponse, final MessageData inMessageData) {
+	/**
+	 * Constructor.
+	 * @param bSignRequest Sign request.
+	 * @param bVerifyResponse Verify response.
+	 * @param inMessageData Data of the message.
+	 */
+	public SendHandler(final boolean bSignRequest, final boolean bVerifyResponse, final MessageData inMessageData) {
 
-        this(bSignRequest, bVerifyResponse, inMessageData, null, null);
-    }
+		this(bSignRequest, bVerifyResponse, inMessageData, null, null);
+	}
 
-    /**
-     * Constructor.
-     * @param bSignRequest Sign request.
-     * @param bVerifyResponse Verify response.
-     * @param inMessageData Data of the message.
-     * @param inCertificate Certificate to sign request.
-     * @param inPrivateKey Private key of the certificate.
-     */
-    public SendHandler(final boolean bSignRequest,
-            final boolean bVerifyResponse,
-            final MessageData inMessageData,
-            final X509Certificate inCertificate,
-            final PrivateKey inPrivateKey) {
+	/**
+	 * Constructor.
+	 * @param bSignRequest Sign request.
+	 * @param bVerifyResponse Verify response.
+	 * @param inMessageData Data of the message.
+	 * @param inCertificate Certificate to sign request.
+	 * @param inPrivateKey Private key of the certificate.
+	 */
+	public SendHandler(final boolean bSignRequest, final boolean bVerifyResponse, final MessageData inMessageData, final X509Certificate inCertificate, final PrivateKey inPrivateKey) {
 
-        signRequest = bSignRequest;
-        verifyResponse = bVerifyResponse;
-        messageData = inMessageData;
-        certificate = inCertificate;
-        privateKey = inPrivateKey;
-    }
+		signRequest = bSignRequest;
+		verifyResponse = bVerifyResponse;
+		messageData = inMessageData;
+		certificate = inCertificate;
+		privateKey = inPrivateKey;
+	}
 
-    /**
-     * This method get the headers that the handler process.
-     * @return Empty set.
-     */
-    @Override
-    public Set<QName> getHeaders() {
+	/**
+	 * This method get the headers that the handler process.
+	 * @return Empty set.
+	 */
+	@Override
+	public Set<QName> getHeaders() {
 
-        return Collections.emptySet();
-    }
+		return Collections.emptySet();
+	}
 
-    /**
-     * This method close the communication.
-     * @param mc Message context.
-     */
-    @Override
-    public void close(final MessageContext mc) {
+	/**
+	 * This method close the communication.
+	 * @param mc Message context.
+	 */
+	@Override
+	public void close(final MessageContext mc) {
 
-        /* This method should not be implemented. */
-    }
+		/* This method should not be implemented. */
+	}
 
-    /**
-     * This method handle fault messages.
-     * @param messageContext Message context.
-     * @return <code>true</code>.
-     */
-    @Override
-    public boolean handleFault(final SOAPMessageContext messageContext) {
+	/**
+	 * This method handle fault messages.
+	 * @param messageContext Message context.
+	 * @return <code>true</code>.
+	 */
+	@Override
+	public boolean handleFault(final SOAPMessageContext messageContext) {
 
-        return true;
-    }
+		logSoapConversation(messageContext);
 
-    /**
-     * This method handle message of the client web service.
-     * @param messageContext Message context.
-     * @return <code>true</code> if the flow is to continue
-     *         <code>false</code> if the flow is to stop.
-     */
-    // FIXME This method should throws exception if the signature is not valid, otherwise a class that uses this method is "blind" to such issue.
-    @Override
-    public boolean handleMessage(final SOAPMessageContext messageContext) {
+		return true;
+	}
 
-        boolean returnValue = true;
-        boolean output = ((Boolean) messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY)).booleanValue();
-        
-        try {
+	/**
+	 * This method handle message of the client web service.
+	 * @param messageContext Message context.
+	 * @return <code>true</code> if the flow is to continue <code>false</code> if the flow is to stop.
+	 */
+	// FIXME This method should throws exception if the signature is not valid, otherwise a class that uses this method
+	// is "blind" to such issue.
+	@Override
+	public boolean handleMessage(final SOAPMessageContext messageContext) {
 
-             
-            if ((output && signRequest) || !output) {
+		boolean returnValue = true;
+		boolean output = ((Boolean) messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY)).booleanValue();
 
-            	SOAPMessage message = messageContext.getMessage();
-                StringBuilder soapBody = new StringBuilder(XMLUtil.getNodeValue(TAG_MSG_IEC_100, SOAPUtil.soapMessage2String(message)));
-                
-                if (output && signRequest) {
-                	
-                    if (certificate != null && privateKey != null) {
+		try {
 
-                        SignatureManager.signString(soapBody, privateKey, certificate);
+			if ((output && signRequest) || !output) {
 
-                    } else {
+				SOAPMessage message = messageContext.getMessage();
+				StringBuilder soapBody = new StringBuilder(XMLUtil.getNodeValue(TAG_MSG_IEC_100, SOAPUtil.soapMessage2String(message)));
 
-                        SignatureManager.signString(soapBody);
-                    }
+				if (output && signRequest) {
 
-                    SOAPUtil.setSOAPMessage(message, soapBody);
+					if (certificate != null && privateKey != null) {
 
-                } else if (!output) {
+						SignatureManager.signString(soapBody, privateKey, certificate);
 
-                    messageData.setDateReceived(Calendar.getInstance());
-                    messageData.setXmlMessage(soapBody);
+					} else {
 
-                    String verb = XMLUtil.getNodeValue(TAG_MSG_VERB, soapBody.toString());
-                    messageData.setVerb(verb);
+						SignatureManager.signString(soapBody);
+					}
 
-                    String noun = XMLUtil.getNodeValue(TAG_MSG_NOUN, soapBody.toString());
-                    messageData.setNoun(noun);
+					SOAPUtil.setSOAPMessage(message, soapBody);
 
-                    String payload = XMLUtil.getNodeValue(TAG_MSG_PAYLOAD, soapBody.toString());
-                    if (payload != null) {
+				} else if (!output) {
 
-                        messageData.setPayload(new StringBuilder(payload));
-                    }
+					messageData.setDateReceived(Calendar.getInstance());
+					messageData.setXmlMessage(soapBody);
 
-                    if (verifyResponse) {
-                 	
-                        X509Certificate x509Certificate = SignatureManager.verifyString(soapBody);
-                        messageData.setCertificate(x509Certificate);
-                    }
-                }
-            }
-            
-           
+					String verb = XMLUtil.getNodeValue(TAG_MSG_VERB, soapBody.toString());
+					messageData.setVerb(verb);
 
-        } catch (SignatureVerificationException e) {
-        	returnValue = false;
-        	
-        	logger.log(Level.SEVERE, e.getMessage() + " Details: " + e.getDetails().toString()); //$NON-NLS-1$
-        	
-        	
-        } catch (SOAPException | SignatureManagerException e ) {
+					String noun = XMLUtil.getNodeValue(TAG_MSG_NOUN, soapBody.toString());
+					messageData.setNoun(noun);
 
-            returnValue = false;
-            logger.log(Level.SEVERE, e.getMessage(), e);
-            
-        } finally {
-        	
-        	/* If debug is enabled, log the current conversation. */
-            if (logger.isLoggable(Level.FINE)) {
-            	if (output) {
-            		logger.fine(">>> out message >>>"); //$NON-NLS-1$
-            	} else {
-            		logger.fine("<<< input message <<<"); //$NON-NLS-1$
-            	}
-            	try {
-					logger.fine(XMLUtil.getNodeValue(TAG_MSG_IEC_100, SOAPUtil.soapMessage2String(messageContext.getMessage())));
-					logger.fine("---- end of message ---- "); //$NON-NLS-1$
-				} catch (SOAPException e) {
-					logger.log(Level.FINE, "Unable to convert soap message to xml...", e); //$NON-NLS-1$
+					String payload = XMLUtil.getNodeValue(TAG_MSG_PAYLOAD, soapBody.toString());
+					if (payload != null) {
+
+						messageData.setPayload(new StringBuilder(payload));
+					}
+
+					if (verifyResponse) {
+
+						X509Certificate x509Certificate = SignatureManager.verifyString(soapBody);
+						messageData.setCertificate(x509Certificate);
+					}
 				}
-            }
-        }
+			}
 
-        return returnValue;
-    }
+		} catch (SignatureVerificationException e) {
+			returnValue = false;
+			messageData.setCertificate(e.getDetails().getSignatureCertificate());
+			logger.log(Level.SEVERE, e.getMessage() + " Details: " + e.getDetails().toString()); //$NON-NLS-1$
+
+		} catch (SOAPException | SignatureManagerException e) {
+
+			returnValue = false;
+			logger.log(Level.SEVERE, e.getMessage(), e);
+
+		} finally {
+
+			logSoapConversation(messageContext);
+
+		}
+
+		return returnValue;
+	}
+
+	/**
+	 * Logs the current SOAP conversation. This method is only called in debug mode.
+	 * @param messageContext Current soap context.
+	 */
+	private void logSoapConversation(final SOAPMessageContext messageContext) {
+		if (logger.isLoggable(Level.FINE)) {
+			boolean output = ((Boolean) messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY)).booleanValue();
+
+			if (output) {
+				logger.fine(">>> out message >>>"); //$NON-NLS-1$
+			} else {
+				logger.fine("<<< input message <<<"); //$NON-NLS-1$
+			}
+			try {
+				logger.fine(XMLUtil.getNodeValue(TAG_MSG_IEC_100, SOAPUtil.soapMessage2String(messageContext.getMessage())));
+				logger.fine("---- end of message ---- "); //$NON-NLS-1$
+			} catch (SOAPException e) {
+				logger.log(Level.FINE, "Unable to convert soap message to xml...", e); //$NON-NLS-1$
+			}
+		}
+	}
 }
