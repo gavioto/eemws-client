@@ -53,6 +53,7 @@
 			<file src="../../bin/uninstaller.cmd" targetdir="$INSTALL_PATH/bin" os="windows"/>
 			<file src="../../bin/get.cmd" targetdir="$INSTALL_PATH/bin" os="windows"/>
 			<file src="../../bin/list.cmd" targetdir="$INSTALL_PATH/bin" os="windows"/>
+			<file src="../../bin/trustserver.cmd" targetdir="$INSTALL_PATH/bin" os="windows"/>
 			<file src="../../bin/put.cmd" targetdir="$INSTALL_PATH/bin" os="windows"/>
 			<file src="../../bin/query.cmd" targetdir="$INSTALL_PATH/bin" os="windows"/>
 
@@ -65,6 +66,7 @@
 			<file src="../../bin/uninstaller.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
 			<file src="../../bin/get.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
 			<file src="../../bin/list.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
+			<file src="../../bin/trustserver.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
 			<file src="../../bin/put.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
 			<file src="../../bin/query.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
 			
@@ -103,6 +105,7 @@
 			<executable targetfile="$INSTALL_PATH/bin/uninstaller.sh" stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/get.sh" stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/list.sh" stage="never" os="unix"/>
+			<executable targetfile="$INSTALL_PATH/bin/trustserver.sh" stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/put.sh" stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/query.sh" stage="never" os="unix"/>
 			
