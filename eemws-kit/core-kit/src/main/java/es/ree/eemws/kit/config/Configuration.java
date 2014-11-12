@@ -23,6 +23,8 @@ package es.ree.eemws.kit.config;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.core.utils.config.ConfigManager;
@@ -47,6 +49,9 @@ public class Configuration {
     /** Mapping key to {@link #keyStorePassword}. */
     private static final String KEY_STORE_PASSWORD_KEY = "javax.net.ssl.keyStorePassword"; //$NON-NLS-1$
 
+    /** Mapping key to {@link #keyStoreType}. */
+    private static final String KEY_STORE_TYPE_KEY = "javax.net.ssl.keyStoreType"; //$NON-NLS-1$
+
     /** Mapping key to {@link #proxyHost}. */
     private static final String PROXY_HOST_KEY = "https.proxyHost"; //$NON-NLS-1$
 
@@ -67,6 +72,9 @@ public class Configuration {
 
     /** Path to Access Key store. */
     private String keyStorePassword;
+    
+    /** Key store type. */
+    private String keyStoreType;
 
     /** Host name for proxy server. */
     private String proxyHost;
@@ -83,8 +91,11 @@ public class Configuration {
     /** Path to configuration file. */
     public static final String CONFIG_FILE = "config.properties"; //$NON-NLS-1$
 
+    /** Default PKCS store type. */
+	private static final String DEFAULT_KEY_STORE_TYPE = "PKCS12"; //$NON-NLS-1$
+
     /**
-     * Read system settings.
+     * Reads system settings.
      * @throws ConfigException If cannot load settings.
      */
     public void readConfiguration() throws ConfigException {
@@ -96,6 +107,7 @@ public class Configuration {
 
         keyStoreFile = cm.getValue(KEY_STORE_FILE_KEY);
         keyStorePassword = cm.getValue(KEY_STORE_PASSWORD_KEY);
+        keyStoreType= cm.getValue(KEY_STORE_TYPE_KEY);
         
         proxyHost = cm.getValue(PROXY_HOST_KEY);
         proxyPort = cm.getValue(PROXY_PORT_KEY);
@@ -103,7 +115,7 @@ public class Configuration {
         proxyPassword = cm.getValue(PROXY_PASSWORD_KEY);
         
         if (!hasMinimumConfiguration()) {
-            throw new ConfigException(Messages.getString("kit.gui.editor.35")); //$NON-NLS-1$
+            throw new ConfigException(Messages.getString("SETTINGS_MISS_CONFIGURED")); //$NON-NLS-1$
         }
 
     }
@@ -116,13 +128,21 @@ public class Configuration {
 
         String configPath = CONFIG_FILE;
         ConfigManager cm = new ConfigManager();
-        cm.readConfigFile(configPath);
+        
+        try {
+        	cm.readConfigFile(configPath);
+        } catch(ConfigException ex) {
+        	
+        	/* Ignore config exception if the configuration is not valid. */
+        	/* Ignore errors on load. */
+			Logger.getLogger(getClass().getName()).log(Level.FINE, "", ex); //$NON-NLS-1$
+        }
 
         try {
 
-            createBackup(configPath);
-
-            String fileContent = FileUtil.read(FileUtil.getFullPathOfResoruce(configPath));
+        	String fullConfigPath = FileUtil.getFullPathOfResoruce(configPath);
+        	
+            String fileContent = FileUtil.read(fullConfigPath);
             fileContent = writeValue(url, cm.getValue(WEBSERVICE_URL_KEY), WEBSERVICE_URL_KEY, fileContent);
 
             fileContent = writeValue(proxyHost, cm.getValue(PROXY_HOST_KEY), PROXY_HOST_KEY, fileContent);
@@ -132,8 +152,10 @@ public class Configuration {
 
             fileContent = writeValue(keyStoreFile, cm.getValue(KEY_STORE_FILE_KEY), KEY_STORE_FILE_KEY, fileContent);
             fileContent = writeValue(keyStorePassword, cm.getValue(KEY_STORE_PASSWORD_KEY), KEY_STORE_PASSWORD_KEY, fileContent);
+            fileContent = writeValue(keyStoreType, cm.getValue(KEY_STORE_TYPE_KEY), KEY_STORE_TYPE_KEY, fileContent);
 
-             FileUtil.write(FileUtil.getFullPathOfResoruce(configPath), fileContent);
+            FileUtil.createBackup(fullConfigPath);
+            FileUtil.write(fullConfigPath, fileContent);
 
         } catch (IOException ex) {
 
@@ -141,23 +163,10 @@ public class Configuration {
         }
     }
 
-    /**
-     * Create new backup from settings file.
-     * @param configPath Path to settings file.
-     * @throws IOException If cannot create backup file.
-     * @throws ConfigException If cannot create backup file.
-     */
-    protected final void createBackup(final String configPath) throws IOException, ConfigException {
-
-        String fullPath = FileUtil.getFullPathOfResoruce(configPath);
-        String contenido = FileUtil.read(fullPath);
-
-        FileUtil.createBackup(fullPath);
-        FileUtil.write(fullPath, contenido);
-    }
+     
 
     /**
-     * Update contents of settings file, modifying value mapped to key providing this new value
+     * Updates contents of settings file, modifying value mapped to key providing this new value
      * is different from existing value.
      * @param newValue New configuration value.
      * @param current Current configuration value.
@@ -244,7 +253,7 @@ public class Configuration {
 
   
     /**
-     * Return host name for the proxy server.
+     * Returns host name for the proxy server.
      * @return host name for the proxy server
      */
     public final String getProxyHost() {
@@ -253,7 +262,7 @@ public class Configuration {
     }
 
     /**
-     * Set host name for the proxy server.
+     * Sets host name for the proxy server.
      * @param host Host name
      */
     public final void setProxyHost(final String host) {
@@ -262,7 +271,7 @@ public class Configuration {
     }
 
     /**
-     * Return listening port for proxy server.
+     * Returns listen port for proxy server.
      * If port is not set or incorrect (not a number) returns <b>-1</b>.
      * @return Listening port for proxy server. -1 if is not set
      * or in a non-numeric value.
@@ -283,7 +292,7 @@ public class Configuration {
     }
 
     /**
-     * Set value for proxy listening port.
+     * Sets value for proxy listen port.
      * @param port Proxy port number.
      * @see #setProxyPort(int)
      */
@@ -293,7 +302,7 @@ public class Configuration {
     }
 
     /**
-     * Set value for proxy listening port.
+     * Sets value for proxy listen port.
      * @param port Proxy port number.
      * @see #setProxyPort(String)
      */
@@ -310,7 +319,7 @@ public class Configuration {
     }
 
     /**
-     * Retorna user name for proxy server.
+     * Returns user name for proxy server.
      * @return User name for proxy server.
      */
     public final String getProxyUser() {
@@ -319,7 +328,7 @@ public class Configuration {
     }
 
     /**
-     * Set user name for proxy server.
+     * Sets user name for proxy server.
      * @param user user name for proxy server.
      */
     public final void setProxyUser(final String user) {
@@ -328,7 +337,7 @@ public class Configuration {
     }
 
     /**
-     * Return password for proxy server.
+     * Returns password for proxy server.
      * @return Password for proxy server.
      */
     public final String getProxyPassword() {
@@ -337,7 +346,7 @@ public class Configuration {
     }
 
     /**
-     * Set password for proxy server.
+     * Sets password for proxy server.
      * @param passwd Password for proxy server.
      */
     public final void setProxyPassword(final String passwd) {
@@ -346,9 +355,8 @@ public class Configuration {
     }
 
     /**
-     * Return password for key store. If password is not crypted correctly will
-     * return an empty string.
-     * @return Access key. An empty string if value is empty or not crypted correctly.
+     * Returns password for key store. 
+     * @return Key store password.
      */
     public final String getKeyStorePassword() {
 
@@ -356,12 +364,33 @@ public class Configuration {
     }
 
     /**
-     * Set password for key store.
+     * Sets password for key store.
      * @param passwd Password for key store.
      */
     public final void setKeyStorePassword(final String passwd) {
 
         keyStorePassword = passwd;
+    }
+    
+    /**
+     * Returns the key store type (JKS, PKCS12)
+     * @return Key store type (JKS, PKCS12). If <code>null<code> PKCS12 will be returned.
+     */
+    public final String getKeyStoreType() {
+    	String retValue = keyStoreType;
+    	if (retValue == null) {
+    		retValue = DEFAULT_KEY_STORE_TYPE;
+    	}
+        return retValue;
+    }
+
+    /**
+     * Sets the key store type.
+     * @param type The key store type.
+     */
+    public final void setKeyStoreType(final String type) {
+
+    	keyStoreType = type;
     }
 
     /**
@@ -375,7 +404,7 @@ public class Configuration {
     }
 
     /**
-     * Set Absolute path to keystore file.
+     * Sets Absolute path to keystore file.
      * @param keyFile Absolute path to keystore file.
      */
     public final void setKeyStoreFile(final String keyFile) {
@@ -384,8 +413,8 @@ public class Configuration {
     }
 
     /**
-     * Return access URL.
-     * @return Access URL. <code>null</code>
+     * Returns web service URL.
+     * @return Web service URL. <code>null</code>
      * If is not correctly entered or is not a valid URL.
      */
     public final URL getUrlEndPoint() {
