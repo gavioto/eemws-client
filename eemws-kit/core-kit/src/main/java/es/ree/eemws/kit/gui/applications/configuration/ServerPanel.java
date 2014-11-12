@@ -21,8 +21,7 @@
 package es.ree.eemws.kit.gui.applications.configuration;
 
 import java.net.URL;
-
-import javax.swing.JFrame;
+ 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -40,13 +39,13 @@ import es.ree.eemws.kit.config.Configuration;
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 09/05/2014
  */
-public final class ServerPanel extends JFrame {
+public final class ServerPanel extends JPanel {
 
     /** Class ID. */
     private static final long serialVersionUID = 0x4a75828270df61c0L;
 
     /** Panel name (on tab panel ). */
-    private static final String PANEL_NAME = Messages.getString("kit.gui.configuration.61");
+    private static final String PANEL_NAME = Messages.getString("SETTINGS_SERVER_TAB"); //$NON-NLS-1$
 
     /** Text field To display a non-preset URL. */
     private JTextField anotherURL;
@@ -64,7 +63,7 @@ public final class ServerPanel extends JFrame {
 
         if (serviceURL == null) {
 
-            anotherURL.setText("");
+            anotherURL.setText(""); //$NON-NLS-1$
 
         } else {
 
@@ -76,33 +75,32 @@ public final class ServerPanel extends JFrame {
     }
 
     /**
-     * Obtains a panel containing Server connection settings.
-     * @return Panel containing server connection settings.
+     * Constructor.
      */
-    public JPanel getPanel() {
+    public ServerPanel() {
 
         JPanel panelSrv = new JPanel();
         panelSrv.setLayout(null);
         panelSrv.setBounds(30, 20, 450, 180);
-        panelSrv.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED, java.awt.Color.white, new java.awt.Color(142, 142, 142)), " " + Messages.getString("kit.gui.configuration.62") + " "));
+        panelSrv.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED, java.awt.Color.white, new java.awt.Color(142, 142, 142)), " "  //$NON-NLS-1$
+        		+ Messages.getString("SETTINGS_SERVER_DATA") + " ")); //$NON-NLS-1$ //$NON-NLS-2$
 
         anotherURL = new JTextField();
-        anotherURL.setText("");
+        anotherURL.setText(""); //$NON-NLS-1$
         anotherURL.setBounds(100, 73, 320, 20);
         panelSrv.add(anotherURL);
 
-        enterURLLbl = new JLabel(Messages.getString("kit.gui.configuration.63") + " ");
+        enterURLLbl = new JLabel(Messages.getString("SETTINGS_SERVER_URL")); //$NON-NLS-1$
         enterURLLbl.setLabelFor(anotherURL);
-        enterURLLbl.setDisplayedMnemonic('E');
+        enterURLLbl.setDisplayedMnemonic('E'); // XXX
         enterURLLbl.setBounds(25, 55, 105, 55);
         panelSrv.add(enterURLLbl, null);
 
-        JPanel server = new JPanel();
-        server.setLayout(null);
-        server.setOpaque(true);
-        server.add(panelSrv, null);
-
-        return server;
+        
+        setLayout(null);
+        setOpaque(true);
+        add(panelSrv, null);
+ 
     }
 
     /**
@@ -119,31 +117,23 @@ public final class ServerPanel extends JFrame {
      * Validate panel.
      * @throws ConfigException If the URL (on text box) is incorrect.
      */
-    public void validar() throws ConfigException {
+    public void validateConfig() throws ConfigException {
 
         String val = anotherURL.getText().trim();
         String errMsg = null;
         if (val.length() == 0) {
 
-            errMsg = Messages.getString("kit.gui.configuration.64");
+            errMsg = Messages.getString("SETTINGS_SERVER_NO_URL"); //$NON-NLS-1$
 
-        } else if (!val.startsWith("https://")) {
+        } else if (!val.startsWith("https://")) { //$NON-NLS-1$
 
-            errMsg = Messages.getString("kit.gui.configuration.65");
+            errMsg = Messages.getString("SETTINGS_SERVER_NO_HTTPS"); //$NON-NLS-1$
 
-        } else {
-
-            int pos = val.indexOf("//") + 2;
-            pos = val.indexOf('/', pos);
-            if (pos == -1) {
-
-                errMsg = Messages.getString("kit.gui.configuration.66");
-            }
-        }
+        } 
 
         if (errMsg != null) {
 
-            throw new ConfigException(errMsg);
+            throw new ConfigException(getPanelName() + " " + Messages.getString("SETTINGS_PANEL_SAYS") + " " + errMsg);  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
         }
     }
 

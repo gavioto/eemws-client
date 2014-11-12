@@ -31,7 +31,6 @@ import es.ree.eemws.core.utils.config.ConfigManager;
 import es.ree.eemws.core.utils.file.FileUtil;
 import es.ree.eemws.kit.common.Messages;
 
-
 /**
  * Magic folder configuration settings.
  * 
@@ -42,13 +41,13 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
 
 	/** Settings file for Folder manager. */
 	private static final String FOLDER_CONFIG_FILE = "magic-folder.properties"; //$NON-NLS-1$
-	
-	 /** Name of the service to run / create . */
-    private static final String SERVICE_NAME = "magic-folder"; //$NON-NLS-1$
+
+	/** Name of the service to run / create . */
+	private static final String SERVICE_NAME = "magic-folder"; //$NON-NLS-1$
 
 	/** RMI url protocol prefix. */
 	private static final String RMI_URL_PROTOCOL = "rmi://"; //$NON-NLS-1$
-	
+
 	/**
 	 * Mapping key for the value of server ID.
 	 * @see {@link #thisServiceID}
@@ -93,7 +92,7 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
 
 	/** Max. length for {@link #instanceID}. */
 	private static final int INSTANCE_ID_MAX_LENGTH = 20;
-	
+
 	/**
 	 * Min delay time for loops (input / output).
 	 * @see {@link #sleepTimeInput}, {@link #sleepTimeOutput}.
@@ -108,7 +107,7 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
 
 	/** Default value for {@link #numOfDaysKept}. */
 	private static final String DEFAULT_MAX_FILE_AGE_IN_DAYS = "7"; //$NON-NLS-1$
-	
+
 	/** ID string for this service into farm. */
 	private String thisServiceID;
 
@@ -181,9 +180,9 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
 		}
 
 		for (String memberRmiUrl : membersRmiUrls) {
-			
-			String hostPort = memberRmiUrl.substring(RMI_URL_PROTOCOL.length(), memberRmiUrl.indexOf(SERVICE_NAME) - 1); 
-			
+
+			String hostPort = memberRmiUrl.substring(RMI_URL_PROTOCOL.length(), memberRmiUrl.indexOf(SERVICE_NAME) - 1);
+
 			int colonPosition = hostPort.indexOf(":"); //$NON-NLS-1$
 			if (colonPosition == -1) {
 				msgErr.append("\n").append(Messages.getString("MF_MF_INVALID_MEMBER_URL", hostPort)); //$NON-NLS-1$//$NON-NLS-2$
@@ -198,28 +197,34 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
 			}
 		}
 
-		try {
-			long slep = Long.parseLong(sleepTimeInput);
-			if (slep < MIN_SLEEP_TIME) {
-				msgErr.append("\n").append(Messages.getString("MF_VALUE_TOO_SMALL", INPUT_DELAYTIME_KEY, sleepTimeInput, MIN_SLEEP_TIME)); //$NON-NLS-1$//$NON-NLS-2$
+		if (sleepTimeInput != null) {
+			try {
+				long slep = Long.parseLong(sleepTimeInput);
+				if (slep < MIN_SLEEP_TIME) {
+					msgErr.append("\n").append(Messages.getString("MF_VALUE_TOO_SMALL", INPUT_DELAYTIME_KEY, sleepTimeInput, MIN_SLEEP_TIME)); //$NON-NLS-1$//$NON-NLS-2$
+				}
+			} catch (NumberFormatException ex) {
+				msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", INPUT_DELAYTIME_KEY, sleepTimeInput)); //$NON-NLS-1$//$NON-NLS-2$
 			}
-		} catch (NumberFormatException ex) {
-			msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", INPUT_DELAYTIME_KEY, sleepTimeInput)); //$NON-NLS-1$//$NON-NLS-2$
-		}
-		
-		try {
-			long slep = Long.parseLong(sleepTimeOutput);
-			if (slep < MIN_SLEEP_TIME) {
-				msgErr.append("\n").append(Messages.getString("MF_VALUE_TOO_SMALL", OUTPUT_DELAYTIME_KEY, sleepTimeOutput, MIN_SLEEP_TIME)); //$NON-NLS-1$//$NON-NLS-2$
-			}
-		} catch (NumberFormatException ex) {
-			msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", OUTPUT_DELAYTIME_KEY, sleepTimeOutput)); //$NON-NLS-1$//$NON-NLS-2$
 		}
 
-		try {
-			Integer.parseInt(numOfDaysKept);
-		} catch (NumberFormatException ex) {
-			msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", MAX_FILE_AGE_IN_DAYS, numOfDaysKept)); //$NON-NLS-1$//$NON-NLS-2$
+		if (sleepTimeOutput != null) {
+			try {
+				long slep = Long.parseLong(sleepTimeOutput);
+				if (slep < MIN_SLEEP_TIME) {
+					msgErr.append("\n").append(Messages.getString("MF_VALUE_TOO_SMALL", OUTPUT_DELAYTIME_KEY, sleepTimeOutput, MIN_SLEEP_TIME)); //$NON-NLS-1$//$NON-NLS-2$
+				}
+			} catch (NumberFormatException ex) {
+				msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", OUTPUT_DELAYTIME_KEY, sleepTimeOutput)); //$NON-NLS-1$//$NON-NLS-2$
+			}
+		}
+
+		if (numOfDaysKept != null) {
+			try {
+				Integer.parseInt(numOfDaysKept);
+			} catch (NumberFormatException ex) {
+				msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", MAX_FILE_AGE_IN_DAYS, numOfDaysKept)); //$NON-NLS-1$//$NON-NLS-2$
+			}
 		}
 
 		if (thisServiceID != null) {
@@ -494,15 +499,17 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
 		cm.readConfigFile(FOLDER_CONFIG_FILE);
 
 		try {
-			createBackup(FOLDER_CONFIG_FILE);
-			String fileContent = FileUtil.read(FileUtil.getFullPathOfResoruce(FOLDER_CONFIG_FILE));
+			String fullPathConfig = FileUtil.getFullPathOfResoruce(FOLDER_CONFIG_FILE);
+
+			String fileContent = FileUtil.read(fullPathConfig);
 			fileContent = writeValue(inputFolder, cm.getValue(INPUT_FOLDER_KEY), INPUT_FOLDER_KEY, fileContent);
 			fileContent = writeValue(outputFolder, cm.getValue(OUTPUT_FOLDER_KEY), OUTPUT_FOLDER_KEY, fileContent);
 			fileContent = writeValue(backupFolder, cm.getValue(BACKUP_FOLDER_KEY), BACKUP_FOLDER_KEY, fileContent);
 			fileContent = writeValue(processedFolder, cm.getValue(PROCESSED_FOLDER_KEY), PROCESSED_FOLDER_KEY, fileContent);
 			fileContent = writeValue(ackFolder, cm.getValue(RESPONSE_FOLDER_KEY), RESPONSE_FOLDER_KEY, fileContent);
 
-			FileUtil.write(FileUtil.getFullPathOfResoruce(FOLDER_CONFIG_FILE), fileContent);
+			FileUtil.createBackup(fullPathConfig);
+			FileUtil.write(fullPathConfig, fileContent);
 		} catch (IOException ex) {
 			throw new ConfigException(ex);
 		}

@@ -27,7 +27,6 @@ import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -40,346 +39,335 @@ import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.folders.Configuration;
 
-
 /**
  * Panel containing Magic Folder settings (input, output, backup).
- *
+ * 
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 09/05/2014
  */
-public final class FolderPanel extends JFrame {
+public final class FolderPanel extends JPanel {
 
-    /** Class ID. */
-    private static final long serialVersionUID = -5459673586632485512L;
+	/** Class ID. */
+	private static final long serialVersionUID = -3411637974163842418L;
+	 
+	/** Panel Name (in tab bar). */
+	private static final String PANEL_NAME = Messages.getString("SETTINGS_FOLDER_TAB"); //$NON-NLS-1$
 
-    /** Panel Name (in tab bar). */
-    private static final String PANEL_NAME = Messages.getString("kit.gui.configuration.22");
+	/** Text box where absolute path to input folder is entered. */
+	private JTextField txtInputFolderPath = null;
 
-    /** Text box where absolute path to input folder is entered. */
-    private JTextField txtInputFolderPath = null;
+	/** Text box where absolute path to response folder is entered. */
+	private JTextField txtResponseFolderPath = null;
 
-    /** Text box where absolute path to response folder is entered. */
-    private JTextField txtResponseFolderPath = null;
+	/** Text box where absolute path to processing folder is entered. */
+	private JTextField txtProcessedFolderPath = null;
 
-    /** Text box where absolute path to processing folder is entered. */
-    private JTextField txtProcessedFolderPath = null;
+	/** Text box where absolute path to output folder is entered. */
+	private JTextField txtOutputFolderPath = null;
 
-    /** Text box where absolute path to output folder is entered. */
-    private JTextField txtOutputFolderPath = null;
+	/** Text box where absolute path to backup folder is entered. */
+	private JTextField txtBackupFolderPath = null;
 
-    /** Text box where absolute path to backup folder is entered. */
-    private JTextField txtBackupFolderPath = null;
+	/**
+	 * Obtain panel containing folder settings.
+	 * @return panel containing folder settings.
+	 */
+	public FolderPanel() {
+		setLayout(null);
+		setOpaque(true);
+		add(getInputPanel(), null);
+		add(getOutputPanel(), null);
+		add(getBackupPanel(), null);
+	}
 
-    /**
-     * Obtain panel containing folder settings.
-     * @return panel containing folder settings.
-     */
-    public JPanel getPanel() {
+	/**
+	 * Obtain sub-panel containing settings for backup folder.
+	 * @return Sub-panel containing settings for backup folder.
+	 */
+	private JPanel getBackupPanel() {
 
-        JPanel pnlFolders = new JPanel();
-        pnlFolders.setLayout(null);
-        pnlFolders.setOpaque(true);
-        pnlFolders.add(getInputPanel(), null);
-        pnlFolders.add(getOutputPanel(), null);
-        pnlFolders.add(getBackupPanel(), null);
+		txtBackupFolderPath = new JTextField(""); //$NON-NLS-1$
+		txtBackupFolderPath.setBounds(new Rectangle(90, 20, 320, 20));
 
-        return pnlFolders;
-    }
+		JLabel backupLbl = new JLabel(Messages.getString("SETTINGS_FOLDER_BACKUP_FOLDER")); //$NON-NLS-1$
+		backupLbl.setDisplayedMnemonic(Messages.getString("SETTINGS_FOLDER_BACKUP_FOLDER_HK").charAt(0)); //$NON-NLS-1$
+		backupLbl.setLabelFor(txtBackupFolderPath);
+		backupLbl.setHorizontalAlignment(SwingConstants.RIGHT);
+		backupLbl.setBounds(new Rectangle(19, 20, 70, 20));
 
-    /**
-     * Obtain sub-panel containing settings for backup folder.
-     * @return Sub-panel containing settings for backup folder.
-     */
-    private JPanel getBackupPanel() {
+		JButton backupBtn = new JButton("..."); //$NON-NLS-1$
+		backupBtn.setBounds(new Rectangle(420, 20, 30, 20));
+		backupBtn.setToolTipText(Messages.getString("SETTINGS_FOLDER_BROWSE")); //$NON-NLS-1$
+		backupBtn.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				examine(txtBackupFolderPath);
+			}
+		});
 
-        txtBackupFolderPath = new JTextField("");
-        txtBackupFolderPath.setBounds(new Rectangle(90, 20, 320, 20));
+		JPanel backupPanel = new JPanel();
+		backupPanel.setLayout(null);
+		backupPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED, Color.white, new Color(142, 142, 142)), " " + //$NON-NLS-1$
+				Messages.getString("SETTINGS_FOLDER_BACKUP_BORDER") + " ")); //$NON-NLS-1$//$NON-NLS-2$
+		backupPanel.setDebugGraphicsOptions(0);
+		backupPanel.setBounds(new Rectangle(19, 175, 469, 55));
+		backupPanel.add(txtBackupFolderPath, null);
+		backupPanel.add(backupLbl, null);
+		backupPanel.add(backupBtn, null);
 
-        JLabel backupLbl = new JLabel(Messages.getString("kit.gui.configuration.13"));
-        backupLbl.setDisplayedMnemonic('B');
-        backupLbl.setLabelFor(txtInputFolderPath);
-        backupLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-        backupLbl.setBounds(new Rectangle(19, 20, 70, 20));
+		return backupPanel;
+	}
 
-        JButton backupBtn = new JButton("...");
-        backupBtn.setBounds(new Rectangle(420, 20, 30, 20));
-        backupBtn.setToolTipText(Messages.getString("kit.gui.configuration.14"));
-        backupBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                examine(txtBackupFolderPath);
-            }
-        });
+	/**
+	 * Obtain sub-panel containing settings for output folder.
+	 * @return Sub-panel containing settings for output folder.
+	 */
+	private JPanel getOutputPanel() {
 
-        JPanel backupPanel = new JPanel();
-        backupPanel.setLayout(null);
-        backupPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED, Color.white, new Color(142, 142, 142)), " Backup "));
-        backupPanel.setDebugGraphicsOptions(0);
-        backupPanel.setBounds(new Rectangle(19, 175, 469, 55));
-        backupPanel.add(txtBackupFolderPath, null);
-        backupPanel.add(backupLbl, null);
-        backupPanel.add(backupBtn, null);
+		txtOutputFolderPath = new JTextField(""); //$NON-NLS-1$
+		txtOutputFolderPath.setBounds(new Rectangle(90, 20, 320, 20));
 
-        return backupPanel;
-    }
+		JLabel lblOutput = new JLabel(Messages.getString("SETTINGS_FOLDER_OUTPUT_FOLDER")); //$NON-NLS-1$
+		lblOutput.setDisplayedMnemonic(Messages.getString("SETTINGS_FOLDER_OUTPUT_FOLDER_HK").charAt(0)); //$NON-NLS-1$
+		lblOutput.setLabelFor(txtOutputFolderPath);
+		lblOutput.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblOutput.setBounds(new Rectangle(19, 20, 70, 20));
 
-    /**
-     * Obtain sub-panel containing settings for output folder.
-     * @return Sub-panel containing settings for output folder.
-     */
-    private JPanel getOutputPanel() {
+		JButton btnOutput = new JButton("..."); //$NON-NLS-1$
+		btnOutput.setBounds(new Rectangle(420, 20, 30, 20));
+		btnOutput.setToolTipText(Messages.getString("SETTINGS_FOLDER_BROWSE")); //$NON-NLS-1$
+		btnOutput.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				examine(txtOutputFolderPath);
+			}
+		});
 
-        txtOutputFolderPath = new JTextField("");
-        txtOutputFolderPath.setBounds(new Rectangle(90, 20, 320, 20));
+		JPanel pnlOutput = new JPanel();
+		pnlOutput.setLayout(null);
+		pnlOutput.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED, Color.white, new Color(142, 142, 142)), " " //$NON-NLS-1$
+				+ Messages.getString("SETTINGS_FOLDER_OUPUT_BORDER") + " ")); //$NON-NLS-1$//$NON-NLS-2$
+		pnlOutput.setDebugGraphicsOptions(0);
+		pnlOutput.setBounds(new Rectangle(19, 116, 469, 55));
+		pnlOutput.add(txtOutputFolderPath, null);
+		pnlOutput.add(lblOutput, null);
+		pnlOutput.add(btnOutput, null);
 
-        JLabel lblOutput = new JLabel(Messages.getString("kit.gui.configuration.15"));
-        lblOutput.setDisplayedMnemonic('S');
-        lblOutput.setLabelFor(txtInputFolderPath);
-        lblOutput.setHorizontalAlignment(SwingConstants.RIGHT);
-        lblOutput.setBounds(new Rectangle(19, 20, 70, 20));
+		return pnlOutput;
+	}
 
-        JButton btnOutput = new JButton("...");
-        btnOutput.setBounds(new Rectangle(420, 20, 30, 20));
-        btnOutput.setToolTipText(Messages.getString("kit.gui.configuration.14"));
-        btnOutput.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                examine(txtOutputFolderPath);
-            }
-        });
+	/**
+	 * Obtain sub-panel containing settings for output folder.
+	 * @return Sub-panel containing settings for output folder.
+	 */
+	public JPanel getInputPanel() {
 
-        JPanel pnlOutput = new JPanel();
-        pnlOutput.setLayout(null);
-        pnlOutput.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED, Color.white, new Color(142, 142, 142)), " " + Messages.getString("kit.gui.configuration.16") + " "));
-        pnlOutput.setDebugGraphicsOptions(0);
-        pnlOutput.setBounds(new Rectangle(19, 116, 469, 55));
-        pnlOutput.add(txtOutputFolderPath, null);
-        pnlOutput.add(lblOutput, null);
-        pnlOutput.add(btnOutput, null);
+		txtInputFolderPath = new JTextField(""); //$NON-NLS-1$
+		txtInputFolderPath.setBounds(new Rectangle(90, 20, 320, 20));
 
-        return pnlOutput;
-    }
+		JLabel lblInput = new JLabel(Messages.getString("SETTINGS_FOLDER_INPUT_FOLDER")); //$NON-NLS-1$
+		lblInput.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblInput.setDisplayedMnemonic(Messages.getString("SETTINGS_FOLDER_INPUT_FOLDER_HK").charAt(0)); //$NON-NLS-1$
+		lblInput.setLabelFor(txtInputFolderPath);
+		lblInput.setBounds(new Rectangle(19, 20, 70, 20));
 
-    /**
-     * Obtain sub-panel containing settings for output folder.
-     * @return Sub-panel containing settings for output folder.
-     */
-    public JPanel getInputPanel() {
+		JButton btnInput = new JButton("..."); //$NON-NLS-1$
+		btnInput.setBounds(new Rectangle(420, 20, 30, 20));
+		btnInput.setToolTipText(Messages.getString("SETTINGS_FOLDER_BROWSE")); //$NON-NLS-1$
+		btnInput.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				examine(txtInputFolderPath);
+			}
+		});
 
-        txtInputFolderPath = new JTextField("");
-        txtInputFolderPath.setBounds(new Rectangle(90, 20, 320, 20));
+		txtResponseFolderPath = new JTextField(""); //$NON-NLS-1$
+		txtResponseFolderPath.setBounds(new Rectangle(90, 45, 320, 20));
 
-        JLabel lblInput = new JLabel(Messages.getString("kit.gui.configuration.17"));
-        lblInput.setHorizontalAlignment(SwingConstants.RIGHT);
-        lblInput.setDisplayedMnemonic('E');
-        lblInput.setLabelFor(txtInputFolderPath);
-        lblInput.setBounds(new Rectangle(19, 20, 70, 20));
+		JLabel lblResponse = new JLabel(Messages.getString("SETTINGS_FOLDER_ACKNOWLEDGEMENT_FOLDER")); //$NON-NLS-1$
+		lblResponse.setDisplayedMnemonic(Messages.getString("SETTINGS_FOLDER_ACKNOWLEDGEMENT_FOLDER_HK").charAt(0)); //$NON-NLS-1$
+		lblResponse.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblResponse.setLabelFor(txtResponseFolderPath);
+		lblResponse.setBounds(new Rectangle(19, 45, 70, 20));
 
-        JButton btnInput = new JButton("...");
-        btnInput.setBounds(new Rectangle(420, 20, 30, 20));
-        btnInput.setToolTipText(Messages.getString("kit.gui.configuration.14"));
-        btnInput.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                examine(txtInputFolderPath);
-            }
-        });
+		JButton btnResponse = new JButton("..."); //$NON-NLS-1$
+		btnResponse.setBounds(new Rectangle(420, 45, 30, 20));
+		btnResponse.setToolTipText(Messages.getString("SETTINGS_FOLDER_BROWSE")); //$NON-NLS-1$
+		btnResponse.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				examine(txtResponseFolderPath);
+			}
+		});
 
-        txtResponseFolderPath = new JTextField("");
-        txtResponseFolderPath.setBounds(new Rectangle(90, 45, 320, 20));
+		txtProcessedFolderPath = new JTextField(""); //$NON-NLS-1$
+		txtProcessedFolderPath.setBounds(new Rectangle(90, 70, 320, 20));
 
-        JLabel lblResponse = new JLabel(Messages.getString("kit.gui.configuration.18"));
-        lblResponse.setDisplayedMnemonic('R');
-        lblResponse.setHorizontalAlignment(SwingConstants.RIGHT);
-        lblResponse.setLabelFor(txtResponseFolderPath);
-        lblResponse.setBounds(new Rectangle(19, 45, 70, 20));
+		JLabel lblProcessed = new JLabel(Messages.getString("SETTINGS_FOLDER_PROCESSED")); //$NON-NLS-1$
+		lblProcessed.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblProcessed.setDisplayedMnemonic(Messages.getString("SETTINGS_FOLDER_PROCESSED_HK").charAt(0)); //$NON-NLS-1$
+		lblProcessed.setLabelFor(txtProcessedFolderPath);
+		lblProcessed.setBounds(new Rectangle(19, 70, 70, 20));
 
-        JButton btnResponse = new JButton("...");
-        btnResponse.setBounds(new Rectangle(420, 45, 30, 20));
-        btnResponse.setToolTipText(Messages.getString("kit.gui.configuration.14"));
-        btnResponse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                examine(txtResponseFolderPath);
-            }
-        });
+		JButton btnProcesed = new JButton("..."); //$NON-NLS-1$
+		btnProcesed.setBounds(new Rectangle(420, 70, 30, 20));
+		btnProcesed.setToolTipText(Messages.getString("SETTINGS_FOLDER_BROWSE")); //$NON-NLS-1$
+		btnProcesed.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				examine(txtProcessedFolderPath);
+			}
+		});
 
-        txtProcessedFolderPath = new JTextField("");
-        txtProcessedFolderPath.setBounds(new Rectangle(90, 70, 320, 20));
+		JPanel pnlInput = new JPanel();
+		pnlInput.setLayout(null);
+		pnlInput.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED, Color.white, new Color(142, 142, 142)), " " //$NON-NLS-1$
+				+ Messages.getString("SETTINGS_FOLDER_INPUT_BORDER") + " ")); //$NON-NLS-1$ //$NON-NLS-2$
 
-        JLabel lblProcessed = new JLabel(Messages.getString("kit.gui.configuration.19"));
-        lblProcessed.setHorizontalAlignment(SwingConstants.RIGHT);
-        lblProcessed.setDisplayedMnemonic('P');
-        lblProcessed.setLabelFor(txtProcessedFolderPath);
-        lblProcessed.setBounds(new Rectangle(19, 70, 70, 20));
+		pnlInput.setBounds(new Rectangle(19, 12, 469, 100));
+		pnlInput.add(txtInputFolderPath, null);
+		pnlInput.add(lblInput, null);
+		pnlInput.add(btnInput, null);
+		pnlInput.add(txtResponseFolderPath, null);
+		pnlInput.add(lblResponse, null);
+		pnlInput.add(btnResponse, null);
+		pnlInput.add(txtProcessedFolderPath, null);
+		pnlInput.add(lblProcessed, null);
+		pnlInput.add(btnProcesed, null);
 
-        JButton btnProcesed = new JButton("...");
-        btnProcesed.setBounds(new Rectangle(420, 70, 30, 20));
-        btnProcesed.setToolTipText(Messages.getString("kit.gui.configuration.14"));
-        btnProcesed.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                examine(txtProcessedFolderPath);
-            }
-        });
+		return pnlInput;
+	}
 
-        JPanel pnlInput = new JPanel();
-        pnlInput.setLayout(null);
-        pnlInput.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED, Color.white, new Color(142, 142, 142)), " Input "));
-        pnlInput.setDebugGraphicsOptions(0);
-        pnlInput.setBounds(new Rectangle(19, 12, 469, 100));
-        pnlInput.add(txtInputFolderPath, null);
-        pnlInput.add(lblInput, null);
-        pnlInput.add(btnInput, null);
-        pnlInput.add(txtResponseFolderPath, null);
-        pnlInput.add(lblResponse, null);
-        pnlInput.add(btnResponse, null);
-        pnlInput.add(txtProcessedFolderPath, null);
-        pnlInput.add(lblProcessed, null);
-        pnlInput.add(btnProcesed, null);
+	/**
+	 * Open file chooser to select path to certificate file.
+	 * @param textField Text box to which file path will be written.
+	 */
+	private void examine(final JTextField textField) {
 
-        return pnlInput;
-    }
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		fileChooser.setSelectedFile(new File(textField.getText()));
 
-    /**
-     * Open file chooser to select path to certificate file.
-     * @param textField Text box to which file path will be written.
-     */
-    private void examine(final JTextField textField) {
+		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fileChooser.setSelectedFile(new File(textField.getText()));
+			File file = fileChooser.getSelectedFile();
+			if (file.isDirectory()) {
 
-        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+				textField.setText(changeFileNameSeparator(file.getAbsolutePath()));
 
-            File file = fileChooser.getSelectedFile();
-            if (file.isDirectory()) {
+			} else {
 
-            	textField.setText(changeFileNameSeparator(file.getAbsolutePath()));
+				JOptionPane.showMessageDialog(this, Messages.getString("MSG_ERROR_TITLE"),  //$NON-NLS-1$
+						Messages.getString("SETTINGS_FOLDER_FOLDER_DOESNT_EXIST"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+			}
+		}
+	}
 
-            } else {
+	/**
+	 * Changes Windows file path (a\b\c) to Unix file path (a/b/c).
+	 * @param filename Absolute file name to convert.
+	 * @return New file name changing '\' character into '/'
+	 */
+	private String changeFileNameSeparator(final String filename) {
+		String retValue;
 
-                JOptionPane.showMessageDialog(this, Messages.getString("kit.gui.configuration.20"), Messages.getString("kit.gui.configuration.21"), JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
+		if (filename == null) {
+			retValue = null;
+		} else {
+			retValue = filename.replaceAll("\\\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 
-    
-    /**
-     * Changes Windows file path (a\b\c) to Unix file path (a/b/c).
-     * @param filename Absolute file name to convert.
-     * @return New file name changing '\' character into '/'
-     */
-    private String changeFileNameSeparator(final String filename) {
-    	String retValue;
-    	
-    	if (filename == null) {
-    		retValue = null;
-    	} else {
-    		retValue = filename.replaceAll("\\\\", "/");
-    	} 
-    	
-    	return retValue;    			
-    }
-    
-    
-    /**
-     * Load path names of server folders into their respective form fields.
-     * @throws ConfigException If settings cannot be read.
-     */
-    public void loadValues() throws ConfigException {
+		return retValue;
+	}
 
-        Configuration cf = new Configuration();
-        cf.readConfiguration();
-        txtInputFolderPath.setText(changeFileNameSeparator(cf.getInputFolder()));
-        txtResponseFolderPath.setText(changeFileNameSeparator(cf.getResponseFolder()));
-        txtProcessedFolderPath.setText(changeFileNameSeparator(cf.getProcessedFolder()));
-        txtOutputFolderPath.setText(changeFileNameSeparator(cf.getOutputFolder()));
-        txtBackupFolderPath.setText(changeFileNameSeparator(cf.getBackupFolder()));
-    }
+	/**
+	 * Loads path names of  folders into their respective form fields.
+	 * @throws ConfigException If settings cannot be read.
+	 */
+	public void loadValues() throws ConfigException {
 
-    /**
-     * Set folder setting values.
-     */
-    public void setValues() {
+		Configuration cf = new Configuration();
+		cf.readConfiguration();
+		txtInputFolderPath.setText(changeFileNameSeparator(cf.getInputFolder()));
+		txtResponseFolderPath.setText(changeFileNameSeparator(cf.getResponseFolder()));
+		txtProcessedFolderPath.setText(changeFileNameSeparator(cf.getProcessedFolder()));
+		txtOutputFolderPath.setText(changeFileNameSeparator(cf.getOutputFolder()));
+		txtBackupFolderPath.setText(changeFileNameSeparator(cf.getBackupFolder()));
+	}
 
-        if (isEnabled()) {
+	/**
+	 * Sets folder setting values.
+	 */
+	public void setValues() {
 
-            Configuration cf = new Configuration();
+		Configuration cf = new Configuration();
 
-            try {
+		try {
+			cf.setInputFolder(changeFileNameSeparator(txtInputFolderPath.getText()));
+			cf.setResponseFolder(changeFileNameSeparator(txtResponseFolderPath.getText()));
+			cf.setProcessedFolder(changeFileNameSeparator(txtProcessedFolderPath.getText()));
+			cf.setBackupFolder(changeFileNameSeparator(txtBackupFolderPath.getText()));
+			cf.setOutputFolder(changeFileNameSeparator(txtOutputFolderPath.getText()));
+			cf.writeConfiguration();
 
-                cf.readConfiguration();
-                cf.setInputFolder(changeFileNameSeparator(txtInputFolderPath.getText()));
-                cf.setResponseFolder(changeFileNameSeparator(txtResponseFolderPath.getText()));
-                cf.setProcessedFolder(changeFileNameSeparator(txtProcessedFolderPath.getText()));
-                cf.setBackupFolder(changeFileNameSeparator(txtBackupFolderPath.getText()));
-                cf.setOutputFolder(changeFileNameSeparator(txtOutputFolderPath.getText()));
-                cf.writeConfiguration();
+		} catch (ConfigException ex) {
 
-            } catch (ConfigException ex) {
+			/*
+			 * Settings should be already validated at this point, thus this exception should be unreachable.
+			 */
+			JOptionPane.showMessageDialog(this, ex.toString(), Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+		}
 
-                /*
-                 * Settings should be already validated at this point,
-                 * thus this exception should be unreachable.
-                 */
-                JOptionPane.showMessageDialog(this, ex.toString(), Messages.getString("kit.gui.configuration.12"), JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
+	}
 
-    /**
-     * Validate folder panel.
-     * @throws ConfigException If entered folders are incorrect.
-     */
-    public void validation() throws ConfigException {
+	/**
+	 * Validates folder panel.
+	 * @throws ConfigException If entered folders are incorrect.
+	 */
+	public void validateConfig() throws ConfigException {
 
-        if (isEnabled()) {
+		Configuration cf = new Configuration();
+		
+		String inputFolderPath = changeFileNameSeparator(txtInputFolderPath.getText().trim());
+		if (inputFolderPath.length() == 0) {
+			inputFolderPath = null;
+		}
+		cf.setInputFolder(inputFolderPath);
 
-            Configuration cf = new Configuration();
-            cf.readConfiguration();
+		String responseFolderPath = changeFileNameSeparator(txtResponseFolderPath.getText().trim());
+		if (responseFolderPath.length() == 0) {
+			responseFolderPath = null;
+		}
+		cf.setResponseFolder(responseFolderPath);
 
-            String inputFolderPath = changeFileNameSeparator(txtInputFolderPath.getText().trim());
-            if (inputFolderPath.length() == 0) {
-                inputFolderPath = null;
-            }
-            cf.setInputFolder(inputFolderPath);
+		String processingFolderPath = changeFileNameSeparator(txtProcessedFolderPath.getText().trim());
+		if (processingFolderPath.length() == 0) {
+			processingFolderPath = null;
+		}
+		cf.setProcessedFolder(processingFolderPath);
 
-            String responseFolderPath = changeFileNameSeparator(txtResponseFolderPath.getText().trim());
-            if (responseFolderPath.length() == 0) {
-                responseFolderPath = null;
-            }
-            cf.setResponseFolder(responseFolderPath);
+		String outputFolderPath = changeFileNameSeparator(txtOutputFolderPath.getText().trim());
+		if (outputFolderPath.length() == 0) {
+			outputFolderPath = null;
+		}
+		cf.setOutputFolder(outputFolderPath);
 
-            String processingFolderPath = changeFileNameSeparator(txtProcessedFolderPath.getText().trim());
-            if (processingFolderPath.length() == 0) {
-                processingFolderPath = null;
-            }
-            cf.setProcessedFolder(processingFolderPath);
+		String backupFolderPath = changeFileNameSeparator(txtBackupFolderPath.getText().trim());
+		if (backupFolderPath.length() == 0) {
+			backupFolderPath = null;
+		}
+		cf.setBackupFolder(backupFolderPath);
 
-            String outputFolderPath = changeFileNameSeparator(txtOutputFolderPath.getText().trim());
-            if (outputFolderPath.length() == 0) {
-                outputFolderPath = null;
-            }
-            cf.setOutputFolder(outputFolderPath);
+		try {
+			cf.validateConfiguration();
+		} catch (ConfigException ex) {
+			throw new ConfigException(getPanelName() + " " + Messages.getString("SETTINGS_PANEL_SAYS") + " "   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
+					+ ex.getMessage());
+		}
 
-            String backupFolderPath = changeFileNameSeparator(txtBackupFolderPath.getText().trim());
-            if (backupFolderPath.length() == 0) {
-                backupFolderPath = null;
-            }
-            cf.setBackupFolder(backupFolderPath);
+	}
 
-            try {
-                cf.validateConfiguration();
-            } catch (ConfigException ex) {
-                ConfigException e = new ConfigException(ex.getMessage());
-                throw e;
-            }
-        }
-    }
+	/**
+	 * Returns panel name.
+	 * @return Panel name.
+	 */
+	public String getPanelName() {
 
-    /**
-     * Return panel name.
-     * @return Panel name.
-     */
-    public String getPanelName() {
-
-        return PANEL_NAME;
-    }
+		return PANEL_NAME;
+	}
 }

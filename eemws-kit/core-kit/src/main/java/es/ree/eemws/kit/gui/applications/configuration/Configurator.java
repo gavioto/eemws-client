@@ -27,8 +27,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.text.MessageFormat;
-import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -43,303 +43,254 @@ import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.config.Configuration;
 
-
 /**
  * Settings manager for the connection kit.
- *
+ * 
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 09/05/2014
  */
 public final class Configurator extends JFrame {
 
-    /** Class ID. */
-    private static final long serialVersionUID = 906215308146814064L;
+	/** Class ID. */
+	private static final long serialVersionUID = 5557129823051375172L;
 
-    /** Certificate settings Panel. */
-    private IdentityPanel identityPanel;
+	/** Certificate settings Panel. */
+	private IdentityPanel identityPanel;
 
-    /** Proxy access Settings. */
-    private ProxyPanel proxyPanel;
+	/** Proxy access Settings. */
+	private ProxyPanel proxyPanel;
 
-    /** Server and service settings panel . */
-    private ServerPanel serverPanel;
+	/** Server and service settings panel . */
+	private ServerPanel serverPanel;
 
-    /** Magic folder settings panel. */
-    private FolderPanel folderPanel;
+	/** Magic folder settings panel. */
+	private FolderPanel folderPanel;
 
-    /** Main panel on which panels are put. */
-    private JTabbedPane main = null;
+	/** Main panel on which panels are put. */
+	private JTabbedPane main = null;
 
-    /**
-     * Starts Application.
-     * @param args -Ignored-
-     */
-    public static void main(final String[] args) {
+	/**
+	 * Starts Application.
+	 * @param args -Ignored-
+	 */
+	public static void main(final String[] args) {
+		Configurator config = new Configurator();
+		config.setVisible(true);
+	}
 
-        Locale.setDefault(Locale.ENGLISH);
-        Configurator config = new Configurator();
-        config.setVisible(true);
-    }
+	/**
+	 * Constructor. Invoke creation graphic elements, read current settings and update elements according to this
+	 * settings.
+	 */
+	public Configurator() {
 
-    /**
-     * Constructor. Invoke creation graphic elements,
-     * read current settings and update elements
-     * according to this settings.
-     */
-    public Configurator() {
+		try {
 
-        try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception ex) {
 
-        } catch (Exception ex) {
+			/*
+			 * ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException
+			 * This block should be unreachable.
+			 */
+			JOptionPane.showMessageDialog(this, Messages.getString("SETTINGS_NO_GUI") + ex.getMessage(), Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 
-            /*
-             * ClassNotFoundException, InstantiationException,
-             * IllegalAccessException,
-             * UnsupportedLookAndFeelException
-             * This block should be unreachable.
-             */
-            JOptionPane.showMessageDialog(this, Messages.getString("kit.gui.configuration.0") + ex.getMessage(), Messages.getString("kit.gui.configuration.11"), JOptionPane.ERROR_MESSAGE);
-        }
+		Configuration commonConfig = new Configuration();
+		try {
+			commonConfig.readConfiguration();
+		} catch (ConfigException ex) {
 
-        boolean reportedError = false;
-        Configuration config = new Configuration();
-        try {
+			JOptionPane.showMessageDialog(this,  
+        			Messages.getString("SETTINGS_NO_CONFIG"),  //$NON-NLS-1$
+        			Messages.getString("MSG_INFO_TITLE"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
+			Logger.getLogger(getClass().getName()).log(Level.FINE, "", ex); //$NON-NLS-1$
+		}
 
-            config.readConfiguration();
+		identityPanel = new IdentityPanel();
+		identityPanel.loadValues(commonConfig);
 
-        } catch (ConfigException ex) {
+		proxyPanel = new ProxyPanel();
+		proxyPanel.loadValues(commonConfig);
 
-            reportedError = true;
+		serverPanel = new ServerPanel();
+		serverPanel.loadValues(commonConfig);
 
-        }
+		folderPanel = new FolderPanel();
+		try {
+			folderPanel.loadValues();
+		} catch (ConfigException ex) {
 
-        identityPanel = new IdentityPanel();
-        proxyPanel = new ProxyPanel();
-        serverPanel = new ServerPanel();
-        folderPanel = new FolderPanel();
-        initGraphicElements();
+			/* Ignore errors on load. */
+			Logger.getLogger(getClass().getName()).log(Level.FINE, "", ex); //$NON-NLS-1$
+		}
 
-        try {
+		initGraphicElements();
+	}
 
-            loadValues(config);
+	/**
+	 * Initializes graphic elements. Create and arrange elements on screen.
+	 */
+	private void initGraphicElements() {
 
-        } catch (ConfigException ex) {
+		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_PATH)));
 
-            /* Prevent showing incorrect settings panel twice. */
-            if (!reportedError) {
+		/* Adding buttons */
+		getContentPane().add(getButtonPanel(), BorderLayout.SOUTH);
 
-                JOptionPane.showMessageDialog(null, Messages.getString("kit.gui.configuration.2") + ex.getMessage(), Messages.getString("kit.gui.configuration.12"), JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
+		/* Adding central panel (tab panel) */
+		getContentPane().add(getMainPanel(), BorderLayout.CENTER);
 
-    /**
-     * Load settings into panels.
-     * @param cm Configuration module from which settings are read.
-     * @throws ConfigException If settings cannot be loaded.
-     */
-    private void loadValues(final Configuration cm) throws ConfigException {
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		setTitle(Messages.getString("SETTINGS_TITLE")); //$NON-NLS-1$
 
-        identityPanel.loadValues(cm);
-        proxyPanel.loadValues(cm);
-        serverPanel.loadValues(cm);
-        folderPanel.loadValues();
-        
-    }
+		/* Event triggered when window closes. */
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(final WindowEvent e) {
+				cancelChanges();
+			}
+		});
 
-    /**
-     * Initialize graphic elements. Create and arrange elements on screen.
-     */
-    private void initGraphicElements() {
+		setResizable(false);
+		setSize(520, 360);
+		Dimension screen = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
+		setLocation(screen.width / 2 - getSize().width / 2, screen.height / 2 - getSize().height / 2);
+	}
 
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_PATH)));
+	/**
+	 * Returns panel containing every settings tab.
+	 * @return Panel Panel containing settings tabs.
+	 */
+	private JTabbedPane getMainPanel() {
 
-        /* Adding buttons */
-        getContentPane().add(getButtonPanel(), BorderLayout.SOUTH);
+		main = new JTabbedPane();
+		main.setMinimumSize(new Dimension(500, 500));
+		main.add(serverPanel, serverPanel.getPanelName());
+		main.add(identityPanel, identityPanel.getPanelName());
+		main.add(proxyPanel, proxyPanel.getPanelName());
+		main.add(folderPanel, folderPanel.getPanelName());
 
-        /* Adding central panel (tab panel) */
-        getContentPane().add(getMainPanel(), BorderLayout.CENTER);
+		return main;
+	}
 
-        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        setTitle(Messages.getString("kit.gui.configuration.3"));
+	/**
+	 * Returns panel contaning 'OK' and 'Cancel' buttons.
+	 * @return Panel containing these common buttons.
+	 */
+	private JPanel getButtonPanel() {
 
-        /* Event triggered when window closes. */
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(final WindowEvent e) {
-                cancelChanges();
-            }
-        });
+		JButton accept = new JButton();
+		accept.setMaximumSize(new Dimension(100, 26));
+		accept.setMinimumSize(new Dimension(100, 26));
+		accept.setPreferredSize(new Dimension(100, 26));
+		accept.setToolTipText(Messages.getString("SETTINGS_OK_BUTTON_TIP")); //$NON-NLS-1$
+		accept.setIcon(null);
+		accept.setMnemonic(Messages.getString("SETTINGS_OK_BUTTON_HK").charAt(0)); //$NON-NLS-1$
+		accept.setText(Messages.getString("SETTINGS_OK_BUTTON")); //$NON-NLS-1$
+		accept.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				saveChanges();
+			}
+		});
 
-        setResizable(false);
-        setSize(520, 360);
-        Dimension screen = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
-        setLocation(screen.width / 2 - getSize().width / 2, screen.height / 2 - getSize().height / 2);
-    }
+		JLabel buttonSeparator = new JLabel();
+		buttonSeparator.setText("          "); //$NON-NLS-1$
+		JButton cancel = new JButton();
+		cancel.setMaximumSize(new Dimension(100, 26));
+		cancel.setMinimumSize(new Dimension(100, 26));
+		cancel.setPreferredSize(new Dimension(100, 26));
+		cancel.setMnemonic(Messages.getString("SETTINGS_CANCEL_BUTTON_HK").charAt(0)); //$NON-NLS-1$
+		cancel.setText(Messages.getString("SETTINGS_CANCEL_BUTTON")); //$NON-NLS-1$
+		cancel.setToolTipText(Messages.getString("SETTINGS_CANCEL_BUTTON_TIP")); //$NON-NLS-1$
+		cancel.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				cancelChanges();
+			}
+		});
 
-    /**
-     * Return panel containing every settings tab.
-     * @return Panel Panel containing settings tabs.
-     */
-    private JTabbedPane getMainPanel() {
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.add(accept, null);
+		buttonPanel.add(buttonSeparator, null);
+		buttonPanel.add(cancel, null);
+		return buttonPanel;
+	}
 
-        main = new JTabbedPane();
-        main.setMinimumSize(new Dimension(500, 500));
-        main.add(serverPanel.getPanel(), serverPanel.getPanelName());
-        main.add(identityPanel.getPanel(), identityPanel.getPanelName());
-        main.add(proxyPanel.getPanel(), proxyPanel.getPanelName());
-        main.add(folderPanel.getPanel(), folderPanel.getPanelName());
-        
-        return main;
-    }
+	/**
+	 * Method triggered when 'Cancel' button is pressed. Exit program without making changes.
+	 */
+	private void cancelChanges() {
 
-    /**
-     * Return panel contaning 'OK' and 'Cancel' buttons.
-     * @return Panel containing these common buttons.
-     */
-    private JPanel getButtonPanel() {
+		int respuesta = JOptionPane.showConfirmDialog(this,
+				Messages.getString("SETTINGS_CANCEL_TEXT"), //$NON-NLS-1$
+				Messages.getString("MSG_CONFIRM_TITLE"), //$NON-NLS-1$				
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 
-        JButton accept = new JButton();
-        accept.setMaximumSize(new Dimension(100, 26));
-        accept.setMinimumSize(new Dimension(100, 26));
-        accept.setPreferredSize(new Dimension(100, 26));
-        accept.setToolTipText(Messages.getString("kit.gui.configuration.4"));
-        accept.setIcon(null);
-        accept.setMnemonic('O');
-        accept.setText(Messages.getString("kit.gui.configuration.5"));
-        accept.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                saveChanges();
-            }
-        });
+		if (respuesta == JOptionPane.OK_OPTION) {
 
-        JLabel buttonSeparator = new JLabel();
-        buttonSeparator.setText("          ");
-        JButton cancel = new JButton();
-        cancel.setMaximumSize(new Dimension(100, 26));
-        cancel.setMinimumSize(new Dimension(100, 26));
-        cancel.setPreferredSize(new Dimension(100, 26));
-        cancel.setMnemonic('N');
-        cancel.setText(Messages.getString("kit.gui.configuration.6"));
-        cancel.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                cancelChanges();
-            }
-        });
+			System.exit(0);
+		}
+	}
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(accept, null);
-        buttonPanel.add(buttonSeparator, null);
-        buttonPanel.add(cancel, null);
-        return buttonPanel;
-    }
+	/**
+	 * Method triggered when 'OK' button is pressed. Save changes and exit.
+	 */
+	private void saveChanges() {
 
-    /**
-     * Method triggered when 'Cancel' button is pressed.
-     * Exit program without making changes.
-     */
-    private void cancelChanges() {
-
-        int respuesta = JOptionPane.showConfirmDialog(this,
-                Messages.getString("kit.gui.configuration.7"),
-                Messages.getString("kit.gui.configuration.8"),
+        int res = JOptionPane.showConfirmDialog(this,                
+                Messages.getString("SETTINGS_SAVE_CHANGES"), //$NON-NLS-1$
+                Messages.getString("MSG_CONFIRM_TITLE"), //$NON-NLS-1$
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
 
-        if (respuesta == JOptionPane.OK_OPTION) {
-
-            System.exit(0);
-        }
-    }
-
-    /**
-     * Method triggered when 'OK' button is pressed.
-     * Save changes and exit.
-     */
-    private void saveChanges() {
-
-        int respuesta = JOptionPane.showConfirmDialog(this,
-                Messages.getString("kit.gui.configuration.9"),
-                Messages.getString("kit.gui.configuration.8"),
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE);
-
-        if (respuesta == JOptionPane.OK_OPTION) {
-
+        if (res == JOptionPane.OK_OPTION) {
+        	boolean wantToSave = true;
+        	
             try {
-
-                validateElements();
-                if (validateFolderPanel()) {
-                    saveConfig();
-                    System.exit(0);
+            	serverPanel.validateConfig();
+                identityPanel.validateConfig();
+                proxyPanel.validateConfig();
+                
+                try {
+					folderPanel.validateConfig();
+				} catch (ConfigException e) {
+					res = JOptionPane.showConfirmDialog(this,
+							Messages.getString("SETTINGS_CONFIG_MAGIC_FOLDER") + "\n" + e.getMessage(), //$NON-NLS-1$ //$NON-NLS-2$
+			                Messages.getString("MSG_WARNING_TITLE"), //$NON-NLS-1$			               
+			                JOptionPane.OK_CANCEL_OPTION,
+			                JOptionPane.QUESTION_MESSAGE);
+					
+					wantToSave = (res == JOptionPane.OK_OPTION);
+						 
+				}
+                
+                if (wantToSave) {
+                	saveConfig();
+                	System.exit(0);
                 }
-
+              
             } catch (ConfigException ex) {
-
-                Object[] paramsText = {ex.getMessage()};
-                String errorText = MessageFormat.format(Messages.getString("kit.gui.configuration.10"), paramsText);
-                JOptionPane.showMessageDialog(this, errorText, Messages.getString("kit.gui.configuration.12"), JOptionPane.ERROR_MESSAGE);
-            }
+            	
+            	JOptionPane.showMessageDialog(this,  
+            			Messages.getString("SETTINGS_CONFIG_HAS_ERRORS") + ex.getMessage(),  //$NON-NLS-1$
+            			Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+            } 
         }
     }
 
-    /**
-     * Save settings file.
-     * @throws ConfigException If settings file cannot be saved.
-     */
-    private void saveConfig() throws ConfigException {
+	/**
+	 * Saves settings file.
+	 * @throws ConfigException If settings file cannot be saved.
+	 */
+	private void saveConfig() throws ConfigException {
 
-        Configuration config = new Configuration();
-        identityPanel.setValues(config);
-        serverPanel.setValues(config);
-        proxyPanel.setValues(config);
-        config.writeConfiguration();
-        if (folderPanel != null) {
+		Configuration config = new Configuration();
+		identityPanel.setValues(config);
+		serverPanel.setValues(config);
+		proxyPanel.setValues(config);
+		config.writeConfiguration();
 
-            folderPanel.setValues();
-        }
-    }
+		folderPanel.setValues();
+	}
 
-    /**
-     * Validate values entered in forms.
-     * @throws ConfigException If any validation is incorrect.
-     */
-    private void validateElements() throws ConfigException {
-
-        serverPanel.validar();
-        identityPanel.validar();
-        proxyPanel.validar();
-    }
-
-    /**
-     * Validate folder panel. Errors in this panel are shown as warnings, is
-     * possible store changes despite they (folder) are incorrect
-     * @return <code>true</code> If settings file can be saved
-     * (either folder settings are correct or are incorrect but user chooses
-     * "continue"). <code>false</code> If folder settings are incorrect
-     * user chooses "cancel".
-     */
-    private boolean validateFolderPanel() {
-        boolean continua = true;
-
-        if (folderPanel != null) {
-            try {
-                folderPanel.validation();
-            } catch (ConfigException ex) {
-
-                /* Ignore unable to access certificate error. */
-                String errMsg = ex.getMessage();
-                if (errMsg == null
-                        || (errMsg != null && errMsg.indexOf(Messages.getString("kit.gui.configuration.39")) == -1)) {
-                    int opcion = JOptionPane.showConfirmDialog(this, ex.getMessage()
-                            + Messages.getString("kit.gui.configuration.67"),
-                            Messages.getString("kit.gui.configuration.11"), JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION);
-                    continua = (opcion == JOptionPane.OK_OPTION);
-                }
-            }
-        }
-
-        return continua;
-    }
 }
