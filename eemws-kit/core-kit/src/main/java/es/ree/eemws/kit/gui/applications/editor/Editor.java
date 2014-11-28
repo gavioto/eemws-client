@@ -108,7 +108,7 @@ public final class Editor extends JFrame {
 
         if (excep != null) {
 
-            JOptionPane.showMessageDialog(null, Messages.getString("kit.gui.editor.37") + excep.getMessage(), Messages.getString("kit.gui.configuration.12"), JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, Messages.getString("kit.gui.editor.37") + excep.getMessage(), Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE);
         }
     }
 

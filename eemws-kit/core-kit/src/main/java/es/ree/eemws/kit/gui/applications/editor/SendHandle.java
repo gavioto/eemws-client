@@ -260,22 +260,22 @@ public final class SendHandle implements ServiceMenuListener {
 
 
         } catch (ClientException cE) {
-
+      	  
             String msg = cE.getMessage();
-            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("kit.gui.configuration.12"), JOptionPane.ERROR_MESSAGE);
-            log.logMessage(cE.getMessage());
+            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE") + " - ClientException", JOptionPane.ERROR_MESSAGE);
+            log.logException(msg, cE);
 
         } catch (WebServiceException wsE) {
 
             String msg = Messages.getString("kit.gui.editor.84");
-            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("kit.gui.configuration.12"), JOptionPane.ERROR_MESSAGE);
-            log.logMessage(wsE.getMessage());
+            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE") + " - WebServiceException", JOptionPane.ERROR_MESSAGE);
+            log.logException(msg, wsE);
 
         } catch (Exception e) {
 
             String msg = Messages.getString("kit.gui.editor.85");
-            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("kit.gui.configuration.12"), JOptionPane.ERROR_MESSAGE);
-            log.logMessage(e.getMessage());
+            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE") + " - Exception", JOptionPane.ERROR_MESSAGE);
+            log.logException(msg, e);
 
         } finally {
 
