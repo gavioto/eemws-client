@@ -119,18 +119,18 @@ public class Configuration {
         }
 
     }
-
+    
+    
     /**
      * Updates configuration file with the current values.
      * @throws ConfigException If cannot modify settings file (Error accessing file).
      */
     public void writeConfiguration() throws ConfigException {
-
-        String configPath = CONFIG_FILE;
+       
         ConfigManager cm = new ConfigManager();
         
         try {
-        	cm.readConfigFile(configPath);
+        	cm.readConfigFile(CONFIG_FILE);
         } catch(ConfigException ex) {
         	
         	/* Ignore config exception if the configuration is not valid. */
@@ -140,7 +140,7 @@ public class Configuration {
 
         try {
 
-        	String fullConfigPath = FileUtil.getFullPathOfResoruce(configPath);
+        	String fullConfigPath = FileUtil.getFullPathOfResoruce(CONFIG_FILE);
         	
             String fileContent = FileUtil.read(fullConfigPath);
             fileContent = writeValue(url, cm.getValue(WEBSERVICE_URL_KEY), WEBSERVICE_URL_KEY, fileContent);

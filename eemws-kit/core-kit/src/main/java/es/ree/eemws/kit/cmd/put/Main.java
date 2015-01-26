@@ -127,7 +127,7 @@ public final class Main extends ParentMain {
             	if (!FileUtil.exists(fileIn)) {
                  	throw new IllegalArgumentException(Messages.getString("UNABLE_TO_READ", fileIn)); //$NON-NLS-1$
                 }
-            	response = put.put(FileUtil.readUTF8(fileIn));
+            	response = put.put(new StringBuilder(FileUtil.readUTF8(fileIn)));
             }
 
             if (outputFile == null) {

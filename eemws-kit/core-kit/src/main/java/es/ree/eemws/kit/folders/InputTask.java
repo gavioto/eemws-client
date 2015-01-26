@@ -184,7 +184,7 @@ public final class InputTask implements Runnable {
 			try {
 				
 				LOGGER.info(Messages.getString("MF_SENDING_MESSAGE", fileName)); //$NON-NLS-1$
-				String response = putMessage.put(FileUtil.readUTF8(fullFileName));
+				String response = putMessage.put(new StringBuilder(FileUtil.readUTF8(fullFileName)));
 				LOGGER.info(Messages.getString("MF_SENT_MESSAGE", fileName)); //$NON-NLS-1$
 				
 				/* Incoming message is saved in Processed folder. */

@@ -20,9 +20,9 @@
  */
 package es.ree.eemws.client.common;
 
-import java.text.MessageFormat;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+
+import es.ree.eemws.core.utils.messages.AbstractMessages;
 
 
 /**
@@ -31,7 +31,7 @@ import java.util.ResourceBundle;
  * @author Red Eléctrica de España S.A.U.
  * @version 1.0 13/06/2014
  */
-public final class Messages {
+public final class Messages extends AbstractMessages {
 
     /** Base name of the bundle. */
     private static final String BUNDLE_NAME = "properties.client_messages"; //$NON-NLS-1$
@@ -39,9 +39,6 @@ public final class Messages {
     /** Resource bundle. */
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 	
-	/*** If there is no text for a given key, returns a string with the raw key using also this token. */
-	private static final String NO_KEY_INFORMATION_TOKEN = "???"; //$NON-NLS-1$
-
     /**
      * Constructor.
      */
@@ -49,38 +46,15 @@ public final class Messages {
 
         /* This method should not be implemented. */
     }
-
     
     /**
      * This method gets the message given its key.
-	 * If there is no text for the given key the string <code>???KEY???</code> will be returned.
+     * If there is no text for the given key the string <code>???KEY???</code> will be returned.
      * @param key Key of the message.
      * @param parameters parameters that will be replaced in the message.
      * @return Message of the key.
      */
     public static String getString(final String key, final Object... parameters) {
-
-    	return MessageFormat.format(getString(key), parameters);
-    }
-    
-    /**
-     * This method gets the message given its key.
-	 * If there is no text for the given key the string <code>???KEY???</code> will be returned.
-     * @param key Key of the message.
-     * @return Message of the key.
-     */
-    public static String getString(final String key) {
-
-        String retValue = ""; //$NON-NLS-1$
-		try {
-
-            retValue = RESOURCE_BUNDLE.getString(key);
-
-        } catch (MissingResourceException e) {
-
-            retValue = NO_KEY_INFORMATION_TOKEN + key + NO_KEY_INFORMATION_TOKEN;
-        }
-		
-		return retValue;
+        return AbstractMessages.getString(RESOURCE_BUNDLE, key, parameters);
     }
 }

@@ -23,6 +23,8 @@ package es.ree.eemws.kit.gui.common;
 import java.awt.BorderLayout;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -150,17 +152,16 @@ public final class Logger extends JFrame {
      * @param e Exception.
      */
 	public void logException(String msg, Exception e) {
+		StringWriter sw = new StringWriter();
+		e.printStackTrace(new PrintWriter(sw));
+		String exceptionDetails = sw.toString();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append(msg);
 		sb.append("\n"); //$NON-NLS-1$
 		sb.append(Messages.getString("LOG_DETAIL_EXCEPTION")); //$NON-NLS-1$
 		sb.append("\n"); //$NON-NLS-1$
-		StackTraceElement[] c = e.getStackTrace();
-		for (StackTraceElement ste : c) {
-			sb.append("\t"); //$NON-NLS-1$
-			sb.append(ste.toString());
-			sb.append("\n"); //$NON-NLS-1$
-		}
+		sb.append(exceptionDetails);
 		
 		logMessage(sb.toString());
 	}	

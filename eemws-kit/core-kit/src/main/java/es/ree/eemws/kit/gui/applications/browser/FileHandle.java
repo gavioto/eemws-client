@@ -106,7 +106,7 @@ public final class FileHandle {
         /* 'file' menu. */
         JMenu mnFileMenu = new JMenu();
         mnFileMenu.setText(Messages.getString("BROWSER_FILE_MENU_ENTRY")); //$NON-NLS-1$
-        mnFileMenu.setMnemonic(Messages.getString("BROWSER_FILE_EXIT_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
+        mnFileMenu.setMnemonic(Messages.getString("BROWSER_FILE_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         mnFileMenu.add(cbmiBackupAuto);
         mnFileMenu.add(cbmiStoreAuto);
         mnFileMenu.addSeparator();

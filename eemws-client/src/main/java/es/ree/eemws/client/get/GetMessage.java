@@ -20,171 +20,127 @@
  */
 package es.ree.eemws.client.get;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import _504.iec62325.wss._1._0.MsgFaultMsg;
-import ch.iec.tc57._2011.schema.message.HeaderType;
-import ch.iec.tc57._2011.schema.message.OptionType;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
-import ch.iec.tc57._2011.schema.message.RequestType;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
+import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.client.common.Messages;
 import es.ree.eemws.client.common.ParentClient;
-import es.ree.eemws.client.common.ClientException;
-
+import es.ree.eemws.core.utils.iec61968100.EnumFilterElement;
+import es.ree.eemws.core.utils.iec61968100.EnumNoun;
+import es.ree.eemws.core.utils.iec61968100.EnumVerb;
+import es.ree.eemws.core.utils.iec61968100.MessageUtil;
 
 /**
  * Retrieves the message according to the given parameters (filters).
- *
+ * 
  * @author Red Eléctrica de España S.A.U.
  * @version 1.0 13/06/2014
  */
 public final class GetMessage extends ParentClient {
 
-    /** Verb of the action. */
-    private static final String VERB = "get"; //$NON-NLS-1$
-
-    /** Noum of the action. */
-    private static final String NOUN = "Any"; //$NON-NLS-1$
-    
-    /** Name of the MessageIdentification option. */
-    private static final String MESSAGE_IDENTIFICATION_OPTION = "MessageIdentification"; //$NON-NLS-1$
-
-    /** Name of the MessageVersion option. */
-    private static final String MESSAGE_VERSION_OPTION = "MessageVersion"; //$NON-NLS-1$
-
-    /** Name of the Code option. */
-    private static final String CODE_OPTION = "Code"; //$NON-NLS-1$
-
-    /** Name of the Queue option. */
-    private static final String QUEUE_OPTION = "Queue"; //$NON-NLS-1$
-
-    /** Queue value should be alwyas "NEXT". */
+	/** Queue value should be alwyas "NEXT". */
 	private static final String QUEUE_NEXT_VALUE = "NEXT"; //$NON-NLS-1$
 
 	/** Get request messages are not signed. */
-    private static final boolean SIGN_REQUEST = false;
+	private static final boolean SIGN_REQUEST = false;
 
-    /** Get response messages signature are validated. */
+	/** Get response messages signature are validated. */
 	private static final boolean VERIFY_RESPONSE = true;
-	
-    /**
-     * Constructor.
-     */
-    public GetMessage() {
 
-        setSignRequest(SIGN_REQUEST);
-        setVerifyResponse(VERIFY_RESPONSE);
-    }
+	/**
+	 * Constructor.
+	 */
+	public GetMessage() {
 
-    /**
-     * This method obtain the message associated to the given parameter (filter).
-     * @param messageIdentification Specifies the Message Identification of the requested message.
-     * @param messageVersion Specifies the Message Version of the requested message. If more than one message in the server have the same
-     *                       MessageIdentification and MessageVersion, the most recent one will be returned.
-     * @return String with the XML message.
-     * @throws ClientException Exception with the error.
-     */
-    public String get(final String messageIdentification, final Integer messageVersion) throws ClientException {
+		setSignRequest(SIGN_REQUEST);
+		setVerifyResponse(VERIFY_RESPONSE);
+	}
 
-        return get(messageIdentification, messageVersion, null, null);
-    }
+	/**
+	 * This method obtain the message associated to the given parameter (filter).
+	 * @param messageIdentification Specifies the Message Identification of the requested message.
+	 * @param messageVersion Specifies the Message Version of the requested message. If more than one message in the
+	 * server have the same MessageIdentification and MessageVersion, the most recent one will be returned.
+	 * @return String with the XML message.
+	 * @throws ClientException Exception with the error.
+	 */
+	public String get(final String messageIdentification, final Integer messageVersion) throws ClientException {
 
-    /**
-     * This method obtain the message associated to the given parameter (filter).
-     * @param code Specifies the internal identification number of the requested message.
-     * @return String with the XML message.
-     * @throws ClientException Exception with the error.
-     */
-    public String get(final Long code) throws ClientException {
+		return get(messageIdentification, messageVersion, null, null);
+	}
 
-        return get(null, null, code, null);
-    }
+	/**
+	 * This method obtain the message associated to the given parameter (filter).
+	 * @param code Specifies the internal identification number of the requested message.
+	 * @return String with the XML message.
+	 * @throws ClientException Exception with the error.
+	 */
+	public String get(final Long code) throws ClientException {
 
-    /**
-     * This method obtain the message associated to the given parameter (filter).
-     * @param queue Indicates that the server will decide which message will be returned. Its value must be <code>NEXT</code> or <code>null</code> 
-     * @return String with the XML message.
-     * @throws ClientException Exception with the error.
-     */
-    public String get(final String queue) throws ClientException {
-    	
-    	if (queue != null && !QUEUE_NEXT_VALUE.equals(queue)) {
-    		
-    		throw new ClientException(Messages.getString("INVALID_QUEUE", QUEUE_NEXT_VALUE, queue)); //$NON-NLS-1$
-    	}
-    	
-        return get(null, null, null, QUEUE_NEXT_VALUE);
-    }
+		return get(null, null, code, null);
+	}
 
-    /**
-     * This method obtain the message associated to the given parameter (filter).
-     * @param messageIdentification Specifies the Message Identification of the requested message.
-     * @param messageVersion Specifies the Message Version of the requested message. If more than one message in the server have the same
-     *                       MessageIdentification and MessageVersion, the most recent one will be returned.
-     * @param code Specifies the internal identification number of the requested message.
-     * @param queue Indicates that the server will decide which message will be returned. Its value shall be <code>NEXT</code>.
-     * @return String with the XML message.
-     * @throws ClientException Exception with the error.
-     */
-    private String get(final String messageIdentification, final Integer messageVersion, final Long code, final String queue) throws ClientException {
+	/**
+	 * This method obtain the message associated to the given parameter (filter).
+	 * @param queue Indicates that the server will decide which message will be returned. Its value must be
+	 * <code>NEXT</code> or <code>null</code>
+	 * @return String with the XML message.
+	 * @throws ClientException Exception with the error.
+	 */
+	public String get(final String queue) throws ClientException {
 
-        try {
+		if (queue != null && !QUEUE_NEXT_VALUE.equals(queue)) {
 
-            RequestMessage requestMessage = createRequest(messageIdentification, messageVersion, code, queue);
-            ResponseMessage responseMessage = sendMessage(requestMessage);
-            return getPrettyPrintPayloadMessage(responseMessage);
+			throw new ClientException(Messages.getString("INVALID_QUEUE", QUEUE_NEXT_VALUE, queue)); //$NON-NLS-1$
+		}
 
-        } catch (MsgFaultMsg e) {
+		return get(null, null, null, QUEUE_NEXT_VALUE);
+	}
 
-            throw new ClientException(e);
-        }
-    }
+	/**
+	 * This method obtain the message associated to the given parameter (filter).
+	 * @param messageIdentification Specifies the Message Identification of the requested message.
+	 * @param messageVersion Specifies the Message Version of the requested message. If more than one message in the
+	 * server have the same MessageIdentification and MessageVersion, the most recent one will be returned.
+	 * @param code Specifies the internal identification number of the requested message.
+	 * @param queue Indicates that the server will decide which message will be returned. Its value shall be
+	 * <code>NEXT</code>.
+	 * @return String with the XML message.
+	 * @throws ClientException Exception with the error.
+	 */
+	private String get(final String messageIdentification, final Integer messageVersion, final Long code, final String queue) throws ClientException {
 
-    /**
-     * This method create the request message.
-     * @param messageIdentification Specifies the Message Identification of the requested message.
-     * @param messageVersion Specifies the Message Version of the requested message. If more than one message in the server have the same
-     *                       MessageIdentification and MessageVersion, the most recent one will be returned.
-     * @param code Specifies the internal identification number of the requested message.
-     * @param queue Indicates that the server will decide which message will be returned. Its value shall be <code>NEXT</code>.
-     * @return Request message.
-     */
-    private RequestMessage createRequest(final String messageIdentification, final Integer messageVersion, final Long code, final String queue) {
+		try {
 
-        RequestMessage message = new RequestMessage();
+		    Map<String, String> msgOptions = new HashMap<>();
+		    
+		    if (messageIdentification != null) {
+		        msgOptions.put(EnumFilterElement.MESSAGE_IDENTIFICATION.toString(), messageIdentification);
+		    }
+		    
+		    if (messageVersion != null) {
+		        msgOptions.put(EnumFilterElement.MESSAGE_VERSION.toString(), messageVersion.toString());
+		    }
+		    
+		    if (code != null) {
+		        msgOptions.put(EnumFilterElement.CODE.toString(), code.toString());
+		    }
+		    
+		    if (queue != null) {
+		        msgOptions.put(EnumFilterElement.QUEUE.toString(), queue);
+		    }		    
+		    
+			RequestMessage requestMessage = MessageUtil.createRequestWithOptions(EnumVerb.GET, EnumNoun.ANY, msgOptions); 
+			ResponseMessage responseMessage = sendMessage(requestMessage);
+			return getPrettyPrintPayloadMessage(responseMessage);
 
-        HeaderType header = createHeader(VERB, NOUN);
-        message.setHeader(header);
+		} catch (MsgFaultMsg e) {
 
-        RequestType resquest = new RequestType();
-
-        List<OptionType> options = resquest.getOptions();
-        if (messageIdentification != null) {
-
-            OptionType option = createOption(MESSAGE_IDENTIFICATION_OPTION, messageIdentification);
-            options.add(option);
-        }
-
-        if (messageVersion != null) {
-
-            OptionType option = createOption(MESSAGE_VERSION_OPTION, String.valueOf(messageVersion));
-            options.add(option);
-        }
-
-        if (code != null) {
-
-            OptionType option = createOption(CODE_OPTION, String.valueOf(code));
-            options.add(option);
-        }
-
-        if (queue != null) {
-
-            OptionType option = createOption(QUEUE_OPTION, queue);
-            options.add(option);
-        }
-
-        message.setRequest(resquest);
-        return message;
-    }
+			throw new ClientException(e);
+		}
+	}
 }

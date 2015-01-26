@@ -24,7 +24,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import java.util.List;
 
 import javax.xml.namespace.QName;
@@ -40,14 +39,13 @@ import _504.iec62325.wss._1._0.MsgFaultMsg;
 import _504.iec62325.wss._1._0.PortTFEDIType;
 import _504.iec62325.wss._1._0.ServiceEME;
 import ch.iec.tc57._2011.schema.message.HeaderType;
-import ch.iec.tc57._2011.schema.message.OptionType;
 import ch.iec.tc57._2011.schema.message.PayloadType;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
-import es.ree.eemws.client.common.ClientException;
-import es.ree.eemws.client.common.SendHandler;
+import es.ree.eemws.core.utils.iec61968100.EnumVerb;
+import es.ree.eemws.core.utils.iec61968100.MessageMetaData;
+import es.ree.eemws.core.utils.iec61968100.StringBuilderMessage;
 import es.ree.eemws.core.utils.xml.XMLElementUtil;
-import es.ree.eemws.core.utils.xml.XMLGregorianCalendarFactory;
 import es.ree.eemws.core.utils.xml.XMLUtil;
 
 
@@ -80,9 +78,12 @@ public abstract class ParentClient {
     /** Private key of the certificate. */
     private PrivateKey privateKey = null;
 
-    /** Data of the message. */
-    private MessageData messageData = null;
-
+    /** Message metadata. */
+    private MessageMetaData messageMetaData = null;
+    
+    /** Message as a StringBuilder. */
+    private StringBuilderMessage sbmessage = null;
+    
     /**
      * This method sets the URL of the end point of the web service.
      * @param url URL of the end point of the web service.
@@ -139,14 +140,23 @@ public abstract class ParentClient {
     }
 
     /**
-     * This method gets the data of the message.
+     * This method gets the metadata of the message.
      * @return Data of the message.
      */
-    public final MessageData getMessageData() {
+    public final MessageMetaData getMessageMetaData() {
 
-        return messageData;
+        return messageMetaData;
     }
 
+    /**
+     * This method gets the iec 61968100 message as StringBuilder
+     * @return IEC 61968100 message as StringBuilder
+     */
+    public final StringBuilderMessage getStringBuilderMessage() {
+
+        return sbmessage;
+    }
+    
     /**
      * This method sends a message.
      *
@@ -162,50 +172,17 @@ public abstract class ParentClient {
         BindingProvider bindingProvider = (BindingProvider) port;
         bindingProvider.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint.toString());
 
-        messageData = new MessageData();
-
+        sbmessage = new StringBuilderMessage();
+        messageMetaData = new MessageMetaData();
+        
         Binding binding = bindingProvider.getBinding();
         List<Handler> handlerList = binding.getHandlerChain();
-        handlerList.add(new SendHandler(signRequest, verifyResponse, messageData, certificate, privateKey));
+        handlerList.add(new SendHandler(signRequest, verifyResponse, messageMetaData, sbmessage, certificate, privateKey));
         binding.setHandlerChain(handlerList);
 
         return port.request(message);
     }
-
-    /**
-     * This method creates the header of the message.
-     * The returned header includes the "Timestamp" element with the current date.
-     * @param verb Verb of the message.
-     * @param noun Noun of the message.
-     * @return Header of the message.
-     */
-    protected final HeaderType createHeader(final String verb, final String noun) {
-
-        HeaderType header = new HeaderType();
-        header.setVerb(verb);
-        header.setNoun(noun);
-        header.setTimestamp(XMLGregorianCalendarFactory.getGMTInstanceMs(new Date()));
-        return header;
-    }
-
-    /**
-     * This method creates a new option.
-     * @param name Name of the new option.
-     * @param value Value of the new option. Value is optional, so its value can be <code>null</code> if not set.
-     * @return New option.
-     */
-    protected final OptionType createOption(final String name, final String value) {
-
-        OptionType option = new OptionType();
-        option.setName(name);
-        
-        if (value != null) {
-        	option.setValue(value);
-        }
-        
-        return option;
-    }
-
+  
     /**
      * Gets the pretty print version of the response payload.
      * For performance considere to use: <code>getMessageData().getPayload()</code> instead.
@@ -235,9 +212,9 @@ public abstract class ParentClient {
             
         String rootTag = message.getLocalName();
             	
-        if (!ConstantMessage.RESPONSE_VERB.equals(verb) || !rootTag.equals(noun)) {
+        if (!EnumVerb.REPLY.toString().equals(verb) || !rootTag.equals(noun)) {
                 	
-        	throw new ClientException(Messages.getString("INVALID_HEADER", verb, noun, ConstantMessage.RESPONSE_VERB, rootTag)); //$NON-NLS-1$
+        	throw new ClientException(Messages.getString("INVALID_HEADER", verb, noun, EnumVerb.REPLY, rootTag)); //$NON-NLS-1$
         }
        
        

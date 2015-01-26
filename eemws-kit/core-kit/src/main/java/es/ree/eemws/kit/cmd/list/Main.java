@@ -32,10 +32,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import es.ree.eemws.client.common.ClientException;
-import es.ree.eemws.client.list.IntervalTimeType;
 import es.ree.eemws.client.list.ListMessages;
 import es.ree.eemws.client.list.MessageListEntry;
 import es.ree.eemws.core.utils.config.ConfigException;
+import es.ree.eemws.core.utils.iec61968100.EnumIntervalTimeType;
 import es.ree.eemws.kit.cmd.ParentMain;
 import es.ree.eemws.kit.common.Messages;
 
@@ -48,268 +48,286 @@ import es.ree.eemws.kit.common.Messages;
 
 public final class Main extends ParentMain {
 
-	/** Name of the command. */
-	private static final String COMMAND_NAME = "list"; //$NON-NLS-1$
+    /** Name of the command. */
+    private static final String COMMAND_NAME = "list"; //$NON-NLS-1$
 
-	/** Log messages. */
-	private static final Logger LOGGER = Logger.getLogger(COMMAND_NAME);
+    /** Log messages. */
+    private static final Logger LOGGER = Logger.getLogger(COMMAND_NAME);
 
-	/** Sets text for parameter <code>code</code>. */
-	private static final String PARAMETER_CODE = Messages.getString("PARAMETER_CODE"); //$NON-NLS-1$
+    /** Sets text for parameter <code>code</code>. */
+    private static final String PARAMETER_CODE = Messages.getString("PARAMETER_CODE"); //$NON-NLS-1$
 
-	/** Sets text for parameter <code>startTime</code>. */
-	private static final String PARAMETER_START_TIME = Messages.getString("PARAMETER_START_TIME"); //$NON-NLS-1$
+    /** Sets text for parameter <code>startTime</code>. */
+    private static final String PARAMETER_START_TIME = Messages.getString("PARAMETER_START_TIME"); //$NON-NLS-1$
 
-	/** Sets text for parameter <code>endTime</code>. */
-	private static final String PARAMETER_END_TIME = Messages.getString("PARAMETER_END_TIME"); //$NON-NLS-1$
+    /** Sets text for parameter <code>endTime</code>. */
+    private static final String PARAMETER_END_TIME = Messages.getString("PARAMETER_END_TIME"); //$NON-NLS-1$
 
-	/** Sets text for parameter <code>intervalTime</code>. */
-	private static final String LIST_PARAMETER_INTERVAL_TYPE = Messages.getString("LIST_PARAMETER_INTERVAL_TYPE"); //$NON-NLS-1$
+    /** Sets text for parameter <code>intervalTime</code>. */
+    private static final String LIST_PARAMETER_INTERVAL_TYPE = Messages.getString("LIST_PARAMETER_INTERVAL_TYPE"); //$NON-NLS-1$
 
-	/** Sets text for parameter <code>msgId</code>. */
-	private static final String PARAMETER_MSG_ID = Messages.getString("PARAMETER_MSG_ID"); //$NON-NLS-1$
+    /** Sets text for parameter <code>msgId</code>. */
+    private static final String PARAMETER_MSG_ID = Messages.getString("PARAMETER_MSG_ID"); //$NON-NLS-1$
 
-	/** Sets text for parameter <code>msgType</code>. */
-	private static final String LIST_PARAMETER_MSG_TYPE = Messages.getString("LIST_PARAMETER_MSG_TYPE"); //$NON-NLS-1$
+    /** Sets text for parameter <code>msgType</code>. */
+    private static final String LIST_PARAMETER_MSG_TYPE = Messages.getString("LIST_PARAMETER_MSG_TYPE"); //$NON-NLS-1$
 
-	/** Sets text for parameter <code>owner</code>. */
-	private static final String LIST_PARAMETER_MSG_OWNER = Messages.getString("LIST_PARAMETER_MSG_OWNER"); //$NON-NLS-1$
+    /** Sets text for parameter <code>owner</code>. */
+    private static final String LIST_PARAMETER_MSG_OWNER = Messages.getString("LIST_PARAMETER_MSG_OWNER"); //$NON-NLS-1$
 
-	/** Sets text for parameter <code>url</code>. */
-	private static final String PARAMETER_URL = Messages.getString("PARAMETER_URL"); //$NON-NLS-1$
+    /** Sets text for parameter <code>url</code>. */
+    private static final String PARAMETER_URL = Messages.getString("PARAMETER_URL"); //$NON-NLS-1$
 
-	/** Format pattern for code. */
-	private static final String CODE_FORMAT = "%20s"; //$NON-NLS-1$
+    /** Format pattern for code. */
+    private static final String CODE_FORMAT = "%20s"; //$NON-NLS-1$
 
-	/** Format pattern for MessageIdentification.Version. */
-	private static final String MESSAGE_IDENTIFICATION_VERSION_FORMAT = "%40s"; //$NON-NLS-1$
+    /** Format pattern for MessageIdentification.Version. */
+    private static final String MESSAGE_IDENTIFICATION_VERSION_FORMAT = "%40s"; //$NON-NLS-1$
 
-	/** Format pattern for Status. */
-	private static final String STATUS_FORMAT = "%6s"; //$NON-NLS-1$
+    /** Format pattern for Status. */
+    private static final String STATUS_FORMAT = "%6s"; //$NON-NLS-1$
 
-	/** Format pattern for Message Type. */
-	private static final String MSG_TYPE_FORMAT = "%50s"; //$NON-NLS-1$
+    /** Format pattern for Message Type. */
+    private static final String MSG_TYPE_FORMAT = "%50s"; //$NON-NLS-1$
 
-	/** Format pattern for Owner. */
-	private static final String OWNER_FORMAT = "%20s"; //$NON-NLS-1$
-	
-	/** Date format with minutes. */
-	private static final String DATE_FORMAT_MINUTES = "dd-MM-yyyy HH:mm"; //$NON-NLS-1$
+    /** Format pattern for Owner. */
+    private static final String OWNER_FORMAT = "%20s"; //$NON-NLS-1$
 
-	/** Date format with seconds. */
-	private static final String DATE_FORMAT_SECONDS = "dd-MM-yyyy HH:mm:ss"; //$NON-NLS-1$
-	
-	/** Format pattern for date. */
-	private static final String DATE_FORMAT = "%" + DATE_FORMAT_MINUTES.length() + "s"; //$NON-NLS-1$ //$NON-NLS-2$
-	
-	/**
-	 * Main. Execute the list command.
-	 * @param args command line arguments.
-	 */
-	public static void main(final String[] args) {
+    /** Date format with minutes. */
+    private static final String DATE_FORMAT_MINUTES = "dd-MM-yyyy HH:mm"; //$NON-NLS-1$
 
-		String urlEndPoint = ""; //$NON-NLS-1$
+    /** Date format with seconds. */
+    private static final String DATE_FORMAT_SECONDS = "dd-MM-yyyy HH:mm:ss"; //$NON-NLS-1$
 
-		try {
+    /** Format pattern for date. */
+    private static final String DATE_FORMAT = "%" + DATE_FORMAT_MINUTES.length() + "s"; //$NON-NLS-1$ //$NON-NLS-2$
 
-			SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_PATTERN);
-			Date dateStartTime = null;
-			Date dateEndTime = null;
-			Long lCode = null;
-			IntervalTimeType intervalTypeVal = null;
-			
-			List<String> arguments = new ArrayList<>(Arrays.asList(args));
+    /**
+     * Main. Execute the list command.
+     * @param args command line arguments.
+     */
+    public static void main(final String[] args) {
 
-			String startTime = readParameter(arguments, PARAMETER_START_TIME);
-			String endTime = readParameter(arguments, PARAMETER_END_TIME);
-			String intervalType = readParameter(arguments, LIST_PARAMETER_INTERVAL_TYPE);
-			String code = readParameter(arguments, PARAMETER_CODE);
-			String msgId = readParameter(arguments, PARAMETER_MSG_ID);
-			String msgType = readParameter(arguments, LIST_PARAMETER_MSG_TYPE);
-			String owner = readParameter(arguments, LIST_PARAMETER_MSG_OWNER);
-			urlEndPoint = readParameter(arguments, PARAMETER_URL);
-			
-			if (!arguments.isEmpty()) {
-				throw new IllegalArgumentException(Messages.getString("UNKNOWN_PARAMETERS", arguments.toString())); //$NON-NLS-1$
-			}
+        String urlEndPoint = ""; //$NON-NLS-1$
 
-			if (code == null) {
+        try {
 
-				if (startTime == null) {
-					throw new IllegalArgumentException(Messages.getString("LIST_NO_PARAMETERS", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE)); //$NON-NLS-1$
-				}
-				
-				try {
-					dateStartTime = sdf.parse(startTime);
-				} catch(ParseException e) {
-					throw new IllegalArgumentException(Messages.getString("LIST_INVALID_DATE_FORMAT", startTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
-				}
-				
-				
-				// By default, endTime = end of the day of startTime
-				if (endTime == null) {
-					Calendar cal = Calendar.getInstance();
-					cal.setTime(dateStartTime);
-					cal.add(Calendar.DAY_OF_MONTH, 1);
-					cal.add(Calendar.SECOND, -1);
-					dateEndTime = cal.getTime();
-				} else {
-					try {
-						dateEndTime = sdf.parse(endTime);
-					} catch (ParseException e) {
-						throw new IllegalArgumentException(Messages.getString("LIST_INVALID_DATE_FORMAT", endTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
-					}
-				}
+            SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+            Date dateStartTime = null;
+            Date dateEndTime = null;
+            Long lCode = null;
+            EnumIntervalTimeType intervalTypeVal = null;
 
-				if (dateStartTime.after(dateEndTime)) {
-					throw new IllegalArgumentException(Messages.getString("LIST_END_BEFORE_START", startTime, endTime)); //$NON-NLS-1$
-				}
-				
-				if (intervalType != null) {					
-					try {
-						intervalTypeVal = IntervalTimeType.valueOf(intervalType);
-					} catch(IllegalArgumentException e) {
-						throw new IllegalArgumentException(Messages.getString("LIST_INVALID_INTERVAL_TYPE", LIST_PARAMETER_INTERVAL_TYPE,  //$NON-NLS-1$
-								IntervalTimeType.Application.toString(), IntervalTimeType.Server.toString())); 
-					}
-				}				
+            List<String> arguments = new ArrayList<>(Arrays.asList(args));
 
-			} else {
-				 
-				if (startTime != null || endTime != null || intervalType != null) {
-					throw new IllegalArgumentException(Messages.getString("LIST_INCOMPATIBLE_PARAMETERS", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE)); //$NON-NLS-1$
-				}
+            String startTime = readParameter(arguments, PARAMETER_START_TIME);
+            String endTime = readParameter(arguments, PARAMETER_END_TIME);
+            String intervalType = readParameter(arguments, LIST_PARAMETER_INTERVAL_TYPE);
+            String code = readParameter(arguments, PARAMETER_CODE);
+            String msgId = readParameter(arguments, PARAMETER_MSG_ID);
+            String msgType = readParameter(arguments, LIST_PARAMETER_MSG_TYPE);
+            String owner = readParameter(arguments, LIST_PARAMETER_MSG_OWNER);
+            urlEndPoint = readParameter(arguments, PARAMETER_URL);
 
-				try {
-					lCode = Long.valueOf(code);
-				} catch (NumberFormatException e) {
-					throw new IllegalArgumentException(Messages.getString("INCORRECT_CODE", code)); //$NON-NLS-1$
-				}
-			}
+            if (!arguments.isEmpty()) {
+                throw new IllegalArgumentException(Messages.getString("UNKNOWN_PARAMETERS", arguments.toString())); //$NON-NLS-1$
+            }
 
-			urlEndPoint = setConfig(urlEndPoint);
+            if (code == null) {
 
-			ListMessages list = new ListMessages();
-			list.setEndPoint(urlEndPoint);
+                if (startTime == null) {
+                    throw new IllegalArgumentException(Messages.getString("LIST_NO_PARAMETERS", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE)); //$NON-NLS-1$
+                }
 
-			long init = System.currentTimeMillis();
+                try {
+                    dateStartTime = sdf.parse(startTime);
+                } catch (ParseException e) {
+                    throw new IllegalArgumentException(Messages.getString("LIST_INVALID_DATE_FORMAT", startTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
+                }
 
-			List<MessageListEntry> response = null;
+                // By default, endTime = end of the day of startTime
+                if (endTime == null) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(dateStartTime);
+                    cal.add(Calendar.DAY_OF_MONTH, 1);
+                    cal.add(Calendar.SECOND, -1);
+                    dateEndTime = cal.getTime();
+                } else {
+                    try {
+                        dateEndTime = sdf.parse(endTime);
+                    } catch (ParseException e) {
+                        throw new IllegalArgumentException(Messages.getString("LIST_INVALID_DATE_FORMAT", endTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
+                    }
+                }
 
-			if (lCode != null) {
-				response = list.list(lCode, msgId, msgType, owner);
-			} else {
-				response = list.list(dateStartTime, dateEndTime, intervalTypeVal, msgId, msgType, owner);
-			}
+                if (dateStartTime.after(dateEndTime)) {
+                    throw new IllegalArgumentException(Messages.getString("LIST_END_BEFORE_START", startTime, endTime)); //$NON-NLS-1$
+                }
 
-			showResults(response);
+                if (intervalType != null) {
+                    intervalTypeVal = EnumIntervalTimeType.fromString(intervalType);
+                    if (intervalTypeVal == null) {
+                        throw new IllegalArgumentException(Messages.getString("LIST_INVALID_INTERVAL_TYPE", LIST_PARAMETER_INTERVAL_TYPE, //$NON-NLS-1$
+                                EnumIntervalTimeType.APPLICATION.toString(), EnumIntervalTimeType.SERVER.toString()));
+                    }
+                }
 
-			long end = System.currentTimeMillis();
-			LOGGER.info(Messages.getString("EXECUTION_TIME", getPerformance(init, end))); //$NON-NLS-1$
+            } else {
 
-		} catch (ClientException e) {
+                if (startTime != null || endTime != null || intervalType != null) {
+                    throw new IllegalArgumentException(Messages.getString("LIST_INCOMPATIBLE_PARAMETERS", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE)); //$NON-NLS-1$
+                }
 
-			LOGGER.severe(e.getMessage());
+                try {
+                    lCode = Long.valueOf(code);
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(Messages.getString("INCORRECT_CODE", code)); //$NON-NLS-1$
+                }
+            }
 
-		} catch (MalformedURLException e) {
+            urlEndPoint = setConfig(urlEndPoint);
 
-			LOGGER.severe(Messages.getString("INVALID_URL", urlEndPoint)); //$NON-NLS-1$
+            ListMessages list = new ListMessages();
+            list.setEndPoint(urlEndPoint);
 
-		} catch (ConfigException e) {
+            long init = System.currentTimeMillis();
 
-			LOGGER.severe(Messages.getString("INVALID_CONFIGURATION", e.getMessage())); //$NON-NLS-1$
+            List<MessageListEntry> response = null;
 
-			/* Shows stack trace only for debug. Don't bother the user with this details. */
-			LOGGER.log(Level.FINE, Messages.getString("INVALID_CONFIGURATION", e.getMessage()), e); //$NON-NLS-1$
+            if (lCode != null) {
+                response = list.list(lCode, msgId, msgType, owner);
+            } else {
+                response = list.list(dateStartTime, dateEndTime, intervalTypeVal, msgId, msgType, owner);
+            }
 
-		} catch (IllegalArgumentException e) {
+            showResults(response);
 
-			LOGGER.info(e.getMessage());
-			LOGGER.info(Messages.getString("LIST_USAGE", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE, //$NON-NLS-1$
-					PARAMETER_MSG_ID, LIST_PARAMETER_MSG_TYPE, LIST_PARAMETER_MSG_OWNER, PARAMETER_URL, new Date(), 
-					IntervalTimeType.Application.toString(), IntervalTimeType.Server.toString()));
-		}
-	}
+            long end = System.currentTimeMillis();
+            LOGGER.info(Messages.getString("EXECUTION_TIME", getPerformance(init, end))); //$NON-NLS-1$
 
-	/**
-	 * This method shows the results.
-	 * @param response List of the message listings.
-	 * @throws ClientException If the server returns an invalid message list entry.
-	 */
-	private static void showResults(final List<MessageListEntry> response) throws ClientException {
+        } catch (ClientException e) {
 
-		if (response != null && !response.isEmpty()) {
+            LOGGER.severe(e.getMessage());
 
-			SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_MINUTES);
+        } catch (MalformedURLException e) {
 
-			SimpleDateFormat sdfTimestamp = new SimpleDateFormat(DATE_FORMAT_SECONDS);
+            LOGGER.severe(Messages.getString("INVALID_URL", urlEndPoint)); //$NON-NLS-1$
 
-			StringBuilder sb = new StringBuilder();
-			sb.append(Messages.getString("LIST_OUTPUT_HEADER")); //$NON-NLS-1$
+        } catch (ConfigException e) {
 
-			int numMessages = 0;
-			long maxCode = -1;
+            LOGGER.severe(Messages.getString("INVALID_CONFIGURATION", e.getMessage())); //$NON-NLS-1$
 
-			for (MessageListEntry msgData : response) {
+            /* Shows stack trace only for debug. Don't bother the user with this details. */
+            LOGGER.log(Level.FINE, Messages.getString("INVALID_CONFIGURATION", e.getMessage()), e); //$NON-NLS-1$
 
-				msgData.checkMandatoryElements();
-				
-				sb.append("\n"); //$NON-NLS-1$
-				sb.append(String.format(CODE_FORMAT, msgData.getCode().toString())); 
-				sb.append(" "); //$NON-NLS-1$
+        } catch (IllegalArgumentException e) {
 
-				if (msgData.getVersion() == null) { // Version is optional
-					sb.append(String.format(MESSAGE_IDENTIFICATION_VERSION_FORMAT, msgData.getMessageIdentification()));
-				} else {
-					sb.append(String.format(MESSAGE_IDENTIFICATION_VERSION_FORMAT, msgData.getMessageIdentification() + "." + msgData.getVersion())); //$NON-NLS-1$
-				}
+            LOGGER.info(e.getMessage());
+            LOGGER.info(Messages.getString("LIST_USAGE", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE, //$NON-NLS-1$
+                    PARAMETER_MSG_ID, LIST_PARAMETER_MSG_TYPE, LIST_PARAMETER_MSG_OWNER, PARAMETER_URL, new Date(), EnumIntervalTimeType.APPLICATION.toString(), EnumIntervalTimeType.SERVER.toString()));
+        }
+    }
 
-				sb.append(" "); //$NON-NLS-1$
-				
-				if (msgData.getStatus() == null) { // Status is optional
-					sb.append(String.format(STATUS_FORMAT, "")); //$NON-NLS-1$ 
-				} else {
-					sb.append(String.format(STATUS_FORMAT, msgData.getStatus()));
-				}
-				
-				sb.append(" "); //$NON-NLS-1$
-				sb.append(sdf.format(msgData.getApplicationStartTime().getTime()));
-				sb.append(" - "); //$NON-NLS-1$
-				
-				if (msgData.getApplicationEndTime() == null) { // End date is optional
-					sb.append(String.format(DATE_FORMAT, "")) ;  //$NON-NLS-1$
-				} else {
-					sb.append(sdf.format(msgData.getApplicationEndTime().getTime()));
-				}
-				
-				sb.append(" "); //$NON-NLS-1$
-				sb.append(sdfTimestamp.format(msgData.getServerTimestamp().getTime()));
-				
-				sb.append(" "); //$NON-NLS-1$
-				sb.append(String.format(MSG_TYPE_FORMAT, msgData.getType())); 
-				
-				sb.append(" "); //$NON-NLS-1$
-				sb.append(String.format(OWNER_FORMAT, msgData.getOwner())); 
+    /**
+     * This method shows the results.
+     * @param response List of the message listings.
+     * @throws ClientException If the server returns an invalid message list entry.
+     */
+    private static void showResults(final List<MessageListEntry> response) {
 
-				numMessages++;
-				maxCode = Math.max(msgData.getCode().longValue(), maxCode);
-			}
+        if (response != null && !response.isEmpty()) {
 
-			sb.append("\n"); //$NON-NLS-1$
-			sb.append(numMessages);
-			sb.append(" "); //$NON-NLS-1$
-			sb.append(Messages.getString("LIST_NUM_OF_MESSAGES")); //$NON-NLS-1$
-			sb.append(" "); //$NON-NLS-1$
-			sb.append(Messages.getString("LIST_MAX_CODE", String.valueOf(maxCode))); //$NON-NLS-1$
+            SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_MINUTES);
 
-			LOGGER.info(sb.toString());
+            SimpleDateFormat sdfTimestamp = new SimpleDateFormat(DATE_FORMAT_SECONDS);
 
-		} else {
+            StringBuilder error = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
+            sb.append(Messages.getString("LIST_OUTPUT_HEADER")); //$NON-NLS-1$
 
-			LOGGER.info(Messages.getString("LIST_NO_MESSAGES")); //$NON-NLS-1$
-		}
+            int numMessages = 0;
+            long maxCode = -1;
 
-	}
+            for (MessageListEntry msgData : response) {
+                
+                int bufferPos = sb.length();
+                
+                try {
 
- 
+                    sb.append("\n"); //$NON-NLS-1$
+                    sb.append(String.format(CODE_FORMAT, msgData.getCode().toString()));
+                    sb.append(" "); //$NON-NLS-1$
+
+                    if (msgData.getVersion() == null) { // Version is optional
+                        sb.append(String.format(MESSAGE_IDENTIFICATION_VERSION_FORMAT, msgData.getMessageIdentification()));
+                    } else {
+                        sb.append(String.format(MESSAGE_IDENTIFICATION_VERSION_FORMAT, msgData.getMessageIdentification() + "." + msgData.getVersion())); //$NON-NLS-1$
+                    }
+
+                    sb.append(" "); //$NON-NLS-1$
+
+                    if (msgData.getStatus() == null) { // Status is optional
+                        sb.append(String.format(STATUS_FORMAT, "")); //$NON-NLS-1$ 
+                    } else {
+                        sb.append(String.format(STATUS_FORMAT, msgData.getStatus()));
+                    }
+
+                    sb.append(" "); //$NON-NLS-1$
+                    sb.append(sdf.format(msgData.getApplicationStartTime().getTime()));
+                    sb.append(" - "); //$NON-NLS-1$
+
+                    if (msgData.getApplicationEndTime() == null) { // End date is optional
+                        sb.append(String.format(DATE_FORMAT, "")); //$NON-NLS-1$
+                    } else {
+                        sb.append(sdf.format(msgData.getApplicationEndTime().getTime()));
+                    }
+
+                    sb.append(" "); //$NON-NLS-1$
+                    sb.append(sdfTimestamp.format(msgData.getServerTimestamp().getTime()));
+
+                    sb.append(" "); //$NON-NLS-1$
+                    sb.append(String.format(MSG_TYPE_FORMAT, msgData.getType()));
+
+                    sb.append(" "); //$NON-NLS-1$
+                    sb.append(String.format(OWNER_FORMAT, msgData.getOwner()));
+
+                    numMessages++;
+                    maxCode = Math.max(msgData.getCode().longValue(), maxCode);
+
+                } catch (NullPointerException npe) {
+                    
+                    /* Don't stop the loop if the server sends one (or more) non-valid entries.
+                     * Put these entries information into a special error buffer. 
+                     */
+                    sb.delete(bufferPos, sb.length());
+                    
+                    try {
+                        msgData.checkMandatoryElements();
+                    } catch(ClientException e) {
+                        error.append(e.toString());
+                        error.append("\n"); //$NON-NLS-1$
+                    }                    
+                }
+            }
+
+            sb.append("\n"); //$NON-NLS-1$
+            sb.append(numMessages);
+            sb.append(" "); //$NON-NLS-1$
+            sb.append(Messages.getString("LIST_NUM_OF_MESSAGES")); //$NON-NLS-1$
+            sb.append(" "); //$NON-NLS-1$
+            sb.append(Messages.getString("LIST_MAX_CODE", String.valueOf(maxCode))); //$NON-NLS-1$
+
+            LOGGER.info(sb.toString());
+            
+            if (error.length() > 0) {
+                LOGGER.severe(error.toString());
+            }
+
+        } else {
+
+            LOGGER.info(Messages.getString("LIST_NO_MESSAGES")); //$NON-NLS-1$
+        }
+
+    }
+
 }

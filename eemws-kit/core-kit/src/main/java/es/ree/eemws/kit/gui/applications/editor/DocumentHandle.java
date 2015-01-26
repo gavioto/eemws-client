@@ -39,20 +39,17 @@ public final class DocumentHandle {
     /** Scrollable container for Document. */
     private JScrollPane scrollableDocumentContainer = new JScrollPane();
 
-    /** Number of characters required to determine whether the text content is XML or plain text. */
-    private static final int MESSAGE_HEADER = 100;
-
     /** Identifies the text area content as XML. */
-    private static final String XML_TYPE = "text/html";
+    private static final String XML_TYPE = "text/html"; //$NON-NLS-1$
 
     /** Identifies the text area content as plain text. */
-    private static final String PLAIN_TEXT_TYPE = "text/plain";
+    private static final String PLAIN_TEXT_TYPE = "text/plain"; //$NON-NLS-1$
 
     /** Font used to display text. */
-    private static final Font FONT = new Font("Monospaced", Font.PLAIN, 13);
+    private static final Font FONT = new Font("Monospaced", Font.PLAIN, 13); //$NON-NLS-1$
 
     /** Edition panel for document. */
-    private JEditorPane document = new JEditorPane(PLAIN_TEXT_TYPE, "");
+    private JEditorPane document = new JEditorPane(PLAIN_TEXT_TYPE, ""); //$NON-NLS-1$
 
     /** Editable text on document. */
     private AccessibleEditableText editableText = document.getAccessibleContext().getAccessibleEditableText();
@@ -72,7 +69,7 @@ public final class DocumentHandle {
     }
 
     /**
-     * Retrieve reference to edit area.
+     * Retrieves a reference to edit area.
      * @return Reference to edit area.
      */
     public JEditorPane getDocument() {
@@ -80,7 +77,7 @@ public final class DocumentHandle {
     }
 
     /**
-     * Creates the pane for Edition area.
+     * Returns the document area.
      * @return Scrollable pane containing edition area.
      */
     public JScrollPane getDocumentArea() {
@@ -117,7 +114,7 @@ public final class DocumentHandle {
     }
 
     /**
-     * Display content applying an XML-convenient formatting.
+     * Displays content applying an XML-convenient formatting.
      * @param content Content to be displayed.
      */
     public void openXml(final StringBuilder content) {
@@ -144,52 +141,9 @@ public final class DocumentHandle {
 
         open(content, PLAIN_TEXT_TYPE, false);
     }
-
+ 
     /**
-     * Check whether the content in plain text or XML.
-     * @param buf String to check.
-     * @return <code>true</code> if is XML. <code>false</code> otherwise.
-     */
-    private boolean isXML(final StringBuilder buf) {
-
-        String header;
-        if (buf.length() < MESSAGE_HEADER) {
-
-            header = buf.toString();
-
-        } else {
-
-            header = buf.substring(0, MESSAGE_HEADER);
-        }
-
-        int semicolonPosition = header.split(";").length;
-        int openerTagPosition = header.split("<").length;
-
-        return semicolonPosition < openerTagPosition;
-    }
-
-    /**
-     * Indicate whether the content is XML or CSV.
-     * @return <code>true</code> if is a XML document
-     * <code>false</code> otherwise.
-     */
-    public boolean isXml() {
-
-        String header;
-        if (document.getText().length() < MESSAGE_HEADER) {
-
-            header = document.getText();
-
-        } else {
-
-            header = document.getText().substring(0, MESSAGE_HEADER);
-        }
-
-        return isXML(new StringBuilder(header));
-    }
-
-    /**
-     * Retrieve the action bound to document.
+     * Retrieves the action bound to document.
      * @param accionName Name of the action to retrieve.
      * @return Action bound to the document with a given key.
      */
@@ -199,8 +153,8 @@ public final class DocumentHandle {
     }
 
     /**
-     * Return the position of cursor on text.
-     * @return  Position of cursor on text.
+     * Returns the position of the cursor on text.
+     * @return Position of cursor on text.
      */
     public int getCursorPosition() {
 
@@ -216,20 +170,20 @@ public final class DocumentHandle {
     }
 
     /**
-     * Selects between the positions set on an interval.
-     * @param begin Interval begin.
-     * @param end Interval end.
+     * Marks (select) the text between the start and end positions.
+     * @param start Start position to be selected.
+     * @param end End position to be selected.
      */
-    public void markText(final int begin, final int end) {
+    public void markText(final int start, final int end) {
 
-        document.setCaretPosition(begin);
+        document.setCaretPosition(start);
         document.moveCaretPosition(end);
         document.requestFocus();
         mainWindow.update(mainWindow.getGraphics());
     }
 
     /**
-     * Indicate whether the text area is empty.
+     * Indicates whether the text area is empty.
      * @return <code>true</code>If text area is empty.
      * <code>false</code> otherwise.
      */
@@ -239,7 +193,7 @@ public final class DocumentHandle {
     }
 
     /**
-     * Return visible text on document area.
+     * Returns the visible text on document area.
      * If document is color-formatted, removal of spaces and reformat
      * will be required.
      * @return Visible text on document area.
@@ -251,7 +205,7 @@ public final class DocumentHandle {
     }
 
     /**
-     * Replace selected text by the one passed as argument.
+     * Replaces selected text by the one passed as argument.
      * @param string Replace string.
      */
     public void replace(final String string) {
@@ -260,7 +214,7 @@ public final class DocumentHandle {
     }
 
     /**
-     * Eneble / disable graphic values.
+     * Enebles / disables graphic values.
      * @param activationValue <code>true</code> Enable.
      * <code>false</code> Disable.
      */

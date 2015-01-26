@@ -27,8 +27,6 @@ import java.util.Calendar;
 import es.ree.eemws.client.common.Messages;
 import es.ree.eemws.client.common.ClientException;
 
-
-
 /**
  * Data of the message.
  *
