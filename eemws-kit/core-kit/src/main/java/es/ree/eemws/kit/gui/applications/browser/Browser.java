@@ -32,7 +32,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.WindowEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
@@ -49,8 +48,8 @@ import javax.swing.WindowConstants;
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.config.Configuration;
-import es.ree.eemws.kit.gui.applications.editor.ServiceMenu;
 import es.ree.eemws.kit.gui.common.Constants;
+import es.ree.eemws.kit.gui.common.LogHandle;
 import es.ree.eemws.kit.gui.common.Logger;
 import es.ree.eemws.kit.gui.common.ServiceMenuListener;
 
@@ -110,10 +109,7 @@ public final class Browser extends JFrame implements ServiceMenuListener {
 
     /** Request class. */
     private GetMessageSender requestSend = null;
-
-    /** Service menu. */
-    private ServiceMenu serviceMenu = null;
-
+   
     /** Column visibility Handler. */
     private ColumnVisibilityHandle columnVisibilityHandler = null;
 
@@ -180,8 +176,7 @@ public final class Browser extends JFrame implements ServiceMenuListener {
         log = logHandle.getLog();
 
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(Constants.ICON_PATH)));
-       
-        JMenu mnService = getServiceMenu();
+               
         JMenu mnView = new JMenu(Messages.getString("BROWSER_VIEW_MENU_ITEM")); //$NON-NLS-1$
         mnView.setMnemonic(Messages.getString("BROWSER_VIEW_MENU_ITEM_HK").charAt(0)); //$NON-NLS-1$
         columnVisibilityHandler.getMenu(mnView);
@@ -191,8 +186,7 @@ public final class Browser extends JFrame implements ServiceMenuListener {
         menuBar.add(mnView);
         menuBar.add(dataTable.getSelectionMenu());
         menuBar.add(logHandle.getMenu());
-        menuBar.add(mnService);
-
+        
         JLabel lblLeftMargin = new JLabel("  "); //$NON-NLS-1$
         JLabel lblRightMargin = new JLabel("  "); //$NON-NLS-1$
 
@@ -256,23 +250,10 @@ public final class Browser extends JFrame implements ServiceMenuListener {
         preferences.putInt(WINDOW_LEFT_KEY, p.y);
     }
 
-    /**
-     * Returns the Service menu.
-     * @return Menu entry containing settings for server and service.
-     */
-    private JMenu getServiceMenu() {
-        JMenu mnServiceMenu = new JMenu();
-        mnServiceMenu.setText("Service");
-        mnServiceMenu.setMnemonic('S');
-        serviceMenu = new ServiceMenu(this);
-        serviceMenu.addServiceElements(mnServiceMenu);
 
-        return mnServiceMenu;
-    }
 
     /**
-     * Sets the application end point. If point set is settlement and 'incremental mode' is
-     * selected. The change will be rejected.
+     * Sets the application end point. 
      * @param endp point to which messages are sent (environment + service).
      */
     @Override

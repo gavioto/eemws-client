@@ -21,156 +21,120 @@
 
 package es.ree.eemws.client.querydata;
 
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import _504.iec62325.wss._1._0.MsgFaultMsg;
-import ch.iec.tc57._2011.schema.message.HeaderType;
-import ch.iec.tc57._2011.schema.message.OptionType;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
-import ch.iec.tc57._2011.schema.message.RequestType;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
-import es.ree.eemws.client.common.ParentClient;
 import es.ree.eemws.client.common.ClientException;
-import es.ree.eemws.core.utils.xml.XMLGregorianCalendarFactory;
-
+import es.ree.eemws.client.common.ParentClient;
+import es.ree.eemws.core.utils.iec61968100.EnumFilterElement;
+import es.ree.eemws.core.utils.iec61968100.EnumNoun;
+import es.ree.eemws.core.utils.iec61968100.EnumVerb;
+import es.ree.eemws.core.utils.iec61968100.MessageUtil;
 
 /**
  * Query Data Service can be used by clients to request specific data from the server using different query parameters.
- *
+ * 
  * @author Red Eléctrica de España S.A.U.
  * @version 1.0 13/06/2014
  */
 public final class QueryData extends ParentClient {
 
-    /** Verb of the action. */
-    private static final String VERB = "get"; //$NON-NLS-1$
+	/** QueryData request messages are not signed. */
+	private static final boolean SIGN_REQUEST = false;
 
-    /** Noun of the action. */
-    private static final String NOUN = "QueryData"; //$NON-NLS-1$
-
-    /** Name of the DataType option. */
-    private static final String DATA_TYPE_OPTION = "DataType"; //$NON-NLS-1$
-    
-    /** QueryData request messages are not signed. */
-    private static final boolean SIGN_REQUEST = false;
-
-    /** QueryData response messages signature are validated. */
+	/** QueryData response messages signature are validated. */
 	private static final boolean VERIFY_RESPONSE = true;
 
-    /**
-     * Constructor.
-     */
-    public QueryData() {
+	/**
+	 * Constructor.
+	 */
+	public QueryData() {
 
-        setSignRequest(SIGN_REQUEST);
-        setVerifyResponse(VERIFY_RESPONSE);
-    }
+		setSignRequest(SIGN_REQUEST);
+		setVerifyResponse(VERIFY_RESPONSE);
+	}
 
-    /**
-     * Invoke the QueryData operation with no parameters (just the query identification).
-     * @param dataType Indicates the type of data being requested.
-     * @return String with the payload message.
-     * @throws ClientException Exception with the error.
-     */
-    public String query(final String dataType) throws ClientException {
+	/**
+	 * Invokes the QueryData operation with no parameters (just the query identification).
+	 * @param dataType Indicates the type of data being requested.
+	 * @return String with the payload message.
+	 * @throws ClientException Exception with the error.
+	 */
+	public String query(final String dataType) throws ClientException {
 
-        return query(dataType, null, null, null);
-    }
+		return query(dataType, null, null, null);
+	}
 
-    /**
-     * Invoke the QueryData operation with start time parameter.
-     * @param dataType Indicates the type of data being requested.
-     * @param startTime Specifies that the returned message should only include data whose Application Date is after the given date.
-     * @return String with the payload message.
-     * @throws ClientException Exception with the error.
-     */
-    public String query(final String dataType, final Date startTime) throws ClientException {
+	/**
+	 * Invokes the QueryData operation with start time parameter.
+	 * @param dataType Indicates the type of data being requested.
+	 * @param startTime Specifies that the returned message should only include data whose Application Date is after the
+	 * given date.
+	 * @return String with the payload message.
+	 * @throws ClientException Exception with the error.
+	 */
+	public String query(final String dataType, final Date startTime) throws ClientException {
 
-        return query(dataType, startTime, null, null);
-    }
+		return query(dataType, startTime, null, null);
+	}
 
-    /**
-     * Invoke the QueryData operation with start and end time parameters.
-     * @param dataType Indicates the type of data being requested.
-     * @param startTime Specifies that the returned message should only include data whose Application Date is after the given date
-     * @param endTime Specifies that the returned message should only include data whose Application Date is before the given date.
-     * @return String with the payload message.
-     * @throws ClientException Exception with the error.
-     */
-    public String query(final String dataType, final Date startTime, final Date endTime) throws ClientException {
+	/**
+	 * Invokes the QueryData operation with start and end time parameters.
+	 * @param dataType Indicates the type of data being requested.
+	 * @param startTime Specifies that the returned message should only include data whose Application Date is after the
+	 * given date
+	 * @param endTime Specifies that the returned message should only include data whose Application Date is before the
+	 * given date.
+	 * @return String with the payload message.
+	 * @throws ClientException Exception with the error.
+	 */
+	public String query(final String dataType, final Date startTime, final Date endTime) throws ClientException {
 
-        return query(dataType, startTime, endTime, null);
-    }
+		return query(dataType, startTime, endTime, null);
+	}
 
-    /**
-     * This method can be used by clients to request specific data from the server using different query parameters.
-     * @param dataType Indicates the type of data being requested.
-     * @param startTime Specifies that the returned message should only include data whose Application Date is after the given date. (Can be <code>null</code>). 
-     * @param endTime Specifies that the returned message should only include data whose Application Date is before the given date. (Can be <code>null</code>).
-     * @param others Specifies others parameters to the query. The parameters are expressed as a key-value pairs, where the value is optional.
-     * @return String with the XML message.
-     * @throws ClientException Exception with the error.
-     */
-    public String query(final String dataType, final Date startTime, final Date endTime, final HashMap<String, String> others) throws ClientException {
+	/**
+	 * This method can be used by clients to request specific data from the server using different query parameters.
+	 * @param dataType Indicates the type of data being requested.
+	 * @param startTime Specifies that the returned message should only include data whose Application Date is after the
+	 * given date. (Can be <code>null</code>).
+	 * @param endTime Specifies that the returned message should only include data whose Application Date is before the
+	 * given date. (Can be <code>null</code>).
+	 * @param others Specifies others parameters to the query. The parameters are expressed as a key-value pairs, where
+	 * the value is optional.
+	 * @return String with the XML message.
+	 * @throws ClientException Exception with the error.
+	 */
+	public String query(final String dataType, final Date startTime, final Date endTime, final Map<String, String> others) throws ClientException {
 
-        try {
+		try {
 
-            RequestMessage requestMessage = createRequest(dataType, startTime, endTime, others);
-            ResponseMessage responseMessage = sendMessage(requestMessage);
-            return getPrettyPrintPayloadMessage(responseMessage);
+		    Map<String, String> options = new HashMap<>(others);
+		    
+		    options.put(EnumFilterElement.DATA_TYPE.toString(), dataType);
+		    
+		    if (startTime != null) {
+		        DateFormat df = DateFormat.getInstance();
+		        options.put(EnumFilterElement.START_TIME.toString(), df.format(startTime));
+		    }
+		    
+		    if (endTime != null) {
+		        DateFormat df = DateFormat.getInstance();
+		        options.put(EnumFilterElement.END_TIME.toString(), df.format(endTime));
+		    }		    
+		    
+			RequestMessage requestMessage = MessageUtil.createRequestWithOptions(EnumVerb.GET, EnumNoun.QUERY_DATA, options);
+			ResponseMessage responseMessage = sendMessage(requestMessage);
+			return getPrettyPrintPayloadMessage(responseMessage);
 
-        } catch (MsgFaultMsg e) {
+		} catch (MsgFaultMsg e) {
 
-            throw new ClientException(e);
-        }
-    }
-
-    /**
-     * This method create the request message.
-     * @param dataType Indicates the type of data being requested.
-     * @param startTime Specifies that the returned message should only include data whose Application Date is after the provided.
-     * @param endTime Specifies that the returned message should only include data whose Application Date is before the provided date.
-     * @param others Specifies that the returned data should be relevant to the provided Area.
-     * @return Request message.
-     */
-    private RequestMessage createRequest(final String dataType, final Date startTime, final Date endTime, final HashMap<String, String> others) {
-
-        RequestMessage message = new RequestMessage();
-
-        HeaderType header = createHeader(VERB, NOUN);
-        message.setHeader(header);
-
-        RequestType resquest = new RequestType();
-
-        if (startTime != null) {
-            
-            resquest.setStartTime(XMLGregorianCalendarFactory.getGMTInstance(startTime));
-        }
-
-        if (endTime != null) {
-            
-            resquest.setEndTime(XMLGregorianCalendarFactory.getGMTInstance(endTime));
-        }
-
-        List<OptionType> options = resquest.getOptions();
-        OptionType option = createOption(DATA_TYPE_OPTION, dataType);
-        options.add(option);
-
-        if (others != null) {
-        	Iterator<Map.Entry<String, String>> itr = others.entrySet().iterator();
-        	
-        	while (itr.hasNext()) {
-        		Map.Entry<String, String> me = itr.next();
-        		options.add(createOption(me.getKey(), me.getValue()));
-        	}
-        }
-
-        message.setRequest(resquest);
-
-        return message;
-    }
+			throw new ClientException(e);
+		}
+	}
 }

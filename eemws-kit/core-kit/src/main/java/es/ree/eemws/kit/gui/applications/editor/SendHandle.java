@@ -23,7 +23,6 @@ package es.ree.eemws.kit.gui.applications.editor;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.text.MessageFormat;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -35,13 +34,10 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.xml.ws.WebServiceException;
 
-import org.w3c.dom.Element;
-
 import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.client.put.PutMessage;
 import es.ree.eemws.core.utils.config.ConfigException;
-import es.ree.eemws.core.utils.xml.XMLElementUtil;
-import es.ree.eemws.core.utils.xml.XMLUtil;
+import es.ree.eemws.core.utils.iec61968100.EnumMessageStatus;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.config.Configuration;
 import es.ree.eemws.kit.gui.common.Logger;
@@ -71,12 +67,6 @@ public final class SendHandle implements ServiceMenuListener {
     /** Editable text manager. */
     private DocumentHandle documentHandle = null;
 
-    /** Status sent by service when successful. */
-    private static final String STATUS_OK = "A01";
-
-    /** Type of the acknowledgement document. */
-    private static final String ACK_DOCUMENT_TYPE = "Acknowledgement_MarketDocument";
-
     /**
      * Constructor. Creates a new private instance of the
      * Send handler class.
@@ -92,41 +82,15 @@ public final class SendHandle implements ServiceMenuListener {
         log = mainWindow.getLogHandle().getLog();
         documentHandle = mainWindow.getDocumentHandle();
     }
-
-    /**
-     * Retrieves a message send module, it sends messages to end point
-     * using current certificate or the one set to signature.
-     * @return Send module.
-     */
-    private PutMessage getPutMessage() {
-
-        PutMessage put = new PutMessage();
-        Configuration config = new Configuration();
-
-        try {
-
-            config.readConfiguration();
-
-            String urlEndPoint = config.getUrlEndPoint().toURI().toString();
-
-            put.setEndPoint(urlEndPoint);
-
-        } catch (Exception e) {
-
-            log.logMessage(e.getMessage());
-        }
-
-        return put;
-    }
-
+ 
     /**
      * Obtains the service menu items.
      * @return Menu entry containing 'Settings' menu items.
      */
     public JMenu getMenu() {
 
-        JMenuItem sendMenuItem = new JMenuItem(Messages.getString("kit.gui.editor.73"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_SEND)));
-        sendMenuItem.setMnemonic('S');
+        JMenuItem sendMenuItem = new JMenuItem(Messages.getString("EDITOR_MENU_ITEM_SEND"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_SEND))); //$NON-NLS-1$
+        sendMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_SEND_HK").charAt(0)); //$NON-NLS-1$
         sendMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0));
         sendMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
@@ -134,13 +98,10 @@ public final class SendHandle implements ServiceMenuListener {
             }
         });
 
-        serviceMenu.setText(Messages.getString("kit.gui.editor.74"));
-        serviceMenu.setMnemonic('e');
+        serviceMenu.setText(Messages.getString("EDITOR_MENU_ITEM_SERVICE")); //$NON-NLS-1$
+        serviceMenu.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_SERVICE_HK").charAt(0)); //$NON-NLS-1$
         serviceMenu.add(sendMenuItem);
         serviceMenu.addSeparator();
-
-        ServiceMenu ms = new ServiceMenu(this);
-        ms.addServiceElements(serviceMenu);
 
         return serviceMenu;
     }
@@ -155,7 +116,7 @@ public final class SendHandle implements ServiceMenuListener {
         buttonBar.setFloatable(true);
 
         JButton enviarDocBtn = new JButton();
-        enviarDocBtn.setToolTipText(Messages.getString("kit.gui.editor.75"));
+        enviarDocBtn.setToolTipText(Messages.getString("EDITOR_MENU_ITEM_SEND")); //$NON-NLS-1$
         enviarDocBtn.setIcon(new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_SEND)));
         enviarDocBtn.setBorderPainted(false);
         enviarDocBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -174,16 +135,12 @@ public final class SendHandle implements ServiceMenuListener {
      */
     public void enable(final boolean activeValue) {
 
-        Component[] buttons = buttonBar.getComponents();
-        for (int cont = 0; cont < buttons.length; cont++) {
-
-            buttons[cont].setEnabled(activeValue);
+        for (Component comp : buttonBar.getComponents()) {
+            comp.setEnabled(activeValue);
         }
 
-        Component[] subMenu = serviceMenu.getMenuComponents();
-        for (int cont = 0; cont < subMenu.length; cont++) {
-
-            subMenu[cont].setEnabled(activeValue);
+        for (Component comp : serviceMenu.getMenuComponents()) {
+            comp.setEnabled(activeValue);
         }
     }
 
@@ -194,8 +151,10 @@ public final class SendHandle implements ServiceMenuListener {
 
         if (documentHandle.isEmpty()) {
 
-            log.logMessage(Messages.getString("kit.gui.editor.76"));
-            JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.76"),  Messages.getString("kit.gui.editor.54"), JOptionPane.INFORMATION_MESSAGE);
+            log.logMessage(Messages.getString("EDITOR_SEND_DOCUMENT_IS_EMPTY")); //$NON-NLS-1$
+            JOptionPane.showMessageDialog(mainWindow, 
+                    Messages.getString("EDITOR_SEND_DOCUMENT_IS_EMPTY"),   //$NON-NLS-1$
+                    Messages.getString("MSG_INFO_TITLE"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
 
         } else {
 
@@ -209,112 +168,66 @@ public final class SendHandle implements ServiceMenuListener {
     }
 
     /**
-     * Starts sending tasks once screen elements are disabled and the wait
-     * cursor is shown.
+     * Sends the current message.
      */
     private void sendDataAfterDisableComponents() {
-
-        PutMessage putMEssage = getPutMessage();
-
+      
         try {
-
-            log.logMessage(Messages.getString("kit.gui.editor.77"));
+            
+            PutMessage put = new PutMessage();
+            Configuration config = new Configuration();
+            config.readConfiguration();
+            put.setEndPoint(config.getUrlEndPoint());
+ 
+            log.logMessage(Messages.getString("EDITOR_SENDING")); //$NON-NLS-1$
             long l = System.currentTimeMillis();
 
-            String response = putMEssage.put(documentHandle.getPlainText());
-
-
+            String response = put.put(new StringBuilder(documentHandle.getPlainText()));
+            
             l = (System.currentTimeMillis() - l) / 1000;
 
-            log.logMessage(Messages.getString("kit.gui.editor.78"));
+            log.logMessage(Messages.getString("EDITOR_ACK_RECEIVED")); //$NON-NLS-1$
             log.logMessage(response);
 
-            if (!"".equals(response) && response != null) {
-                if (isSuccess(response)) {
-
-                    Object[] paramsText = {l};
-                    String msg = MessageFormat.format(Messages.getString("kit.gui.editor.79"), paramsText);
-                    log.logMessage(msg);
-                    JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("kit.gui.editor.80"), JOptionPane.INFORMATION_MESSAGE);
-
-                } else {
-
-                    String rejectionReason = "";
-                    rejectionReason = getReasonText(response);
-                    Object[] paramsText = {rejectionReason, l};
-                    String msg = MessageFormat.format(Messages.getString("kit.gui.editor.81"), paramsText);
-                    String msg2 = MessageFormat.format(Messages.getString("kit.gui.editor.82"), paramsText);
-                    log.logMessage(msg);
-                    JOptionPane.showMessageDialog(mainWindow, msg2, Messages.getString("kit.gui.editor.22"), JOptionPane.INFORMATION_MESSAGE);
-                }
+            EnumMessageStatus status = put.getStringBuilderMessage().getStatus();
+            
+            if (status == null) {
+                JOptionPane.showMessageDialog(mainWindow, 
+                        Messages.getString("EDITOR_NO_IEC_MESSAGE"),  //$NON-NLS-1$
+                        Messages.getString("MSG_ERROR_TITLE"),  //$NON-NLS-1$
+                        JOptionPane.INFORMATION_MESSAGE);
+                
+            } else if (status.equals(EnumMessageStatus.OK)) {
+                JOptionPane.showMessageDialog(mainWindow, 
+                        Messages.getString("EDITOR_ACK_OK"),  //$NON-NLS-1$
+                        Messages.getString("MSG_INFO_TITLE"),  //$NON-NLS-1$
+                        JOptionPane.INFORMATION_MESSAGE);
             } else {
-                Element xml = XMLElementUtil.string2Element(documentHandle.getPlainText());
-                if (ACK_DOCUMENT_TYPE.equals(xml.getLocalName())) {
-                     Object[] paramsText = {l};
-                     String msg = MessageFormat.format(Messages.getString("kit.gui.editor.79"), paramsText);
-                     log.logMessage(msg);
-                     JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("kit.gui.editor.80"), JOptionPane.INFORMATION_MESSAGE);
-                }
-
+                JOptionPane.showMessageDialog(mainWindow, 
+                        Messages.getString("EDITOR_ACK_NOOK"),  //$NON-NLS-1$
+                        Messages.getString("MSG_WARNING_TITLE"),  //$NON-NLS-1$
+                        JOptionPane.INFORMATION_MESSAGE);
             }
+         
 
-
-        } catch (ClientException cE) {
-
-            String msg = cE.getMessage();
-            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("kit.gui.configuration.12"), JOptionPane.ERROR_MESSAGE);
-            log.logMessage(cE.getMessage());
-
-        } catch (WebServiceException wsE) {
-
-            String msg = Messages.getString("kit.gui.editor.84");
-            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("kit.gui.configuration.12"), JOptionPane.ERROR_MESSAGE);
-            log.logMessage(wsE.getMessage());
-
-        } catch (Exception e) {
-
-            String msg = Messages.getString("kit.gui.editor.85");
-            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("kit.gui.configuration.12"), JOptionPane.ERROR_MESSAGE);
-            log.logMessage(e.getMessage());
-
+        } catch (ClientException | WebServiceException ex) {
+            
+            String msg = Messages.getString("EDITOR_UNABLE_TO_SEND"); //$NON-NLS-1$
+            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+            log.logException(msg, ex);
+                
+        } catch (ConfigException ex) {
+            
+            String msg = Messages.getString("INVALID_CONFIGURATION" + ex.getMessage()); //$NON-NLS-1$
+            JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+            log.logException(msg, ex);
+            
         } finally {
 
             mainWindow.enableScreen(true);
         }
     }
-
-    /**
-     * Checks if message was sent successfully.
-     * @param document Content of the response
-     * @return <code>true</code> if the response is marked as successful.
-     * <code> false</code> otherwise.
-     */
-    private boolean isSuccess(final String document) {
-
-        String code = getCode(document);
-        return (STATUS_OK.indexOf(code) != -1);
-    }
-
-    /** Retrieves the Status code.
-     * @param document content of the Document as text.
-     * @return The Reason node as text.
-     */
-    private String getCode(final String document) {
-
-        String status = XMLUtil.getNodeValue("code", document);
-        return status;
-    }
-
-    /**
-     * Retrieves the description of Send status.
-     * @param document String containing the response
-     * @return description of status
-     */
-    private String getReasonText(final String document) {
-
-        String text = XMLUtil.getNodeValue("text", document);
-        return text;
-    }
+ 
 
     /**
      * Sets end point.

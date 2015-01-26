@@ -37,7 +37,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
-import es.ree.eemws.client.list.IntervalTimeType;
+import es.ree.eemws.core.utils.iec61968100.EnumIntervalTimeType;
 import es.ree.eemws.kit.common.Messages;
 
 /**
@@ -284,9 +284,9 @@ public final class Filter {
 		} else {
 
 			if (listType == 2) {
-				df.setMsgInterval(IntervalTimeType.Application);
+				df.setMsgInterval(EnumIntervalTimeType.APPLICATION);
 			} else {
-				df.setMsgInterval(IntervalTimeType.Server);
+				df.setMsgInterval(EnumIntervalTimeType.SERVER);
 			}
 			df.setStartDate(txtStartDate.getText());
 			df.setEndDate(txtEndDate.getText());

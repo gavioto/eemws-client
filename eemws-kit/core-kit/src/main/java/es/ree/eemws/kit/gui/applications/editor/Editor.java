@@ -25,8 +25,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
-import java.awt.event.WindowEvent;
-import java.util.Locale;
+import java.awt.event.WindowEvent; 
 
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
@@ -38,10 +37,11 @@ import javax.swing.WindowConstants;
 
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.kit.common.Messages;
+import es.ree.eemws.kit.gui.common.LogHandle;
 
 
 /**
- * Implements a simple editor for edit and send XML Messages.
+ * Implements a simple editor to edit and send XML Messages.
  *
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 09/05/2014
@@ -55,7 +55,7 @@ public final class Editor extends JFrame {
     private static final Dimension DEFAULT_SIZE_ON_RESTORE = new Dimension(617, 417);
 
     /** File actions manager. */
-    private FileHandle fileHandle = null;
+    private FileHandler fileHandle = null;
 
     /** Editing actions handler. */
     private EditHandle editHandle = null;
@@ -65,9 +65,6 @@ public final class Editor extends JFrame {
 
     /** Document send handler. */
     private SendHandle sendHandle = null;
-
-    /** XML formating. */
-    private XmlHandle xmlHandle = null;
 
     /** Undo / Redo handler. */
     private UndoRedoHandle undoRedoHandle = null;
@@ -85,9 +82,6 @@ public final class Editor extends JFrame {
 
         try {
 
-            /* Keep text of native components (as default dialogue buttons) text in English */
-            Locale.setDefault(Locale.ENGLISH);
-
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             Editor a = new Editor();
             a.setVisible(true);
@@ -102,13 +96,14 @@ public final class Editor extends JFrame {
 
         } catch (ConfigException ex) {
 
-            JOptionPane.showMessageDialog(null, ex.getMessage(), Messages.getString("kit.gui.editor.36"), JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, ex.getMessage(), Messages.getString("EDITOR_NO_CONFIGURATION"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 
         }
 
         if (excep != null) {
 
-            JOptionPane.showMessageDialog(null, Messages.getString("kit.gui.editor.37") + excep.getMessage(), Messages.getString("kit.gui.configuration.12"), JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, Messages.getString("EDITOR_NO_GUI") + excep.getMessage(),  //$NON-NLS-1$
+                    Messages.getString("EDITOR_NO_GUI"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
         }
     }
 
@@ -133,27 +128,24 @@ public final class Editor extends JFrame {
         logHandle = new LogHandle();
         undoRedoHandle = new UndoRedoHandle(this);
         documentHandle = new DocumentHandle(this);
-        fileHandle = new FileHandle(this);
+        fileHandle = new FileHandler(this);
         editHandle = new EditHandle(this);
         sendHandle = new SendHandle(this);
-        xmlHandle = new XmlHandle(this);
-
+        
         /* Button bar constructors */
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.add(fileHandle.getButtonBar());
         buttonPanel.add(editHandle.getButtonBar());
         buttonPanel.add(sendHandle.getButtonBar());
-        buttonPanel.add(xmlHandle.getButtonBar());
-
+        
         /* Menu construction. */
         JMenuBar barraMenu = new JMenuBar();
         barraMenu.add(fileHandle.getMenu());
         barraMenu.add(editHandle.getMenu());
         barraMenu.add(logHandle.getMenu());
         barraMenu.add(sendHandle.getMenu());
-        barraMenu.add(xmlHandle.getMenu());
-
+        
         getContentPane().add(barraMenu, BorderLayout.NORTH);
 
         /* Graphic elements arrangement. */
@@ -186,7 +178,7 @@ public final class Editor extends JFrame {
      * Returns file actions manager.
      * @return File actions manager.
      */
-    public FileHandle getFicheroHandle() {
+    public FileHandler getFicheroHandle() {
 
         return fileHandle;
     }

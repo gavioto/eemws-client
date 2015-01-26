@@ -32,7 +32,6 @@ import javax.swing.undo.UndoManager;
 
 import es.ree.eemws.kit.common.Messages;
 
-
 /**
  * Management of undo/redo actions.
  *
@@ -41,10 +40,7 @@ import es.ree.eemws.kit.common.Messages;
  */
 public final class UndoRedoHandle implements UndoableEditListener {
 
-    /**
-     * Reference to main window.
-     * Used to show warning messages only.
-     */
+    /** Reference to main window. */
     private Editor mainWindow;
 
     /** Edit changes parameter. */
@@ -113,7 +109,7 @@ public final class UndoRedoHandle implements UndoableEditListener {
     class UndoAction extends AbstractAction {
 
         /** Class ID. */
-        private static final long serialVersionUID = 0x16221b67e6a25842L;
+        private static final long serialVersionUID = -8799265871111561426L;
 
         /**
          * Invoked when "undo" Action is activated, Undoes the last available
@@ -128,7 +124,9 @@ public final class UndoRedoHandle implements UndoableEditListener {
 
             } catch (CannotUndoException ex) {
 
-                JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.87"), Messages.getString("kit.gui.editor.88"), JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_UNABLE_TO_UNDO"), //$NON-NLS-1$
+                        Messages.getString("MSG_INFO_TITLE"), //$NON-NLS-1$
+                        JOptionPane.INFORMATION_MESSAGE);
             }
 
             update();
@@ -144,17 +142,12 @@ public final class UndoRedoHandle implements UndoableEditListener {
             setEnabled(undo.canUndo());
             String title = mainWindow.getTitle();
             if (undo.canUndo()) {
-
-                if (title.indexOf("*") == -1) {
-
-                    mainWindow.setTitle(title + "*");
+                if (title.indexOf(FileHandler.MODIFIED_FILE_CHAR) == -1) {
+                    mainWindow.setTitle(title + FileHandler.MODIFIED_FILE_CHAR);
                 }
-
             } else {
-
-                int pos = title.indexOf("*");
+                int pos = title.indexOf(FileHandler.MODIFIED_FILE_CHAR);
                 if (pos != -1) {
-
                     mainWindow.setTitle(title.substring(0, pos));
                 }
             }
@@ -164,8 +157,7 @@ public final class UndoRedoHandle implements UndoableEditListener {
          * Undoes action.
          */
         public UndoAction() {
-
-            super(Messages.getString("kit.gui.editor.7"));
+            super();
             update();
         }
     }
@@ -187,33 +179,28 @@ public final class UndoRedoHandle implements UndoableEditListener {
         public void actionPerformed(final ActionEvent e) {
 
             try {
-
                 undo.redo();
-
             } catch (CannotRedoException ex) {
-
-                JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.89"), Messages.getString("kit.gui.editor.88"), JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_UNABLE_TO_REDO"),  //$NON-NLS-1$
+                        Messages.getString("MSG_INFO_TITLE"),  //$NON-NLS-1$
+                        JOptionPane.INFORMATION_MESSAGE);
             }
-
             update();
             undoAction.update();
         }
 
         /**
-         * Enable / disable action depending on whether
-         * redo is possible.
+         * Enables / disables action depending on whether redo is possible.
          */
         protected void update() {
-
             setEnabled(undo.canRedo());
         }
 
         /**
-         * Redoes un undone action.
+         * Redoes an undone action.
          */
         public RedoAction() {
-
-            super(Messages.getString("kit.gui.editor.8"));
+            super();
             update();
         }
     }

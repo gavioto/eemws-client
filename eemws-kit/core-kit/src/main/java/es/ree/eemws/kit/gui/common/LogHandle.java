@@ -18,19 +18,16 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
-package es.ree.eemws.kit.gui.applications.editor;
+package es.ree.eemws.kit.gui.common;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import es.ree.eemws.kit.common.Messages;
-import es.ree.eemws.kit.gui.common.Logger;
-import es.ree.eemws.kit.gui.common.LoggerListener;
-
 
 /**
  * Log Window management.
@@ -41,109 +38,78 @@ import es.ree.eemws.kit.gui.common.LoggerListener;
 public final class LogHandle implements LoggerListener {
 
     /** Log menu item, is modified depending on status Log status. */
-    private JMenuItem showLogMenuItem = new JMenuItem();
+    private JCheckBoxMenuItem miShowLog = new JCheckBoxMenuItem();
 
     /** Log window. */
     private Logger log;
 
     /** Log menu. */
-    private JMenu logMenu = new JMenu();
+    private JMenu mnLogMenu = new JMenu();
 
     /**
-     * Create new instance of Log window.
+     * Creates new instance of Log window.
      */
     public LogHandle() {
-
         log = new Logger(this);
         log.setVisible(false);
     }
 
     /**
-     * Retrieve "Actions" menu.
-     * @return "Actions" Menu for main Options bar.
+     * Retrieves "Log" menu.
+     * @return "Log" menu.
      */
     public JMenu getMenu() {
 
-        JMenuItem deleteLog = new JMenuItem();
+        JMenuItem miDeleteLog = new JMenuItem();
 
-        deleteLog.setText(Messages.getString("kit.gui.editor.69"));
-        deleteLog.setMnemonic('D');
-        deleteLog.addActionListener(new ActionListener() {
+        miDeleteLog.setText(Messages.getString("LOG_CLEAR_MENU_ITEM")); //$NON-NLS-1$
+        miDeleteLog.setMnemonic(Messages.getString("LOG_CLEAR_MENU_ITEM_HK").charAt(0)); //$NON-NLS-1$
+        miDeleteLog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-                deleteLog();
+                log.deleteLog();
+            }
+        });
+        miShowLog.setText(Messages.getString("LOG_SHOW_MENU_ITEM")); //$NON-NLS-1$
+        miShowLog.setMnemonic(Messages.getString("LOG_SHOW_MENU_ITEM_HK").charAt(0)); //$NON-NLS-1$
+        miShowLog.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+            	log.setVisible(miShowLog.isSelected());
             }
         });
 
-        showLogMenuItem.setText(Messages.getString("kit.gui.editor.70"));
-        showLogMenuItem.setMnemonic('S');
-        showLogMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                toggleLogMenuItemText();
-            }
-        });
+        mnLogMenu.setText(Messages.getString("LOG_MENU_ITEM")); //$NON-NLS-1$
+        mnLogMenu.setMnemonic(Messages.getString("LOG_MENU_ITEM_HK").charAt(0)); //$NON-NLS-1$
+        mnLogMenu.add(miShowLog);
+        mnLogMenu.add(miDeleteLog);
 
-        logMenu.setText(Messages.getString("kit.gui.editor.71"));
-        logMenu.setMnemonic('L');
-        logMenu.add(showLogMenuItem);
-        logMenu.add(deleteLog);
-        return logMenu;
+        return mnLogMenu;
     }
 
+   
     /**
-     * Display / hide Log window depending on whether log
-     * window is active or not.
-     * Change Text on Menu item: Show Log / Hide Log.
-     */
-    private void toggleLogMenuItemText() {
-
-        if (log.isVisible()) {
-
-            log.setVisible(false);
-            showLogMenuItem.setText(Messages.getString("kit.gui.editor.70"));
-
-        } else {
-
-            log.setVisible(true);
-            showLogMenuItem.setText(Messages.getString("kit.gui.editor.72"));
-        }
-    }
-
-    /**
-     * Delete log messages.
-     */
-    private void deleteLog() {
-
-        log.deleteLog();
-    }
-
-    /**
-     * Retrieve reference to log Window.
+     * Retrieves reference to log Window.
      * @return Reference to log Window.
      */
     public Logger getLog() {
-
         return log;
     }
 
     /**
-     * Invoked by window when closing, swaps items
-     * Hide log / Show log.
+     * Invoked by window when closing.
      */
+    @Override
     public void logWindowIsClosing() {
-
-        showLogMenuItem.setText(Messages.getString("kit.gui.editor.70"));
+        miShowLog.setSelected(false);
     }
 
     /**
-     * Enable / disable graphic values.
+     * Enables / disables graphic values.
      * @param activeValue <code>true</code> Enable.
      * <code>false</code> disable.
      */
     public void enable(final boolean activeValue) {
-
-        Component[] subMenu = logMenu.getMenuComponents();
+        Component[] subMenu = mnLogMenu.getMenuComponents();
         for (int cont = 0; cont < subMenu.length; cont++) {
-
             subMenu[cont].setEnabled(activeValue);
         }
     }

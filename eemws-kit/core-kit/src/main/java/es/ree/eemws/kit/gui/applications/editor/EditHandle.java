@@ -32,9 +32,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.text.MessageFormat;
+import java.awt.event.WindowEvent; 
 
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -49,6 +49,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 
+import es.ree.eemws.core.utils.xml.XMLUtil;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.gui.common.Logger;
 import es.ree.eemws.kit.gui.common.Constants;
@@ -72,7 +73,7 @@ public final class EditHandle {
     private String lastSearchTerm = null;
 
     /** Indicate whether search must ignores capitalization. */
-    private boolean findIsNonCaseSensitive = false;
+    private boolean findIsCaseSensitive = false;
 
     /** Main window. */
     private Editor mainWindow = null;
@@ -84,7 +85,7 @@ public final class EditHandle {
     private JToolBar buttonBar = new JToolBar();
 
     /**
-     * Constructor. Create a new instance of Text Manager.
+     * Constructor. Creates a new instance of Text Manager.
      * @param window Reference to main window.
      */
     public EditHandle(final Editor window) {
@@ -95,40 +96,40 @@ public final class EditHandle {
     }
 
     /**
-     * Retrieve "Edit" menu.
+     * Retrieves "Edit" menu.
      * @return Edition menu for Main Options bar.
      */
     public JMenu getMenu() {
 
-        javax.swing.Action cut = documentHandle.getAction("cut-to-clipboard");
+        javax.swing.Action cut = documentHandle.getAction("cut-to-clipboard"); //$NON-NLS-1$
         JMenuItem cutMenuItem = new JMenuItem(cut);
         cutMenuItem.setAccelerator(KeyStroke.getKeyStroke('X', InputEvent.CTRL_MASK));
-        cutMenuItem.setText(Messages.getString("kit.gui.editor.0"));
-        cutMenuItem.setMnemonic('t');
+        cutMenuItem.setText(Messages.getString("EDITOR_CUT")); //$NON-NLS-1$
+        cutMenuItem.setMnemonic(Messages.getString("EDITOR_CUT_HK").charAt(0)); //$NON-NLS-1$
 
-        javax.swing.Action copy = documentHandle.getAction("copy-to-clipboard");
+        javax.swing.Action copy = documentHandle.getAction("copy-to-clipboard"); //$NON-NLS-1$
         JMenuItem copyMenuItem = new JMenuItem(copy);
         copyMenuItem.setAccelerator(KeyStroke.getKeyStroke('C', InputEvent.CTRL_MASK));
-        copyMenuItem.setText(Messages.getString("kit.gui.editor.1"));
-        copyMenuItem.setMnemonic('C');
+        copyMenuItem.setText(Messages.getString("EDITOR_COPY")); //$NON-NLS-1$
+        copyMenuItem.setMnemonic(Messages.getString("EDITOR_COPY_HK").charAt(0)); //$NON-NLS-1$
 
-        javax.swing.Action paste = documentHandle.getAction("paste-from-clipboard");
+        javax.swing.Action paste = documentHandle.getAction("paste-from-clipboard"); //$NON-NLS-1$
         JMenuItem pasteMenuItem = new JMenuItem(paste);
         pasteMenuItem.setAccelerator(KeyStroke.getKeyStroke('V', InputEvent.CTRL_MASK));
-        pasteMenuItem.setText(Messages.getString("kit.gui.editor.2"));
-        pasteMenuItem.setMnemonic('P');
+        pasteMenuItem.setText(Messages.getString("EDITOR_PASTE")); //$NON-NLS-1$
+        pasteMenuItem.setMnemonic(Messages.getString("EDITOR_PASTE_HK").charAt(0)); //$NON-NLS-1$
 
-        JMenuItem findMenuItem = new JMenuItem(Messages.getString("kit.gui.editor.3"), new ImageIcon(getClass().getResource(Constants.ICON_FIND)));
-        findMenuItem.setMnemonic('B');
-        findMenuItem.setAccelerator(KeyStroke.getKeyStroke('F', InputEvent.CTRL_MASK));
+        JMenuItem findMenuItem = new JMenuItem(Messages.getString("EDITOR_FIND"), new ImageIcon(getClass().getResource(Constants.ICON_FIND))); //$NON-NLS-1$
+        findMenuItem.setMnemonic(Messages.getString("EDITOR_FIND_HK").charAt(0)); //$NON-NLS-1$
+        findMenuItem.setAccelerator(KeyStroke.getKeyStroke(Messages.getString("EDITOR_FIND_HK").charAt(0), InputEvent.CTRL_MASK)); //$NON-NLS-1$
         findMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 find();
             }
         });
 
-        JMenuItem findNextMenuItem = new JMenuItem(Messages.getString("kit.gui.editor.4"), new ImageIcon(getClass().getResource(Constants.ICON_FIND)));
-        findNextMenuItem.setMnemonic('z');
+        JMenuItem findNextMenuItem = new JMenuItem(Messages.getString("EDITOR_FIND_NEXT"), new ImageIcon(getClass().getResource(Constants.ICON_FIND))); //$NON-NLS-1$
+        findNextMenuItem.setMnemonic(Messages.getString("EDITOR_FIND_NEXT").charAt(0)); //$NON-NLS-1$
         findNextMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
         findNextMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
@@ -137,18 +138,18 @@ public final class EditHandle {
         });
 
         JMenuItem replaceMenuItem = new JMenuItem();
-        replaceMenuItem.setText(Messages.getString("kit.gui.editor.5"));
-        replaceMenuItem.setMnemonic('R');
-        replaceMenuItem.setAccelerator(KeyStroke.getKeyStroke('R', InputEvent.CTRL_MASK));
+        replaceMenuItem.setText(Messages.getString("EDITOR_REPLACE")); //$NON-NLS-1$
+        replaceMenuItem.setMnemonic(Messages.getString("EDITOR_REPLACE_HK").charAt(0)); //$NON-NLS-1$
+        replaceMenuItem.setAccelerator(KeyStroke.getKeyStroke(Messages.getString("EDITOR_REPLACE_HK").charAt(0), InputEvent.CTRL_MASK)); //$NON-NLS-1$
         replaceMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 replace();
             }
         });
 
-        JMenuItem goToLineMenuItem = new JMenuItem(Messages.getString("kit.gui.editor.6"), new ImageIcon(getClass().getResource(Constants.ICON_GO)));
-        goToLineMenuItem.setMnemonic('I');
-        goToLineMenuItem.setAccelerator(KeyStroke.getKeyStroke('G', InputEvent.CTRL_MASK));
+        JMenuItem goToLineMenuItem = new JMenuItem(Messages.getString("EDITOR_GO_TO_LINE"), new ImageIcon(getClass().getResource(Constants.ICON_GO))); //$NON-NLS-1$
+        goToLineMenuItem.setMnemonic(Messages.getString("EDITOR_GO_TO_LINE_HK").charAt(0)); //$NON-NLS-1$
+        goToLineMenuItem.setAccelerator(KeyStroke.getKeyStroke(Messages.getString("EDITOR_GO_TO_LINE_HK").charAt(0), InputEvent.CTRL_MASK)); //$NON-NLS-1$
         goToLineMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 goToLine();
@@ -157,27 +158,36 @@ public final class EditHandle {
 
         JMenuItem undoMenuItem = new JMenuItem(mainWindow.getUndoRedoHandle().getUndoAction());
         undoMenuItem.setAccelerator(KeyStroke.getKeyStroke('Z', InputEvent.CTRL_MASK));
-        undoMenuItem.setText(Messages.getString("kit.gui.editor.7"));
-        undoMenuItem.setMnemonic('D');
+        undoMenuItem.setText(Messages.getString("EDITOR_UNDO")); //$NON-NLS-1$
+        undoMenuItem.setMnemonic(Messages.getString("EDITOR_UNDO_HK").charAt(0)); //$NON-NLS-1$
 
         JMenuItem redoMenuItem = new JMenuItem(mainWindow.getUndoRedoHandle().getRedoAction());
         redoMenuItem.setAccelerator(KeyStroke.getKeyStroke('Y', InputEvent.CTRL_MASK));
-        redoMenuItem.setText(Messages.getString("kit.gui.editor.8"));
-        redoMenuItem.setMnemonic('R');
+        redoMenuItem.setText(Messages.getString("EDITOR_REDO")); //$NON-NLS-1$
+        redoMenuItem.setMnemonic(Messages.getString("EDITOR_REDO").charAt(0)); //$NON-NLS-1$
 
-        javax.swing.Action selectAll = documentHandle.getAction("select-all");
+        Action selectAll = documentHandle.getAction("select-all"); //$NON-NLS-1$
         JMenuItem selectAllMenuItem = new JMenuItem(selectAll);
         selectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke('A', InputEvent.CTRL_MASK));
-        selectAllMenuItem.setText(Messages.getString("kit.gui.editor.9"));
-        selectAllMenuItem.setMnemonic('S');
+        selectAllMenuItem.setText(Messages.getString("EDITOR_SELECT_ALL")); //$NON-NLS-1$
+        selectAllMenuItem.setMnemonic(Messages.getString("EDITOR_SELECT_ALL_HK").charAt(0)); //$NON-NLS-1$
 
-        javax.swing.Action selectLine = documentHandle.getAction("select-line");
+        Action selectLine = documentHandle.getAction("select-line"); //$NON-NLS-1$
         JMenuItem selectLineMenuItem = new JMenuItem(selectLine);
-        selectLineMenuItem.setText(Messages.getString("kit.gui.editor.10"));
-        selectLineMenuItem.setMnemonic('l');
+        selectLineMenuItem.setText(Messages.getString("EDITOR_SELECT_LINE")); //$NON-NLS-1$
+        selectLineMenuItem.setMnemonic(Messages.getString("EDITOR_SELECT_LINE_HK").charAt(0)); //$NON-NLS-1$
 
-        editMenu.setText(Messages.getString("kit.gui.editor.11"));
-        editMenu.setMnemonic('E');
+        JMenuItem xmlFormatMenuItem = new JMenuItem();
+        xmlFormatMenuItem.setText(Messages.getString("EDITOR_MENU_ITEM_XML_FORMAT")); //$NON-NLS-1$
+        xmlFormatMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_XML_FORMAT_HK").charAt(0)); //$NON-NLS-1$
+        xmlFormatMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                applyFormat();
+            }
+        });
+       
+        editMenu.setText(Messages.getString("EDITOR_EDIT_MENU_ENTRY")); //$NON-NLS-1$
+        editMenu.setMnemonic(Messages.getString("EDITOR_EDIT_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         editMenu.add(cutMenuItem);
         editMenu.add(copyMenuItem);
         editMenu.add(pasteMenuItem);
@@ -192,12 +202,29 @@ public final class EditHandle {
         editMenu.addSeparator();
         editMenu.add(selectAllMenuItem);
         editMenu.add(selectLineMenuItem);
+        editMenu.addSeparator();
+        editMenu.add(xmlFormatMenuItem);
 
         return editMenu;
     }
 
     /**
-     * Retrieve Edition Button bar.
+     * Applies format (tabs, spaces, etc.) on current document. 
+     */
+    private void applyFormat() {
+        if (documentHandle.isEmpty()) {
+            JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_DOCUMENT_EMPTY"),  //$NON-NLS-1$
+                    Messages.getString("MSG_INFO_TITLE"), //$NON-NLS-1$
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            mainWindow.enableScreen(false);
+            documentHandle.openReversible(XMLUtil.prettyPrint(documentHandle.getPlainText()));
+            mainWindow.enableScreen(true);
+        }
+    }   
+    
+    /**
+     * Retrieves Edition Button bar.
      * @return Edition Button bar.
      */
     public JToolBar getButtonBar() {
@@ -206,7 +233,7 @@ public final class EditHandle {
 
         JButton goToLineBtn = new JButton();
         goToLineBtn.setIcon(new ImageIcon(getClass().getResource(Constants.ICON_GO)));
-        goToLineBtn.setToolTipText(Messages.getString("kit.gui.editor.6"));
+        goToLineBtn.setToolTipText(Messages.getString("EDITOR_GO_TO_LINE")); //$NON-NLS-1$
         goToLineBtn.setBorderPainted(false);
         goToLineBtn.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
@@ -216,41 +243,47 @@ public final class EditHandle {
 
         JButton findBtn = new JButton();
         findBtn.setIcon(new ImageIcon(getClass().getResource(Constants.ICON_FIND)));
-        findBtn.setToolTipText(Messages.getString("kit.gui.editor.3"));
+        findBtn.setToolTipText(Messages.getString("EDITOR_FIND")); //$NON-NLS-1$
         findBtn.setBorderPainted(false);
         findBtn.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 find();
             }
         });
+        
+        JButton btApplyFormat = new JButton();
+        btApplyFormat.setIcon(new ImageIcon(getClass().getResource(Constants.ICON_FORMAT)));
+        btApplyFormat.setToolTipText(Messages.getString("EDITOR_MENU_ITEM_XML_FORMAT")); //$NON-NLS-1$
+        btApplyFormat.setBorderPainted(false);
+        btApplyFormat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                applyFormat();
+            }
+        });
 
         buttonBar.add(goToLineBtn, null);
         buttonBar.add(findBtn, null);
+        buttonBar.add(btApplyFormat, null);
 
         return buttonBar;
     }
 
     /**
-     * Enable disable graphic values.
+     * Enables disable graphic values.
      * @param activeValue <code>true</code> enable. <code>false</code> disable.
      */
     public void enable(final boolean activeValue) {
-
-        Component[] botones = buttonBar.getComponents();
-        for (int cont = 0; cont < botones.length; cont++) {
-
-            botones[cont].setEnabled(activeValue);
+        for (Component component : buttonBar.getComponents()) {
+            component.setEnabled(activeValue);
         }
-
-        Component[] subMenu = editMenu.getMenuComponents();
-        for (int cont = 0; cont < subMenu.length; cont++) {
-
-            subMenu[cont].setEnabled(activeValue);
+        
+        for (Component menu : editMenu.getMenuComponents()) {
+            menu.setEnabled(activeValue);
         }
     }
 
     /**
-     * Search successively in document the last term entered, starting from cursor position.
+     * Searches successively in document the last term entered, starting from cursor position.
      * @param mustShowNotFoundDialogue Indicate whether the "not found" dialogue must be
      * displayed or not.
      * @return <code>true</code> If search term was found. <code>false</code> Otherwise.
@@ -262,23 +295,21 @@ public final class EditHandle {
 
             if (lastSearchTerm != null) {
 
-                String busca = lastSearchTerm;
-                String texto = documentHandle.getPlainText();
-                if (findIsNonCaseSensitive) {
+                String search = lastSearchTerm;
+                String text = documentHandle.getPlainText();
+                if (!findIsCaseSensitive) {
 
-                    texto = texto.toLowerCase();
-                    busca = busca.toLowerCase();
+                    text = text.toLowerCase();
+                    search = search.toLowerCase();
                 }
 
-                int caracterStart = documentHandle.getCursorPosition();
-                int start = texto.indexOf(busca, caracterStart);
+                int chrStart = documentHandle.getCursorPosition();
+                int start = text.indexOf(search, chrStart);
                 if (start == -1) {
 
                     if (mustShowNotFoundDialogue) {
-
-                        Object[] paramsText = {lastSearchTerm, caracterStart};
-                        String msg = MessageFormat.format(Messages.getString("kit.gui.editor.13"), paramsText);
-                        JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("kit.gui.editor.12"), JOptionPane.INFORMATION_MESSAGE);
+                        String msg = Messages.getString("EDITOR_SEARCH_NOT_FOUND_DETAIL", lastSearchTerm, chrStart); //$NON-NLS-1$
+                        JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("EDITOR_SEARCH_NOT_FOUND"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
                         log.logMessage(msg);
                     }
 
@@ -296,38 +327,38 @@ public final class EditHandle {
 
         } else {
 
-            JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.14"), Messages.getString("kit.gui.editor.15"), JOptionPane.INFORMATION_MESSAGE);
-            log.logMessage(Messages.getString("kit.gui.editor.16"));
+            JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_DOCUMENT_EMPTY"), Messages.getString("EDITOR_DOCUMENT_EMPTY"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+            log.logMessage(Messages.getString("EDITOR_DOCUMENT_EMPTY")); //$NON-NLS-1$
         }
 
         return retValue;
     }
 
     /**
-     * Search in document the entered term, starting from cursor position.
+     * Searches in document the entered term, starting from cursor position.
      */
     private void find() {
 
         if (!documentHandle.isEmpty()) {
 
-            SearchAndReplaceDialogue dialogo = new SearchAndReplaceDialogue(mainWindow, false);
-            dialogo.setVisible(true);
-            if (!dialogo.isCanceled()) {
+            SearchAndReplaceDialogue dialog = new SearchAndReplaceDialogue(mainWindow, false);
+            dialog.setVisible(true);
+            if (!dialog.isCanceled()) {
 
-                lastSearchTerm = dialogo.getSearchTerm();
-                findIsNonCaseSensitive = dialogo.isNonCaseSensitive();
+                lastSearchTerm = dialog.getSearchTerm();
+                findIsCaseSensitive = dialog.isCaseSensitive();
                 findNext(true);
             }
 
         } else {
 
-            JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.17"), Messages.getString("kit.gui.editor.18"), JOptionPane.INFORMATION_MESSAGE);
-            log.logMessage(Messages.getString("kit.gui.editor.19"));
+            JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_DOCUMENT_EMPTY"), Messages.getString("EDITOR_DOCUMENT_EMPTY"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+            log.logMessage(Messages.getString("EDITOR_DOCUMENT_EMPTY")); //$NON-NLS-1$
         }
     }
 
     /**
-     * Replace text according to values entered by user on dialogue.
+     * Replaces text according to values entered by user on dialogue.
      */
     private void replace() {
 
@@ -336,14 +367,14 @@ public final class EditHandle {
             SearchAndReplaceDialogue dialogue = new SearchAndReplaceDialogue(mainWindow, true);
             dialogue.setVisible(true);
             if (!dialogue.isCanceled()) {
-
+                
                 lastSearchTerm = dialogue.getSearchTerm();
                 String replace = dialogue.getReplaceTerm();
-                findIsNonCaseSensitive = dialogue.isNonCaseSensitive();
+                findIsCaseSensitive = dialogue.isCaseSensitive();
                 boolean replaceAll = dialogue.isReplaceAll();
-                if (lastSearchTerm.equals(replace) || findIsNonCaseSensitive && lastSearchTerm.equalsIgnoreCase(replace)) {
+                if (lastSearchTerm.equals(replace) || !findIsCaseSensitive && lastSearchTerm.equalsIgnoreCase(replace)) {
 
-                    JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.20"), Messages.getString("kit.gui.editor.21"), 1);
+                    JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_REPLACE_THE_SAME"), Messages.getString("EDITOR_REPLACE_THE_SAME_NOTHING_TO_REPLACE"), 1); //$NON-NLS-1$ //$NON-NLS-2$
 
                 } else {
 
@@ -367,18 +398,16 @@ public final class EditHandle {
                     }
 
                     if (ocurrences > 0) {
-
-                        Object[] paramsText = {ocurrences};
-                        String msg = MessageFormat.format(Messages.getString("kit.gui.editor.26"), paramsText);
-                        JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("kit.gui.editor.22"), JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_REPLACE_NUM_REPLACEMENTS" , ocurrences),  //$NON-NLS-1$
+                                Messages.getString("MSG_INFO_TITLE"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
                     }
                 }
             }
 
         } else {
 
-            JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.23"), Messages.getString("kit.gui.editor.24"), JOptionPane.INFORMATION_MESSAGE);
-            log.logMessage(Messages.getString("kit.gui.editor.25"));
+            JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_DOCUMENT_EMPTY"), Messages.getString("EDITOR_DOCUMENT_EMPTY"), JOptionPane.INFORMATION_MESSAGE);  //$NON-NLS-1$//$NON-NLS-2$
+            log.logMessage(Messages.getString("EDITOR_DOCUMENT_EMPTY")); //$NON-NLS-1$
         }
     }
 
@@ -389,15 +418,14 @@ public final class EditHandle {
 
         if (!documentHandle.isEmpty()) {
 
-            String[] lines = documentHandle.getPlainText().split("\n");
+            String[] lines = documentHandle.getPlainText().split("\n"); //$NON-NLS-1$
             int numberOfLines = lines.length;
             boolean loop = true;
             while (loop) {
 
-                Object[] paramsText = {numberOfLines};
-                String msg = MessageFormat.format(Messages.getString("kit.gui.editor.28"), paramsText);
-
-                String lineNumber = JOptionPane.showInputDialog(mainWindow, msg, Messages.getString("kit.gui.editor.27"), JOptionPane.QUESTION_MESSAGE);
+                String lineNumber = JOptionPane.showInputDialog(mainWindow, Messages.getString("EDITOR_GO_TO_LINE_NUMBER", numberOfLines), //$NON-NLS-1$
+                        Messages.getString("MSG_QUESTION_TITLE"), JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$
+                
                 if (lineNumber != null) {
 
                     try {
@@ -431,8 +459,9 @@ public final class EditHandle {
 
         } else {
 
-            JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.23"), Messages.getString("kit.gui.editor.29"), JOptionPane.INFORMATION_MESSAGE);
-            log.logMessage(Messages.getString("kit.gui.editor.19"));
+            JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_DOCUMENT_EMPTY"),  //$NON-NLS-1$
+                    Messages.getString("EDITOR_DOCUMENT_EMPTY"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
+
         }
     }
 
@@ -442,7 +471,7 @@ public final class EditHandle {
     class SearchAndReplaceDialogue extends JDialog {
 
         /** Class ID. */
-        private static final long serialVersionUID = 0xae5fac8c05f1ca03L;
+        private static final long serialVersionUID = -8621170710549253308L;
 
         /** Search term text box. */
         private JTextField searchTxt;
@@ -455,7 +484,7 @@ public final class EditHandle {
 
         /** Checkbox to indicate whether the search
          * must ignore capitalization. */
-        private JCheckBox ignorarCase;
+        private JCheckBox caseSensitive;
 
         /** Indicates if search was cancelled. */
         private boolean isCanceled;
@@ -470,7 +499,7 @@ public final class EditHandle {
             super(window);
             setModal(true);
             isCanceled = false;
-            searchTxt = new JTextField("");
+            searchTxt = new JTextField(""); //$NON-NLS-1$
             searchTxt.setBounds(new Rectangle(90, 10, 190, 20));
             searchTxt.addActionListener(new ActionListener() {
                 public void actionPerformed(final ActionEvent e) {
@@ -478,12 +507,12 @@ public final class EditHandle {
                 }
             });
 
-            JLabel searchLbl = new JLabel(Messages.getString("kit.gui.editor.30"));
+            JLabel searchLbl = new JLabel(Messages.getString("EDITOR_FIND_LBL")); //$NON-NLS-1$
             searchLbl.setLabelFor(searchTxt);
             searchLbl.setBackground(Color.RED);
-            searchLbl.setDisplayedMnemonic('F');
+            searchLbl.setDisplayedMnemonic(Messages.getString("EDITOR_FIND_LBL_HK").charAt(0)); //$NON-NLS-1$
             searchLbl.setBounds(new Rectangle(10, 10, 50, 20));
-            replaceTxt = new JTextField("");
+            replaceTxt = new JTextField(""); //$NON-NLS-1$
             replaceTxt.setBounds(new Rectangle(90, 33, 190, 20));
             replaceTxt.setEnabled(isReplace);
             replaceTxt.addActionListener(new ActionListener() {
@@ -492,29 +521,27 @@ public final class EditHandle {
                 }
             });
 
-            JLabel replaceLbl = new JLabel(Messages.getString("kit.gui.editor.31"));
+            JLabel replaceLbl = new JLabel(Messages.getString("EDITOR_REPLACE_LBL")); //$NON-NLS-1$
             replaceLbl.setLabelFor(replaceTxt);
-            replaceLbl.setDisplayedMnemonic('R');
+            replaceLbl.setDisplayedMnemonic(Messages.getString("EDITOR_REPLACE_LBL_HK").charAt(0)); //$NON-NLS-1$
             replaceLbl.setBounds(new Rectangle(10, 33, 100, 20));
             replaceLbl.setEnabled(isReplace);
             replaceAll = new JCheckBox();
-            replaceAll.setText(Messages.getString("kit.gui.editor.32"));
-            replaceAll.setMnemonic('a');
+            replaceAll.setText(Messages.getString("EDITOR_REPLACE_ALL_LBL")); //$NON-NLS-1$
+            replaceAll.setMnemonic(Messages.getString("EDITOR_REPLACE_ALL_LBL_HK").charAt(0)); //$NON-NLS-1$
             replaceAll.setSelected(false);
             replaceAll.setBounds(new Rectangle(10, 66, 120, 20));
             replaceAll.setEnabled(isReplace);
-            ignorarCase = new JCheckBox();
-            ignorarCase.setText(Messages.getString("kit.gui.editor.33"));
-            ignorarCase.setMnemonic('N');
-            ignorarCase.setSelected(false);
-            ignorarCase.setBounds(new Rectangle(10, 90, 270, 20));
+            caseSensitive = new JCheckBox();
+            caseSensitive.setText(Messages.getString("EDITOR_REPLACE_CASE_SENSITIVE")); //$NON-NLS-1$
+            caseSensitive.setMnemonic(Messages.getString("EDITOR_REPLACE_CASE_SENSITIVE_HK").charAt(0)); //$NON-NLS-1$
+            caseSensitive.setSelected(true);
+            caseSensitive.setSelected(false);
+            caseSensitive.setBounds(new Rectangle(10, 90, 270, 20));
             JButton findButton = new JButton();
             findButton.setMaximumSize(new Dimension(100, 26));
             findButton.setMinimumSize(new Dimension(100, 26));
             findButton.setPreferredSize(new Dimension(100, 26));
-            findButton.setToolTipText(Messages.getString("kit.gui.editor.34"));
-            findButton.setMnemonic('I');
-            findButton.setText(Messages.getString("kit.gui.editor.3"));
             findButton.addActionListener(new ActionListener() {
                 public void actionPerformed(final ActionEvent e) {
                     accept();
@@ -522,13 +549,13 @@ public final class EditHandle {
             });
 
             JLabel separator = new JLabel();
-            separator.setText("          ");
+            separator.setText("          "); //$NON-NLS-1$
             JButton cancelBtn = new JButton();
             cancelBtn.setMaximumSize(new Dimension(100, 26));
             cancelBtn.setMinimumSize(new Dimension(100, 26));
             cancelBtn.setPreferredSize(new Dimension(100, 26));
-            cancelBtn.setMnemonic('C');
-            cancelBtn.setText(Messages.getString("kit.gui.configuration.6"));
+            cancelBtn.setMnemonic(Messages.getString("EDITOR_CANCEL_BUTTON_HK").charAt(0)); //$NON-NLS-1$
+            cancelBtn.setText(Messages.getString("EDITOR_CANCEL_BUTTON")); //$NON-NLS-1$
             cancelBtn.addActionListener(new ActionListener() {
                 public void actionPerformed(final ActionEvent e) {
                     cancel();
@@ -546,16 +573,21 @@ public final class EditHandle {
             textPanel.add(replaceLbl, null);
             textPanel.add(replaceTxt, null);
             textPanel.add(replaceAll, null);
-            textPanel.add(ignorarCase, null);
+            textPanel.add(caseSensitive, null);
             getContentPane().setLayout(new BorderLayout());
             getContentPane().add(textPanel, BorderLayout.CENTER);
             getContentPane().add(buttonLabel, BorderLayout.SOUTH);
             setSize(new Dimension(300, 190));
             setResizable(false);
             if (isReplace) {
-                setTitle(Messages.getString("kit.gui.editor.5"));
+                setTitle(Messages.getString("EDITOR_SEARCH_AND_REPLACE")); //$NON-NLS-1$
+                findButton.setMnemonic(Messages.getString("EDITOR_SEARCH_AND_REPLACE_HK").charAt(0)); //$NON-NLS-1$
+                findButton.setText(Messages.getString("EDITOR_SEARCH_AND_REPLACE")); //$NON-NLS-1$
             } else {
-                setTitle(Messages.getString("kit.gui.editor.3"));
+                setTitle(Messages.getString("EDITOR_FIND")); //$NON-NLS-1$
+                findButton.setMnemonic(Messages.getString("EDITOR_FIND_HK").charAt(0)); //$NON-NLS-1$
+                findButton.setText(Messages.getString("EDITOR_FIND")); //$NON-NLS-1$
+                
             }
             Dimension screen = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
             setLocation(screen.width / 3, screen.height / 3);
@@ -598,9 +630,9 @@ public final class EditHandle {
          * Indicate whether the capitalization must be ignored.
          * @return <code>true</code> If capitalization is ignored<code>false</code> otherwise.
          */
-        public boolean isNonCaseSensitive() {
+        public boolean isCaseSensitive() {
 
-            return ignorarCase.isSelected();
+            return caseSensitive.isSelected();
         }
 
         /**
