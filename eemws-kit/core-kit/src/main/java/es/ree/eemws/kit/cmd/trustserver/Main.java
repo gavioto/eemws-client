@@ -53,12 +53,12 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.xml.ws.WebServiceException;
 
-import es.ree.eemws.client.common.ClientException;
-import es.ree.eemws.client.common.MessageData;
+import es.ree.eemws.client.common.ClientException; 
 import es.ree.eemws.client.get.GetMessage;
 import es.ree.eemws.client.list.ListMessages;
 import es.ree.eemws.client.list.MessageListEntry;
 import es.ree.eemws.core.utils.config.ConfigException; 
+import es.ree.eemws.core.utils.iec61968100.MessageMetaData;
 import es.ree.eemws.core.utils.security.X509Util;
 import es.ree.eemws.kit.cmd.ParentMain;
 import es.ree.eemws.kit.common.Messages;
@@ -77,6 +77,9 @@ public final class Main extends ParentMain {
 	/** Sets text for parameter <code>url</code>. */
 	private static final String PARAMETER_URL = Messages.getString("PARAMETER_URL"); //$NON-NLS-1$
 
+	/** Sets text for parameter <code>force</code>. */
+    private static final String PARAMETER_FORCE = Messages.getString("TRUSTSERVER_FORCE"); //$NON-NLS-1$
+	
 	/** Log messages. */
 	private static final Logger LOGGER = Logger.getLogger(COMMAND_NAME);
 
@@ -98,6 +101,8 @@ public final class Main extends ParentMain {
 	/** Java system property to get the trust store file. */
 	private static final String LOCAL_TRUST_STORE_FILE_KEY = "javax.net.ssl.trustStore"; //$NON-NLS-1$
 
+
+
 	/** Local trust store. */
 	private static KeyStore localTrustStore;
 
@@ -116,11 +121,16 @@ public final class Main extends ParentMain {
 			List<String> arguments = new ArrayList<>(Arrays.asList(args));
 
 			urlEndPoint = readParameter(arguments, PARAMETER_URL);
-
+				
+			boolean force = false; 
+			if (arguments.contains(PARAMETER_FORCE)) {
+			    force = true;
+			    arguments.remove(PARAMETER_FORCE);
+			}
+			
 			if (!arguments.isEmpty()) {
 				throw new IllegalArgumentException(Messages.getString("UNKNOWN_PARAMETERS", arguments.toString())); //$NON-NLS-1$
 			}
-
 
 			urlEndPoint = setConfig(urlEndPoint);
 
@@ -147,7 +157,7 @@ public final class Main extends ParentMain {
 			LOGGER.info(""); //$NON-NLS-1$
 			LOGGER.info(Messages.getString("TRUSTSERVER_GETTING_SERVER_CERTICATES")); //$NON-NLS-1$
 			
-			boolean certAdded  = addServerCerts(urlEndPoint);
+			boolean certAdded  = addServerCerts(urlEndPoint, force);
 			
 			if (certAdded) {
 				LOGGER.info(Messages.getString("TRUSTSERVER_RERUN_COMMAND")); //$NON-NLS-1$
@@ -173,7 +183,7 @@ public final class Main extends ParentMain {
 			LOGGER.log(Level.SEVERE, Messages.getString("TRUSTSERVER_BAD_KEYSTORE"), e.getMessage()); //$NON-NLS-1$
 		} catch (IllegalArgumentException e) {
 			LOGGER.info(e.getMessage());
-			LOGGER.info(Messages.getString("TRUSTSERVER_USAGE", PARAMETER_URL)); //$NON-NLS-1$
+			LOGGER.info(Messages.getString("TRUSTSERVER_USAGE", PARAMETER_URL, PARAMETER_FORCE)); //$NON-NLS-1$
 		}
 
 	}
@@ -245,33 +255,29 @@ public final class Main extends ParentMain {
 			LOGGER.log(Level.FINE, Messages.getString("TRUSTSERVER_UNABLE_TO_CONNECT_WITH_SERVER", ce.getMessage()), ce); //$NON-NLS-1$
 			
 		} finally {
-			boolean added = false;
 			if (get != null) {
-				MessageData md = get.getMessageData();
+				MessageMetaData md = get.getMessageMetaData();
 				if (md != null) {
-					X509Certificate certificate = md.getCertificate();
+					X509Certificate certificate = md.getSignatureCertificate();
 					if (certificate != null) {
-						added = addCertificate(url.getHost() + " (" + certificate.getSubjectDN().getName() + ") (" + Messages.getString("TRUSTSERVER_SIGNATURE") + ") ", certificate); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$		
+						addCertificate(url.getHost() + " (" + certificate.getSubjectDN().getName() + ") (" + Messages.getString("TRUSTSERVER_SIGNATURE") + ") ", certificate); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$		
 					}
 				}
 			}
-						
-			if (!added) {
-				LOGGER.warning(Messages.getString("TRUSTSERVER_NO_SIGNATURE")); //$NON-NLS-1$
-			} 		
 		}
 	}
 
 	/**
 	 * Adds the all the certificates in the server's certificate chain to the local trust store.
 	 * @param urlEndPoint Url to connect with in order to retrieve the certificate chain.
+	 * @param force If the certificate should be added even if it's not a CA certificate.
 	 * @return <code>true</code> if a least one certificate is added.
 	 * @throws MalformedURLException If the current url is incorrecto (impossible at this point) 
 	 * @throws KeyStoreException If the method is unable to add the retrieved certificate.
 	 * @throws NoSuchAlgorithmException If the system is unable to deal with TSL protocol (Is this possible by the way?)
 	 * @throws KeyManagementException If it is not possible to initialize the SSL context with the local trust store.
 	 */
-	private static boolean addServerCerts(final String urlEndPoint) throws MalformedURLException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+	private static boolean addServerCerts(final String urlEndPoint, final boolean force) throws MalformedURLException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
 
 		boolean certsAdded = false;
 		
@@ -303,30 +309,18 @@ public final class Main extends ParentMain {
 			X509Certificate[] chain = tm.getServerCertificateChain();
 
 			if (chain != null && chain.length > 0) {
-
-				String hostCompare = "CN=" + host.toUpperCase(); //$NON-NLS-1$
-				boolean match = false;
-
+				
 				for (X509Certificate certificate : chain) {
 					String subjectDN = certificate.getSubjectDN().getName();
 					String issuer = certificate.getIssuerDN().getName();
-
-					if (subjectDN.toUpperCase().indexOf(hostCompare) != -1) {
-						match = true;
-					}
-
-					if (issuer.equals(subjectDN)) {
+   
+					if (force || issuer.equals(subjectDN)) {
 						if (addCertificate(host + " (" + subjectDN + ") ", certificate)) { //$NON-NLS-1$ //$NON-NLS-2$
 							certsAdded = true;
-						}
-						
+						}						
 					} else {
 						LOGGER.info(Messages.getString("TRUSTSERVER_SKIPPING_NO_ROOT_CERTIFICATE", subjectDN)); //$NON-NLS-1$
 					}
-				}
-
-				if (!match) {
-					LOGGER.warning(Messages.getString("TRUSTSERVER_NO_CERTIFICATE_MATCH_SERVER_NAME")); //$NON-NLS-1$
 				}
 			}
 		}

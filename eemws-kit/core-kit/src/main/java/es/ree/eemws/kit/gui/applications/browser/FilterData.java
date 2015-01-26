@@ -27,7 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import es.ree.eemws.kit.common.Messages;
-import es.ree.eemws.client.list.IntervalTimeType;
+import es.ree.eemws.core.utils.iec61968100.EnumIntervalTimeType;
 
 
 /**
@@ -63,7 +63,7 @@ public final class FilterData {
     private String owner = null;
 
     /** Defines type of interval. */
-    private IntervalTimeType msgInterval = null;
+    private EnumIntervalTimeType msgInterval = null;
 
     /**
      * Sets list filter code.
@@ -232,7 +232,7 @@ public final class FilterData {
      * @return 'interval' filtering field.
      */
 
-    public IntervalTimeType getMsgInterval() {
+    public EnumIntervalTimeType getMsgInterval() {
         return msgInterval;
     }
 
@@ -240,7 +240,7 @@ public final class FilterData {
      * Sets 'interval' filtering field.
      * @param pMsgInterval Owner by which query will be filtered.
      */
-    public void setMsgInterval(final IntervalTimeType pMsgInterval) {
+    public void setMsgInterval(final EnumIntervalTimeType pMsgInterval) {
         msgInterval = pMsgInterval;
     }
 

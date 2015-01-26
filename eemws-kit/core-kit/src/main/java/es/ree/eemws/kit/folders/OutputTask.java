@@ -93,9 +93,9 @@ public final class OutputTask implements Runnable {
 		
 		StringBuilder msg = new StringBuilder();
 		msg.append("\n").append(Messages.getString("MF_CONFIG_OUTPUT_FOLDER", outputFolder)); //$NON-NLS-1$ //$NON-NLS-2$
-		msg.append("\n").append(Messages.getString("MF_CONFIG_OUTPUT_URL_O", endPoint.toString())); //$NON-NLS-1$ //$NON-NLS-2$
 		msg.append("\n").append(Messages.getString("MF_CONFIG_DELAY_TIME_O", config.getSleepTimeOutput()));  //$NON-NLS-1$//$NON-NLS-2$
-		
+		msg.append("\n").append(Messages.getString("MF_CONFIG_URL_O", endPoint.toString())); //$NON-NLS-1$ //$NON-NLS-2$
+				
 		LOGGER.info(msg.toString());
 	}
 
@@ -118,17 +118,17 @@ public final class OutputTask implements Runnable {
 			
 			try {
 				if (mle.getVersion() == null) {
-					LOGGER.log(Level.SEVERE, Messages.getString("MF_RETRIEVING_MESSAGE_WO_VERSION", String.valueOf(code), mle.getMessageIdentification())); //$NON-NLS-1$
+					LOGGER.info(Messages.getString("MF_RETRIEVING_MESSAGE_WO_VERSION", String.valueOf(code), mle.getMessageIdentification())); //$NON-NLS-1$
 				} else {
-					LOGGER.log(Level.SEVERE, Messages.getString("MF_RETRIEVING_MESSAGE", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
+					LOGGER.info(Messages.getString("MF_RETRIEVING_MESSAGE", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
 				}
 				
 				String response = get.get(code);
 				
 				if (mle.getVersion() == null) {
-					LOGGER.log(Level.SEVERE, Messages.getString("MF_RETRIEVED_MESSAGE_WO_VERSION", String.valueOf(code), mle.getMessageIdentification())); //$NON-NLS-1$
+					LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE_WO_VERSION", String.valueOf(code), mle.getMessageIdentification())); //$NON-NLS-1$
 				} else {
-					LOGGER.log(Level.SEVERE, Messages.getString("MF_RETRIEVED_MESSAGE", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
+					LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
 				}
 				
 				File tmpFile;

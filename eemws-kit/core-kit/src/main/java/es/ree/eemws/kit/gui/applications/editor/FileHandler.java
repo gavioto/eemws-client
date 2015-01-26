@@ -31,7 +31,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -54,17 +53,23 @@ import es.ree.eemws.kit.gui.common.Logger;
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 09/05/2014
  */
-public final class FileHandle extends DropTargetAdapter {
+public final class FileHandler extends DropTargetAdapter {
 
     /**
      * String to notify on title that the current
      * document has not been saved yet.
      */
-    public static final String NEW_FILE = Messages.getString("kit.gui.editor.38");
+    public static final String NEW_FILE = Messages.getString("EDITOR_NEW_FILE_TITLE"); //$NON-NLS-1$
 
-    /** Character to notify on title that document has been modified. */
-    private static final String MODIFIED_FILE_CHAR = "*";
+    /** Character to notify in the application title that document has been modified. */
+    public static final String MODIFIED_FILE_CHAR = "*"; //$NON-NLS-1$
 
+    /** File name start character token. */ 
+    private static final String TITLE_START = "["; //$NON-NLS-1$
+    
+    /** File name end character token. */
+    private static final String TITLE_END = "]"; //$NON-NLS-1$
+    
     /** Editable text handler. */
     private DocumentHandle documentHandle = null;
 
@@ -87,7 +92,7 @@ public final class FileHandle extends DropTargetAdapter {
      * Creates a new instance of the File handler.
      * @param window Reference to main window.
      */
-    public FileHandle(final Editor window) {
+    public FileHandler(final Editor window) {
 
         mainWindow = window;
         documentHandle = mainWindow.getDocumentHandle();
@@ -104,25 +109,24 @@ public final class FileHandle extends DropTargetAdapter {
      */
     public JMenu getMenu() {
 
-        JMenuItem newFileMenuItem = new JMenuItem(Messages.getString("kit.gui.editor.39"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_NEW)));
-        newFileMenuItem.setMnemonic('N');
+        JMenuItem newFileMenuItem = new JMenuItem(Messages.getString("EDITOR_MENU_ITEM_NEW"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_NEW))); //$NON-NLS-1$
+        newFileMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_NEW_HK").charAt(0)); //$NON-NLS-1$
         newFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-
                 newFile();
             }
         });
 
-        JMenuItem openFileMenuItem = new JMenuItem(Messages.getString("kit.gui.editor.40"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_OPEN)));
-        openFileMenuItem.setMnemonic('O');
+        JMenuItem openFileMenuItem = new JMenuItem(Messages.getString("EDITOR_MENU_ITEM_OPEN"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_OPEN))); //$NON-NLS-1$
+        openFileMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_OPEN_HK").charAt(0)); //$NON-NLS-1$
         openFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 openFile();
             }
         });
 
-        JMenuItem saveMenuItem = new JMenuItem(Messages.getString("kit.gui.editor.41"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_SAVE)));
-        saveMenuItem.setMnemonic('S');
+        JMenuItem saveMenuItem = new JMenuItem(Messages.getString("EDITOR_MENU_ITEM_SAVE"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_SAVE))); //$NON-NLS-1$
+        saveMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_SAVE_HK").charAt(0)); //$NON-NLS-1$
         saveMenuItem.setAccelerator(KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK));
         saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
@@ -130,8 +134,8 @@ public final class FileHandle extends DropTargetAdapter {
             }
         });
 
-        JMenuItem saveAsMenuItem = new JMenuItem(Messages.getString("kit.gui.editor.42"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_SAVE_AS)));
-        saveAsMenuItem.setMnemonic('A');
+        JMenuItem saveAsMenuItem = new JMenuItem(Messages.getString("EDITOR_MENU_ITEM_SAVE_AS"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_SAVE_AS))); //$NON-NLS-1$
+        saveAsMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_SAVE_AS_HK").charAt(0)); //$NON-NLS-1$
         saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 saveFileAs();
@@ -139,16 +143,16 @@ public final class FileHandle extends DropTargetAdapter {
         });
 
         JMenuItem menuItemExit = new JMenuItem();
-        menuItemExit.setText(Messages.getString("kit.gui.editor.43"));
-        menuItemExit.setMnemonic('x');
+        menuItemExit.setText(Messages.getString("EDITOR_MENU_ITEM_EXIT")); //$NON-NLS-1$
+        menuItemExit.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_EXIT").charAt(0)); //$NON-NLS-1$
         menuItemExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 exitProgram();
             }
         });
 
-        fileMenu.setText(Messages.getString("kit.gui.editor.44"));
-        fileMenu.setMnemonic('F');
+        fileMenu.setText(Messages.getString("EDITOR_MENU_ITEM_FILE")); //$NON-NLS-1$
+        fileMenu.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_FILE").charAt(0)); //$NON-NLS-1$
         fileMenu.add(newFileMenuItem);
         fileMenu.add(openFileMenuItem);
         fileMenu.add(saveMenuItem);
@@ -169,7 +173,7 @@ public final class FileHandle extends DropTargetAdapter {
 
         JButton newDocumentButton = new JButton();
         newDocumentButton.setIcon(new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_NEW)));
-        newDocumentButton.setToolTipText(Messages.getString("kit.gui.editor.38"));
+        newDocumentButton.setToolTipText(Messages.getString("EDITOR_MENU_ITEM_NEW")); //$NON-NLS-1$
         newDocumentButton.setBorderPainted(false);
         newDocumentButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
@@ -178,7 +182,7 @@ public final class FileHandle extends DropTargetAdapter {
         });
 
         JButton openFileButton = new JButton();
-        openFileButton.setToolTipText(Messages.getString("kit.gui.editor.45"));
+        openFileButton.setToolTipText(Messages.getString("EDITOR_MENU_ITEM_OPEN")); //$NON-NLS-1$
         openFileButton.setBorderPainted(false);
         openFileButton.setIcon(new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_OPEN)));
         openFileButton.addActionListener(new java.awt.event.ActionListener() {
@@ -189,7 +193,7 @@ public final class FileHandle extends DropTargetAdapter {
 
         JButton saveFileButton = new JButton();
         saveFileButton.setIcon(new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_SAVE)));
-        saveFileButton.setToolTipText(Messages.getString("kit.gui.editor.46"));
+        saveFileButton.setToolTipText(Messages.getString("EDITOR_MENU_ITEM_SAVE")); //$NON-NLS-1$
         saveFileButton.setBorderPainted(false);
         saveFileButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(final ActionEvent e) {
@@ -204,7 +208,7 @@ public final class FileHandle extends DropTargetAdapter {
     }
 
     /**
-     * Open file in Edit area.
+     * Opens a file in edit area.
      * @param file File to be opened.
      */
     private void openFile(final File file) {
@@ -214,29 +218,30 @@ public final class FileHandle extends DropTargetAdapter {
             try {
 
                 documentHandle.openIrreversible(new StringBuilder(FileUtil.readUTF8(file.getAbsolutePath())));
-                log.logMessage(Messages.getString("kit.gui.editor.47") + " " + file.getAbsolutePath());
-                mainWindow.setTitle("[" + file.getName() + "]");
+                log.logMessage(Messages.getString("EDITOR_OPENING_FILE", file.getAbsolutePath())); //$NON-NLS-1$
+                mainWindow.setTitle(TITLE_START + file.getName() + TITLE_END); 
                 currentFile = file;
 
             } catch (IOException ioe) {
-                JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.48") + ioe.getMessage(), Messages.getString("kit.gui.editor.49"), JOptionPane.ERROR_MESSAGE);
-                log.logMessage(Messages.getString("kit.gui.editor.50") + " " + file.getAbsolutePath() + " " + Messages.getString("kit.gui.editor.51") + ioe.getMessage());
+                String errMsg = Messages.getString("EDITOR_CANNOT_OPEN_FILE", file.getAbsolutePath(), ioe.getMessage()); //$NON-NLS-1$
+                JOptionPane.showMessageDialog(mainWindow, errMsg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+                log.logMessage(errMsg);
             }
         }
     }
 
     /**
-     * Opens file in editor.
+     * Opens a file in editor.
      */
     private void openFile() {
 
         if (hasUserPermission()) {
 
-            JFileChooser manejarFichero = new JFileChooser();
-            int returnVal = manejarFichero.showOpenDialog(mainWindow);
+            JFileChooser fileChooser = new JFileChooser();
+            int returnVal = fileChooser.showOpenDialog(mainWindow);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
 
-                openFile(manejarFichero.getSelectedFile());
+                openFile(fileChooser.getSelectedFile());
             }
         }
     }
@@ -247,11 +252,9 @@ public final class FileHandle extends DropTargetAdapter {
     private void saveFile() {
 
         if (currentFile == null) {
-
             saveFileAs();
 
         } else {
-
             saveFile(currentFile);
         }
     }
@@ -263,32 +266,33 @@ public final class FileHandle extends DropTargetAdapter {
 
         if (documentHandle.isEmpty()) {
 
-            log.logMessage(Messages.getString("kit.gui.editor.52"));
-            JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.53"), Messages.getString("kit.gui.editor.54"), JOptionPane.INFORMATION_MESSAGE);
+            log.logMessage(Messages.getString("EDITOR_NOTHING_TO_SAVE")); //$NON-NLS-1$
+            JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_NOTHING_TO_SAVE"), Messages.getString("MSG_WARNING_TITLE"), JOptionPane.INFORMATION_MESSAGE);  //$NON-NLS-1$//$NON-NLS-2$
 
         } else {
 
-            String title = mainWindow.getTitle();
-            title = title.substring(title.indexOf("[") + 1, title.indexOf("]"));
-
-            JFileChooser manejarFichero = new JFileChooser();
-            manejarFichero.setSelectedFile(new File(title));
-            int returnVal = manejarFichero.showSaveDialog(mainWindow);
+            String fileNameFromTitle = mainWindow.getTitle();
+            fileNameFromTitle = fileNameFromTitle.substring(fileNameFromTitle.indexOf(TITLE_START) + 1, fileNameFromTitle.indexOf(TITLE_END));  
+ 
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setSelectedFile(new File(fileNameFromTitle));
+            int returnVal = fileChooser.showSaveDialog(mainWindow);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
 
-                File file = manejarFichero.getSelectedFile();
+                File file = fileChooser.getSelectedFile();
                 if (file.exists()) {
 
-                    int resp = JOptionPane.showConfirmDialog(mainWindow, Messages.getString("kit.gui.editor.55") + file.getName() + Messages.getString("kit.gui.editor.56"),
-                            Messages.getString("kit.gui.editor.57"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                    int resp = JOptionPane.showConfirmDialog(mainWindow, 
+                            Messages.getString("EDITOR_SAVE_FILE_ALREADY_EXISTS", file.getName()), //$NON-NLS-1$
+                            Messages.getString("MSG_WARNING_TITLE"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
 
                     if (resp != JOptionPane.OK_OPTION) {
 
                         return;
                     }
 
-                    log.logMessage(Messages.getString("kit.gui.editor.58") + " " + file.getAbsolutePath());
+                    log.logMessage(Messages.getString("EDITOR_SAVE_FILE_OVERWRITTEN", file.getAbsolutePath())); //$NON-NLS-1$
                 }
 
                 saveFile(file);
@@ -297,7 +301,7 @@ public final class FileHandle extends DropTargetAdapter {
     }
 
     /**
-     * Save a file.
+     * Saves a file.
      * @param file File.
      */
     private void saveFile(final File file) {
@@ -306,30 +310,29 @@ public final class FileHandle extends DropTargetAdapter {
 
             String contenido = documentHandle.getPlainText();
             FileUtil.writeUTF8(file.getAbsolutePath(), contenido);
-            mainWindow.setTitle("[" + file.getName() + "]");
-
-            Object[] paramsText = {file.getAbsolutePath()};
-            String msg = MessageFormat.format(Messages.getString("kit.gui.editor.59"), paramsText);
-            log.logMessage(msg);
+            log.logMessage(Messages.getString("EDITOR_SAVE_FILE_SAVED", file.getAbsolutePath())); //$NON-NLS-1$
             currentFile = file;
-
+            mainWindow.setTitle(TITLE_START + file.getName() + TITLE_END);  
+            
         } catch (IOException ioe) {
 
-            JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.60") + " " + ioe.getMessage(), Messages.getString("kit.gui.editor.61"), JOptionPane.ERROR_MESSAGE);
-            log.logMessage(Messages.getString("kit.gui.editor.62") + " " + file.getAbsolutePath() + " " + Messages.getString("kit.gui.editor.51") + ioe.getMessage());
+            String errMsg = Messages.getString("EDITOR_UNABLE_TO_SAVE", file.getAbsolutePath());  //$NON-NLS-1$
+            
+            JOptionPane.showMessageDialog(mainWindow, errMsg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+                        
+            log.logException(errMsg, ioe);
         }
     }
 
     /**
-     * Create a new file.
+     * CreateS a new file.
      */
     private void newFile() {
 
         if (hasUserPermission()) {
-
-            documentHandle.openIrreversible(new StringBuilder(""));
-            mainWindow.setTitle("[" + NEW_FILE + "]");
-            log.logMessage(NEW_FILE + ".");
+            documentHandle.openIrreversible(new StringBuilder("")); //$NON-NLS-1$
+            mainWindow.setTitle(TITLE_START + NEW_FILE + TITLE_END);
+            log.logMessage(NEW_FILE);
             currentFile = null;
         }
     }
@@ -348,16 +351,15 @@ public final class FileHandle extends DropTargetAdapter {
         if (title.indexOf(MODIFIED_FILE_CHAR) != -1) {
 
             String fileName = title.substring(0, title.indexOf(MODIFIED_FILE_CHAR));
-            fileName = fileName.substring(fileName.indexOf("[") + 1, fileName.indexOf("]"));
+            fileName = fileName.substring(fileName.indexOf(TITLE_START) + 1, fileName.indexOf(TITLE_END));
 
-            Object[] paramsText = {fileName};
-            String msg = MessageFormat.format(Messages.getString("kit.gui.editor.63"), paramsText);
-
-            int answer = JOptionPane.showConfirmDialog(mainWindow, msg, Messages.getString("kit.gui.editor.64"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if (answer != JOptionPane.OK_OPTION) {
-
-                permited = false;
-            }
+            int answer = JOptionPane.showConfirmDialog(mainWindow, 
+                    Messages.getString("EDITOR_LOSE_CHANGES", fileName),  //$NON-NLS-1$
+                    Messages.getString("MSG_WARNING_TITLE"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$
+            
+            
+            permited = (answer == JOptionPane.OK_OPTION);
+            
         }
 
         return permited;
@@ -369,10 +371,10 @@ public final class FileHandle extends DropTargetAdapter {
     public void exitProgram() {
 
         if (hasUserPermission()) {
+            int res = JOptionPane.showConfirmDialog(mainWindow, Messages.getString("EDITOR_EXIT_APPLICATION"),  //$NON-NLS-1$
+                    Messages.getString("MSG_QUESTION_TITLE"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$
 
-            int respuesta = JOptionPane.showConfirmDialog(mainWindow, Messages.getString("kit.gui.editor.65"), Messages.getString("kit.gui.editor.66"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if (respuesta == JOptionPane.OK_OPTION) {
-
+            if (res == JOptionPane.OK_OPTION) {
                 System.exit(0);
             }
         }
@@ -400,7 +402,9 @@ public final class FileHandle extends DropTargetAdapter {
 
                 } else {
 
-                    JOptionPane.showMessageDialog(mainWindow, Messages.getString("kit.gui.editor.67"), Messages.getString("kit.gui.editor.68"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_CANNOT_LOAD_FOLDER"),  //$NON-NLS-1$
+                            Messages.getString("MSG_ERROR_TITLE"), //$NON-NLS-1$ 
+                            JOptionPane.ERROR_MESSAGE); 
                     eventoDrop.dropComplete(false);
                 }
 
@@ -423,16 +427,12 @@ public final class FileHandle extends DropTargetAdapter {
      */
     public void enable(final boolean activeValue) {
 
-        Component[] buttons = toolBar.getComponents();
-        for (int count = 0; count < buttons.length; count++) {
-
-            buttons[count].setEnabled(activeValue);
+        for (Component comp : toolBar.getComponents()) {
+            comp.setEnabled(activeValue);
         }
-
-        Component[] subMenu = fileMenu.getMenuComponents();
-        for (int cont = 0; cont < subMenu.length; cont++) {
-
-            subMenu[cont].setEnabled(activeValue);
+        
+        for (Component comp : fileMenu.getMenuComponents()) {
+            comp.setEnabled(activeValue);
         }
     }
 }

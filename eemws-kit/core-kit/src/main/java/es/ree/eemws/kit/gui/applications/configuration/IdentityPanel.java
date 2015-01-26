@@ -30,7 +30,11 @@ import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
+import java.util.Enumeration;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -245,11 +249,35 @@ public final class IdentityPanel extends JPanel {
 				KeyStore ks = KeyStore.getInstance((String) storeType.getSelectedItem());
 
 				ks.load(certFileIS, pass1.toCharArray());
-				int storeSize = ks.size();
-				if (storeSize > 1) {
-					throw new ConfigException(getPanelName() + " " + Messages.getString("SETTINGS_PANEL_SAYS") + " "   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
-							+ Messages.getString("SETTINGS_IDENTITY_CERTIFICATE_MORE_THAN_ONE", storeSize)); //$NON-NLS-1$
-				}
+				
+				 Enumeration<String> keyAlias = ks.aliases();
+		         String entryAlias = null;
+		            boolean okAlias = false;
+
+		            while (!okAlias && keyAlias.hasMoreElements()) {
+
+		                try {
+
+		                    entryAlias = keyAlias.nextElement();
+		                    RSAPrivateKey privateKey = (RSAPrivateKey) ks.getKey(entryAlias, pass1.toCharArray());
+		                    X509Certificate certificate = (X509Certificate) ks.getCertificate(entryAlias);
+		                    certificate.checkValidity();
+		                    
+		                    // do not use keystore entries with no private key (usually a CA certificate)
+		                    okAlias = privateKey != null;
+
+		                } catch (CertificateException | UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
+
+		                    okAlias = false;
+		                }
+		            }
+
+		            if (!okAlias) {
+
+		            	throw new ConfigException(getPanelName() + " " + Messages.getString("SETTINGS_PANEL_SAYS") + " "   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
+								+ Messages.getString("SETTINGS_IDENTITY_NO_USABLE_CERTIFICATE")); //$NON-NLS-1$
+		            }
+				 
 			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
 				throw new ConfigException(getPanelName() + " " + Messages.getString("SETTINGS_PANEL_SAYS") + " "   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
 						+ Messages.getString("SETTINGS_IDENTITY_CERTIFICATE_CANNOT_BE_READ")); //$NON-NLS-1$

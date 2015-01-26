@@ -21,27 +21,19 @@
 package es.ree.eemws.client.put;
 
 import java.io.IOException;
-import java.util.List;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import _504.iec62325.wss._1._0.MsgFaultMsg;
-import ch.iec.tc57._2011.schema.message.HeaderType;
-import ch.iec.tc57._2011.schema.message.PayloadType;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
-import ch.iec.tc57._2011.schema.message.RequestType;
-import ch.iec.tc57._2011.schema.message.RequestType.ID;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
-import es.ree.eemws.client.common.Messages;
-import es.ree.eemws.client.common.ParentClient;
 import es.ree.eemws.client.common.ClientException;
-import es.ree.eemws.core.utils.file.GZIPUtil;
-import es.ree.eemws.core.utils.xml.XMLElementUtil;
-
+import es.ree.eemws.client.common.ParentClient;
+import es.ree.eemws.core.utils.iec61968100.EnumVerb;
+import es.ree.eemws.core.utils.iec61968100.MessageUtil;
+import es.ree.eemws.core.utils.xml.XMLUtil;
 
 /**
  * The Put Message service is used to send a message to the server for further processing
@@ -52,19 +44,12 @@ import es.ree.eemws.core.utils.xml.XMLElementUtil;
  */
 public final class PutMessage extends ParentClient {
 
-    /** Verb of the action. */
-    private static final String VERB = "create"; //$NON-NLS-1$
-
-    /** Name of the name of the binary file. */
-    private static final String BINARY_FILENAME_ID = "name"; //$NON-NLS-1$
-
     /** Put request messages are signed by default. */
     private static final boolean SIGN_REQUEST = true;
 
     /** Put response messages signature are validated by default. */
-	private static final boolean VERIFY_RESPONSE = true;
+    private static final boolean VERIFY_RESPONSE = true;
 
-    
     /**
      * Constructor.
      */
@@ -94,16 +79,15 @@ public final class PutMessage extends ParentClient {
      * @param noun Noun.
      * @param name Name of the binary file.
      * @param data Binary content.
-     * @param format Hint as to format of payload.
+     * @param format Hint to format of payload.
      * @return String with the XML response message.
      * @throws ClientException Exception with the error.
      */
-    public String put(final String noun, final String name, final byte[] data, final String format)
-            throws ClientException {
+    public String put(final String noun, final String name, final byte[] data, final String format) throws ClientException {
 
         try {
 
-            RequestMessage requestMessage = createRequest(noun, name, data, format);
+            RequestMessage requestMessage = MessageUtil.createResponseWithBinaryPayload(EnumVerb.CREATE.toString(), noun, name, data, format);
             ResponseMessage responseMessage = sendMessage(requestMessage);
             return getPrettyPrintPayloadMessage(responseMessage);
 
@@ -114,93 +98,22 @@ public final class PutMessage extends ParentClient {
     }
 
     /**
-     * This method create the request message.
-     * @param noun Noun.
-     * @param name Name of the binary file.
-     * @param data Binary content.
-     * @param format Hint as to format of payload.
-     * @return Request message.
-     * @throws IOException Exception with the error.
-     */
-    private RequestMessage createRequest(final String noun, final String name, final byte[] data, final String format)
-            throws IOException {
-
-        RequestMessage message = new RequestMessage();
-
-        HeaderType header = createHeader(VERB, noun);
-        message.setHeader(header);
-
-        RequestType resquest = new RequestType();
-
-        ID id = new ID();
-        id.setIdType(BINARY_FILENAME_ID);
-        id.setValue(name);
-
-        List<ID> ids = resquest.getIDS();
-        ids.add(id);
-
-        message.setRequest(resquest);
-
-        PayloadType payload = new PayloadType();
-        byte[] dataCompress = GZIPUtil.compress(data);
-        String dataBase64 = DatatypeConverter.printBase64Binary(dataCompress);
-        payload.setCompressed(dataBase64);
-        if (format != null) {
-            payload.setFormat(format);
-        }
-        message.setPayload(payload);
-
-        return message;
-    }
-
-    /**
-     * This method is used to send a message to the server for further processing
-     * following the rules of the European Energy Markets for Electricity.
+     * Sends a XML message to the server for further processing following the rules of the European Energy Markets for Electricity.
      * @param xmlMessage The xml message that is being sent to the server.
      * @return String with the XML response message.
      * @throws ClientException Exception with the error.
      */
-    public String put(final String xmlMessage) throws ClientException {
+    public String put(final StringBuilder xmlMessage) throws ClientException {
 
         try {
-
-            RequestMessage requestMessage = createRequest(xmlMessage);
+            String noun = XMLUtil.getRootTag(xmlMessage);
+            RequestMessage requestMessage = MessageUtil.createRequestWithPayload(EnumVerb.CREATE.toString(), noun, xmlMessage);
             ResponseMessage responseMessage = sendMessage(requestMessage);
             return getPrettyPrintPayloadMessage(responseMessage);
 
-        } catch (MsgFaultMsg e) {
+        } catch (MsgFaultMsg | ParserConfigurationException | SAXException | IOException e) {
 
             throw new ClientException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * This method create the request message.
-     * @param xmlMessage The xml message that is being sent to the server.
-     * @return Request message.
-     * @throws ClientException Exception with the error.
-     */
-    private RequestMessage createRequest(final String xmlMessage)
-            throws ClientException {
-
-        try {
-
-            Element xml = XMLElementUtil.string2Element(xmlMessage);
-
-            RequestMessage message = new RequestMessage();
-
-            HeaderType header = createHeader(VERB, xml.getLocalName());
-            message.setHeader(header);
-
-            PayloadType payload = new PayloadType();
-            payload.getAnies().add(xml);
-            message.setPayload(payload);
-
-            return message;
-
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-
-        	throw new ClientException(Messages.getString("UNABLE_TO_CREATE_PAYLOAD", e.getMessage()), e); //$NON-NLS-1$
         }
     }
 }
