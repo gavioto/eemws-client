@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.client.get.GetMessage;
+import es.ree.eemws.client.get.RetrievedMessage;
 import es.ree.eemws.client.list.ListMessages;
 import es.ree.eemws.client.list.MessageListEntry;
 import es.ree.eemws.core.utils.file.FileUtil;
@@ -123,7 +124,7 @@ public final class OutputTask implements Runnable {
 					LOGGER.info(Messages.getString("MF_RETRIEVING_MESSAGE", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
 				}
 				
-				String response = get.get(code);
+				RetrievedMessage response = get.get(code);
 				
 				if (mle.getVersion() == null) {
 					LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE_WO_VERSION", String.valueOf(code), mle.getMessageIdentification())); //$NON-NLS-1$
@@ -133,7 +134,12 @@ public final class OutputTask implements Runnable {
 				
 				File tmpFile;
 				tmpFile = File.createTempFile(TMP_PREFIX, null, new File(outputFolder));
-				FileUtil.write(tmpFile.getAbsolutePath(), response);
+				if (response.isBinary()) {
+				    FileUtil.write(tmpFile.getAbsolutePath(), response.getBinaryPayload());
+				} else {
+				    FileUtil.writeUTF8(tmpFile.getAbsolutePath(), response.getPrettyPayload());    
+				}
+				
 				tmpFile.renameTo(new File(outputFolder + File.separator + fileName));
 
 			} catch (ClientException e) {
