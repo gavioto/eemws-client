@@ -311,7 +311,11 @@ public final class ListMessages extends ParentClient {
                 TimeIntervalType interval = msg.getApplicationTimeInterval();
                 if (interval != null) {
 
-                    messageData.setApplicationStartTime(interval.getStart().toGregorianCalendar());
+                    if (interval.getStart() != null) {
+                        
+                        messageData.setApplicationStartTime(interval.getStart().toGregorianCalendar());    
+                    }
+                    
 
                     if (interval.getEnd() != null) {
 

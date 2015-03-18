@@ -159,7 +159,7 @@ public final class Browser extends JFrame implements ServiceMenuListener {
 
         } catch (ConfigException ex) {
             JOptionPane.showMessageDialog(null, ex.getMessage(), Messages.getString("GUI_NO_CONFIGURATION_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-            System.exit(1);
+            System.exit(1); //NOSONAR We want to force application to exit.
         }
     }
 

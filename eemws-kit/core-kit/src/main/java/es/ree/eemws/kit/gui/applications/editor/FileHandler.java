@@ -375,7 +375,7 @@ public final class FileHandler extends DropTargetAdapter {
                     Messages.getString("MSG_QUESTION_TITLE"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$
 
             if (res == JOptionPane.OK_OPTION) {
-                System.exit(0);
+                System.exit(0); //NOSONAR We want to force application to exit.
             }
         }
     }

@@ -30,6 +30,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
+import es.ree.eemws.client.get.RetrievedMessage;
 import es.ree.eemws.core.utils.file.FileUtil;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.gui.common.Logger;
@@ -141,10 +142,18 @@ public final class FileHandle {
      * @param response Request object containing requested message data.
      * @throws IOException If cannot write file.
      */
-    public void saveFile(final String idMensaje, final String response) throws IOException {
+    public void saveFile(final String idMensaje, final RetrievedMessage response) throws IOException {
 
-        String fileName = idMensaje;
-        fileName += XML_FILE_EXTENSION;
+        String fileName;
+        
+        if (response.isBinary()) {
+            fileName = response.getFileName();
+            if (fileName == null) {
+                fileName = idMensaje;
+            }
+        } else {
+            fileName = idMensaje + XML_FILE_EXTENSION;
+        }
 
         int returnVal;
         if (cbmiStoreAuto.isSelected()) {
@@ -185,7 +194,11 @@ public final class FileHandle {
             }
 
             if (save) {
-                FileUtil.writeUTF8(file.getAbsolutePath(), response);
+                if (response.isBinary()) {
+                    FileUtil.write(file.getAbsolutePath(), response.getBinaryPayload());
+                } else {
+                    FileUtil.writeUTF8(file.getAbsolutePath(), response.getPrettyPayload());
+                }
                 logger.logMessage(Messages.getString("BROWSER_FILE_FILE_SAVED", file.getName())); //$NON-NLS-1$
             }
         }
@@ -202,7 +215,7 @@ public final class FileHandle {
                 JOptionPane.QUESTION_MESSAGE);
 
         if (answer == JOptionPane.OK_OPTION) {
-            System.exit(0);
+            System.exit(0); //NOSONAR We want to force application to exit.
         }
     }
 

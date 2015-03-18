@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 
 import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.client.get.GetMessage;
+import es.ree.eemws.client.get.RetrievedMessage;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.gui.common.Logger;
 
@@ -138,8 +139,6 @@ public final class GetMessageSender {
         String idMensaje = getMessageId(row, dataTable);
         
         Long codigo = ((BigInteger) dataTable.getModel().getAbsoluteValueAt(row, ColumnsId.CODE.ordinal())).longValue();
-
-        String response = null;
         
         String msg = Messages.getString("BROWSER_RETRIEVING_FILE", idMensaje, codigo); //$NON-NLS-1$
         
@@ -147,7 +146,7 @@ public final class GetMessageSender {
         status.setStatus(msg);
 
         try {
-            response = get.get(codigo);
+            RetrievedMessage response = get.get(codigo);
             
             msg = Messages.getString("BROWSER_RETRIEVED_FILE", idMensaje, codigo); //$NON-NLS-1$
             
