@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 
 import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.client.get.GetMessage;
+import es.ree.eemws.client.get.RetrievedMessage;
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.core.utils.file.FileUtil;
 import es.ree.eemws.kit.cmd.ParentMain;
@@ -143,7 +144,7 @@ public final class Main extends ParentMain {
 
 			long init = System.currentTimeMillis();
 			 
-			String response = null;
+			RetrievedMessage response = null;
 			
 			if (lCode != null) {
 
@@ -158,25 +159,43 @@ public final class Main extends ParentMain {
 				response = get.get(messageId, iMessageVersion);
 			}
 			
-			if (response.length() > 0) {
-
-				if (outputFile == null) {
-					LOGGER.info(response);
-
-					/* Don't output performance values here, the user could pipe the ouput to other process. */
-
-				} else {
-
-					FileUtil.writeUTF8(outputFile, response);
-					long end = System.currentTimeMillis();
-					LOGGER.info(Messages.getString("EXECUTION_TIME", getPerformance(init, end))); //$NON-NLS-1$
-				}
-
+			if (response.isEmpty()) {
+			    
+			    LOGGER.info(Messages.getString("GET_NO_MESSAGE")); //$NON-NLS-1$
+			    
 			} else {
-
-				LOGGER.info(Messages.getString("GET_NO_MESSAGE")); //$NON-NLS-1$
-			}
-
+			
+				if (outputFile == null) {				    
+				    if (response.isBinary()) {				        
+				        String fileName = response.getFileName();
+				        if (fileName == null) {
+				            throw new ClientException(Messages.getString("GET_BINARY_WO_NAME", PARAMETER_OUT_FILE));
+				        } else {
+				            FileUtil.write(fileName, response.getBinaryPayload());
+				        }				        
+				        
+				    } else {				        
+				        LOGGER.info(response.getPrettyPayload());
+				    }
+				} else {
+                    if (response.isBinary()) {
+                        FileUtil.write(outputFile, response.getBinaryPayload());
+				    
+                    } else {
+                        FileUtil.writeUTF8(outputFile, response.getPrettyPayload());    
+                    }
+				}
+			
+				/* 
+				 * Put performance values on screen if the user didn't set an output file value and the
+				 * retrieved message is xml (the message was printed on screen).
+				 */
+				if (outputFile != null || (outputFile == null && !response.isBinary())) {
+				    long end = System.currentTimeMillis();
+				    LOGGER.info(Messages.getString("EXECUTION_TIME", getPerformance(init, end))); //$NON-NLS-1$
+				}			
+			} 
+			
 		} catch (ClientException e) {
 
 			LOGGER.severe(e.getMessage());

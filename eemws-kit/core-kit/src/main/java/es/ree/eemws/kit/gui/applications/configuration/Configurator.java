@@ -228,7 +228,7 @@ public final class Configurator extends JFrame {
 
 		if (respuesta == JOptionPane.OK_OPTION) {
 
-			System.exit(0);
+			System.exit(0); //NOSONAR We want to force application to exit.
 		}
 	}
 
@@ -266,7 +266,7 @@ public final class Configurator extends JFrame {
                 
                 if (wantToSave) {
                 	saveConfig();
-                	System.exit(0);
+                	System.exit(0); //NOSONAR We want to force application to exit.
                 }
               
             } catch (ConfigException ex) {

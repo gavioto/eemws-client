@@ -153,7 +153,7 @@ public final class Logger extends JFrame {
      */
 	public void logException(String msg, Exception e) {
 		StringWriter sw = new StringWriter();
-		e.printStackTrace(new PrintWriter(sw));
+		e.printStackTrace(new PrintWriter(sw));  //NOSONAR - Here we are dumping the stack trace to a writer not to the console.
 		String exceptionDetails = sw.toString();
 		
 		StringBuilder sb = new StringBuilder();

@@ -114,7 +114,7 @@ public final class FolderManager {
         	
         	// Force exit
         	StatusIcon.removeIcon();        	
-        	System.exit(0);
+        	System.exit(0); //NOSONAR Invalid configuration: we need to force application to exit.
         	
         } catch (RemoteException ex) {
         	
