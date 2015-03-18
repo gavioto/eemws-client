@@ -179,7 +179,7 @@ public final class ListTableModel extends AbstractTableModel implements TableMod
     @Override
     public Class<?> getColumnClass(final int col) {
     	Class<?> retValue;
-        if (data.length > 0) {
+        if (data.length > 0 && data[0][col] != null) {
         	retValue =  data[0][col].getClass();
         } else {
         	retValue = super.getColumnClass(col);

@@ -164,7 +164,7 @@ public final class StatusIcon {
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 
         if (answer == JOptionPane.OK_OPTION) {
-            System.exit(0);
+            System.exit(0); //NOSONAR We want to force application to exit.
         }
     }
 }
