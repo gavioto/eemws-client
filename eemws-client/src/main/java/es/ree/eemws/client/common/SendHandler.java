@@ -180,7 +180,7 @@ public final class SendHandler implements SOAPHandler<SOAPMessageContext> {
 			messageData.setSignatureCertificate(e.getDetails().getSignatureCertificate());
 			logger.log(Level.SEVERE, e.getMessage() + " Details: " + e.getDetails().toString()); //$NON-NLS-1$
 
-		} catch (GenericCodedException | SOAPException | SignatureManagerException e) {
+		} catch (SOAPException | SignatureManagerException e) {
 
 			returnValue = false;
 			logger.log(Level.SEVERE, e.getMessage(), e);
@@ -210,7 +210,7 @@ public final class SendHandler implements SOAPHandler<SOAPMessageContext> {
 			try {
 				logger.fine(new StringBuilderMessage(messageContext).getStringMessage().toString());
 				logger.fine("---- end of message ---- "); //$NON-NLS-1$
-			} catch (GenericCodedException e) {
+			} catch (SOAPException e) {
 				logger.log(Level.FINE, "Unable to convert soap message to xml...", e); //$NON-NLS-1$
 			}
 		}
