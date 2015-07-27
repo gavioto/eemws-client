@@ -89,7 +89,7 @@ public final class FileHandle {
         cbmiStoreAuto.setMnemonic(Messages.getString("BROWSER_FILE_SET_FOLDER_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         cbmiStoreAuto.setSelected(false);
         cbmiStoreAuto.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 selectFolder();
             }
         });
@@ -99,7 +99,7 @@ public final class FileHandle {
         miExit.setText(Messages.getString("BROWSER_FILE_EXIT_MENU_ENTRY")); //$NON-NLS-1$
         miExit.setMnemonic(Messages.getString("BROWSER_FILE_EXIT_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         miExit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 exitApplication();
             }
         });

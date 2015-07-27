@@ -449,7 +449,7 @@ public class Configuration {
      */
     public final boolean hasMinimumConfiguration() {
 
-        return (!isEmpty(url) && !isEmpty(keyStoreFile) && !isEmpty(keyStorePassword));
+        return !isEmpty(url) && !isEmpty(keyStoreFile) && !isEmpty(keyStorePassword);
     }
 
     /**
@@ -459,6 +459,6 @@ public class Configuration {
      */
     private boolean isEmpty(final String st) {
 
-        return (st == null || "".equals(st.trim())); //$NON-NLS-1$
+        return st == null || "".equals(st.trim()); //$NON-NLS-1$
     }
 }

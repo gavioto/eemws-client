@@ -144,7 +144,7 @@ public final class Filter {
 		cbFilterType.setSelectedIndex(2);
 		cbFilterType.setBounds(100, 28, 130, 19);
 		cbFilterType.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
 				switchFilterType();
 			}
 		});
@@ -208,7 +208,7 @@ public final class Filter {
 		btList.setMnemonic(Messages.getString("BROWSER_FILTER_BROWSER_BUTTON_HK").charAt(0)); //$NON-NLS-1$
 		btList.setText(Messages.getString("BROWSER_FILTER_BROWSER_BUTTON")); //$NON-NLS-1$
 		btList.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {   // NOSONAR event is not used.
 				mainWindow.getListSend().retrieveList();
 			}
 		});
@@ -217,7 +217,7 @@ public final class Filter {
 		btGet.setMnemonic(Messages.getString("BROWSER_FILTER_GET_BUTTON_HK").charAt(0)); //$NON-NLS-1$
 		btGet.setText(Messages.getString("BROWSER_FILTER_GET_BUTTON")); //$NON-NLS-1$
 		btGet.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {   // NOSONAR event is not used.
 				mainWindow.getRequestSend().retrieve();
 			}
 		});
@@ -325,7 +325,7 @@ public final class Filter {
 		final JCheckBoxMenuItem miShowFilter = new JCheckBoxMenuItem(Messages.getString("BROWSER_FILTER_SHOW_FILTER_MENU_ENTRY")); //$NON-NLS-1$
 		miShowFilter.setMnemonic(Messages.getString("BROWSER_FILTER_SHOW_FILTER_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
 		miShowFilter.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
 				setVisible(miShowFilter.isSelected());
 			}
 		});

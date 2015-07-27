@@ -123,7 +123,7 @@ public final class EditHandle {
         findMenuItem.setMnemonic(Messages.getString("EDITOR_FIND_HK").charAt(0)); //$NON-NLS-1$
         findMenuItem.setAccelerator(KeyStroke.getKeyStroke(Messages.getString("EDITOR_FIND_HK").charAt(0), InputEvent.CTRL_MASK)); //$NON-NLS-1$
         findMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR
                 find();
             }
         });
@@ -132,7 +132,7 @@ public final class EditHandle {
         findNextMenuItem.setMnemonic(Messages.getString("EDITOR_FIND_NEXT").charAt(0)); //$NON-NLS-1$
         findNextMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
         findNextMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR
                 findNext(true);
             }
         });
@@ -142,7 +142,7 @@ public final class EditHandle {
         replaceMenuItem.setMnemonic(Messages.getString("EDITOR_REPLACE_HK").charAt(0)); //$NON-NLS-1$
         replaceMenuItem.setAccelerator(KeyStroke.getKeyStroke(Messages.getString("EDITOR_REPLACE_HK").charAt(0), InputEvent.CTRL_MASK)); //$NON-NLS-1$
         replaceMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR
                 replace();
             }
         });
@@ -151,7 +151,7 @@ public final class EditHandle {
         goToLineMenuItem.setMnemonic(Messages.getString("EDITOR_GO_TO_LINE_HK").charAt(0)); //$NON-NLS-1$
         goToLineMenuItem.setAccelerator(KeyStroke.getKeyStroke(Messages.getString("EDITOR_GO_TO_LINE_HK").charAt(0), InputEvent.CTRL_MASK)); //$NON-NLS-1$
         goToLineMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR
                 goToLine();
             }
         });
@@ -181,7 +181,7 @@ public final class EditHandle {
         xmlFormatMenuItem.setText(Messages.getString("EDITOR_MENU_ITEM_XML_FORMAT")); //$NON-NLS-1$
         xmlFormatMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_XML_FORMAT_HK").charAt(0)); //$NON-NLS-1$
         xmlFormatMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 applyFormat();
             }
         });
@@ -236,7 +236,7 @@ public final class EditHandle {
         goToLineBtn.setToolTipText(Messages.getString("EDITOR_GO_TO_LINE")); //$NON-NLS-1$
         goToLineBtn.setBorderPainted(false);
         goToLineBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 goToLine();
             }
         });
@@ -246,7 +246,7 @@ public final class EditHandle {
         findBtn.setToolTipText(Messages.getString("EDITOR_FIND")); //$NON-NLS-1$
         findBtn.setBorderPainted(false);
         findBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 find();
             }
         });
@@ -256,7 +256,7 @@ public final class EditHandle {
         btApplyFormat.setToolTipText(Messages.getString("EDITOR_MENU_ITEM_XML_FORMAT")); //$NON-NLS-1$
         btApplyFormat.setBorderPainted(false);
         btApplyFormat.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                 applyFormat();
             }
         });
@@ -502,7 +502,7 @@ public final class EditHandle {
             searchTxt = new JTextField(""); //$NON-NLS-1$
             searchTxt.setBounds(new Rectangle(90, 10, 190, 20));
             searchTxt.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                     accept();
                 }
             });
@@ -516,7 +516,7 @@ public final class EditHandle {
             replaceTxt.setBounds(new Rectangle(90, 33, 190, 20));
             replaceTxt.setEnabled(isReplace);
             replaceTxt.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                     accept();
                 }
             });
@@ -543,7 +543,7 @@ public final class EditHandle {
             findButton.setMinimumSize(new Dimension(100, 26));
             findButton.setPreferredSize(new Dimension(100, 26));
             findButton.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                     accept();
                 }
             });
@@ -557,7 +557,7 @@ public final class EditHandle {
             cancelBtn.setMnemonic(Messages.getString("EDITOR_CANCEL_BUTTON_HK").charAt(0)); //$NON-NLS-1$
             cancelBtn.setText(Messages.getString("EDITOR_CANCEL_BUTTON")); //$NON-NLS-1$
             cancelBtn.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                     cancel();
                 }
             });
@@ -593,7 +593,7 @@ public final class EditHandle {
             setLocation(screen.width / 3, screen.height / 3);
             setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             addWindowListener(new WindowAdapter() {
-                public void windowClosing(final WindowEvent e) {
+                public void windowClosing(final WindowEvent e) {  // NOSONAR event is not used.
                     cancel();
                 }
             });

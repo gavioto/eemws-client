@@ -63,28 +63,26 @@ public final class PutMessage extends ParentClient {
     /**
      * This method is used to send a message to the server for further processing
      * following the rules of the European Energy Markets for Electricity.
-     * @param noun Noun.
      * @param name Name of the binary file.
      * @param data Binary content.
      * @return String with the XML response message. <code>null</code> if the response has no payload.
      * @throws ClientException Exception with the error.
      */
-    public String put(final String noun, final String name, final byte[] data) throws ClientException {
+    public String put(final String name, final byte[] data) throws ClientException {
 
-        return put(noun, name, data, null);
+        return put(name, data, null);
     }
 
     /**
      * This method is used to send a message to the server for further processing
      * following the rules of the European Energy Markets for Electricity.
-     * @param noun Noun.
      * @param name Name of the binary file.
      * @param data Binary content.
      * @param format Hint to format of payload.
      * @return String with the XML response message. <code>null</code> if the response has no payload.
      * @throws ClientException Exception with the error.
      */
-    public String put(final String noun, final String name, final byte[] data, final EnumMessageFormat format) throws ClientException {
+    public String put(final String name, final byte[] data, final EnumMessageFormat format) throws ClientException {
         
         String retValue = null;
         

@@ -34,7 +34,6 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
-import es.ree.eemws.core.utils.iec61968100.GenericCodedException;
 import es.ree.eemws.core.utils.iec61968100.MessageMetaData;
 import es.ree.eemws.core.utils.iec61968100.StringBuilderMessage;
 import es.ree.eemws.core.utils.security.SignatureManager;

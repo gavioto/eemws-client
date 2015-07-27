@@ -160,7 +160,7 @@ public final class Editor extends JFrame {
         /* When "Close" button is pressed triggers close action in file handler. */
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(final WindowEvent e) {
+            public void windowClosing(final WindowEvent e) { // NOSONAR event is not used.
                 fileHandle.exitProgram();
             }
         });

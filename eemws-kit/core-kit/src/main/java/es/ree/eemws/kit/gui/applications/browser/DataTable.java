@@ -95,7 +95,7 @@ public final class DataTable {
             }
         });
         tblListTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(final ListSelectionEvent e) {
+            public void valueChanged(final ListSelectionEvent e) { // NOSONAR event is not used.
                 changeSelectionStatus();
             }
 
@@ -135,7 +135,7 @@ public final class DataTable {
         miSelectAll.setText(Messages.getString("BROWSER_SELECT_ALL_MENU_ENTRY")); //$NON-NLS-1$
         miSelectAll.setMnemonic(Messages.getString("BROWSER_SELECT_ALL_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         miSelectAll.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 tableSelection(DataTable.SELECTION_ALL);
             }
         });
@@ -145,7 +145,7 @@ public final class DataTable {
         miSelectNone.setText(Messages.getString("BROWSER_SELECT_NONE_MENU_ENTRY")); //$NON-NLS-1$
         miSelectNone.setMnemonic(Messages.getString("BROWSER_SELECT_NONE_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         miSelectNone.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 tableSelection(DataTable.SELECTION_NONE);
             }
         });
@@ -155,7 +155,7 @@ public final class DataTable {
         miSelectInvert.setText(Messages.getString("BROWSER_SELECT_INVERT_MENU_ENTRY")); //$NON-NLS-1$
         miSelectInvert.setMnemonic(Messages.getString("BROWSER_SELECT_INVERT_MENU_ENTRY_HK").charAt(0)); //$NON-NLS-1$
         miSelectInvert.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 tableSelection(DataTable.SELECTION_INVERT);
             }
         });
@@ -278,7 +278,6 @@ public final class DataTable {
      * @param width Width of the main window.
      * @param height Height  of the main window.
      * @param isFilterVisible Indicates whether the data filter is visible.
-     * TODO Avoid magic numbers!
      */
     public void adjustTableSize(final int width, final int height, final boolean isFilterVisible) {
         if (isFilterVisible) {

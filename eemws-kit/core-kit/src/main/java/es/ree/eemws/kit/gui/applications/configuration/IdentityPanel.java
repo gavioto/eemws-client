@@ -126,7 +126,7 @@ public final class IdentityPanel extends JPanel {
 		examine.setMnemonic(Messages.getString("SETTINGS_IDENTITY_CERTIFICATE_BROWSE_HK").charAt(0)); //$NON-NLS-1$
 		examine.setText(Messages.getString("SETTINGS_IDENTITY_CERTIFICATE_BROWSE")); //$NON-NLS-1$
 		examine.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
 				findCertificate();
 			}
 		});

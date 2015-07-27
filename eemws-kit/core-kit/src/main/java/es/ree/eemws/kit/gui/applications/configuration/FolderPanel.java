@@ -99,7 +99,7 @@ public final class FolderPanel extends JPanel {
 		backupBtn.setBounds(new Rectangle(420, 20, 30, 20));
 		backupBtn.setToolTipText(Messages.getString("SETTINGS_FOLDER_BROWSE")); //$NON-NLS-1$
 		backupBtn.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
 				examine(txtBackupFolderPath);
 			}
 		});
@@ -136,7 +136,7 @@ public final class FolderPanel extends JPanel {
 		btnOutput.setBounds(new Rectangle(420, 20, 30, 20));
 		btnOutput.setToolTipText(Messages.getString("SETTINGS_FOLDER_BROWSE")); //$NON-NLS-1$
 		btnOutput.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {   // NOSONAR event is not used.
 				examine(txtOutputFolderPath);
 			}
 		});
@@ -173,7 +173,7 @@ public final class FolderPanel extends JPanel {
 		btnInput.setBounds(new Rectangle(420, 20, 30, 20));
 		btnInput.setToolTipText(Messages.getString("SETTINGS_FOLDER_BROWSE")); //$NON-NLS-1$
 		btnInput.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {   // NOSONAR event is not used.
 				examine(txtInputFolderPath);
 			}
 		});
@@ -191,7 +191,7 @@ public final class FolderPanel extends JPanel {
 		btnResponse.setBounds(new Rectangle(420, 45, 30, 20));
 		btnResponse.setToolTipText(Messages.getString("SETTINGS_FOLDER_BROWSE")); //$NON-NLS-1$
 		btnResponse.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {   // NOSONAR event is not used.
 				examine(txtResponseFolderPath);
 			}
 		});
@@ -209,7 +209,7 @@ public final class FolderPanel extends JPanel {
 		btnProcesed.setBounds(new Rectangle(420, 70, 30, 20));
 		btnProcesed.setToolTipText(Messages.getString("SETTINGS_FOLDER_BROWSE")); //$NON-NLS-1$
 		btnProcesed.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {   // NOSONAR event is not used.
 				examine(txtProcessedFolderPath);
 			}
 		});
