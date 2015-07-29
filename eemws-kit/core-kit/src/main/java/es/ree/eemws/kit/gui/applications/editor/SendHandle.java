@@ -93,7 +93,7 @@ public final class SendHandle implements ServiceMenuListener {
         sendMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_SEND_HK").charAt(0)); //$NON-NLS-1$
         sendMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0));
         sendMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                 send();
             }
         });
@@ -120,7 +120,7 @@ public final class SendHandle implements ServiceMenuListener {
         enviarDocBtn.setIcon(new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_SEND)));
         enviarDocBtn.setBorderPainted(false);
         enviarDocBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                 send();
             }
         });

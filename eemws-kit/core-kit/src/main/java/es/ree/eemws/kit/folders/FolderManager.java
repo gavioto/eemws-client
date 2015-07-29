@@ -47,6 +47,16 @@ public final class FolderManager {
     /** Logging. */
     private static final Logger LOGGER = Logger.getLogger(FolderManager.class.getName());
 
+    
+    /**
+     * Private constructor.
+     * Utility classes should not have a public constructor.
+     */
+    private FolderManager() {
+        
+        /* Utility classes should not have a public constructor. */
+    }
+    
     /**
      * Main method, creates the application objects and schedules.
      * @param args Command line parameters (ignored)

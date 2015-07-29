@@ -120,7 +120,7 @@ public final class Main extends ParentMain {
                 }
             	File f = new File(attachment);
             	String fileName = f.getName();
-            	response = put.put("binary", fileName, FileUtil.readBinary(attachment)); //$NON-NLS-1$
+            	response = put.put(fileName, FileUtil.readBinary(attachment)); //$NON-NLS-1$
             
             } else {
             

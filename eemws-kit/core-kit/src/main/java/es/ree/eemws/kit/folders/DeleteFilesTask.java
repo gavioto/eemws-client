@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
@@ -169,10 +168,9 @@ public final class DeleteFilesTask implements Runnable {
 	 * Copies an existent zip file into other in order to
 	 * @param zosTmp New Zip file output stream.
 	 * @param backupZipFile Old Zip file reference.
-	 * @throws ZipException If the application cannot create a new Zip File.
 	 * @throws IOException If the application cannot write into the new Zip File.
 	 */
-	private void copyOldBackup(ZipOutputStream zosTmp, File backupZipFile) throws ZipException, IOException {
+	private void copyOldBackup(ZipOutputStream zosTmp, File backupZipFile) throws IOException {
 		if (backupZipFile.exists()) {
 
 			try (ZipFile oldZip = new ZipFile(backupZipFile)) {

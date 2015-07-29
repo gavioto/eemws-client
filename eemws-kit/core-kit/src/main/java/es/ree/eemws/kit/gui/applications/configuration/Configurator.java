@@ -147,7 +147,7 @@ public final class Configurator extends JFrame {
 
 		/* Event triggered when window closes. */
 		addWindowListener(new WindowAdapter() {
-			public void windowClosing(final WindowEvent e) {
+			public void windowClosing(final WindowEvent e) {  // NOSONAR event is not used.
 				cancelChanges();
 			}
 		});
@@ -189,7 +189,7 @@ public final class Configurator extends JFrame {
 		accept.setMnemonic(Messages.getString("SETTINGS_OK_BUTTON_HK").charAt(0)); //$NON-NLS-1$
 		accept.setText(Messages.getString("SETTINGS_OK_BUTTON")); //$NON-NLS-1$
 		accept.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {   // NOSONAR event is not used.
 				saveChanges();
 			}
 		});
@@ -204,7 +204,7 @@ public final class Configurator extends JFrame {
 		cancel.setText(Messages.getString("SETTINGS_CANCEL_BUTTON")); //$NON-NLS-1$
 		cancel.setToolTipText(Messages.getString("SETTINGS_CANCEL_BUTTON_TIP")); //$NON-NLS-1$
 		cancel.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {   // NOSONAR event is not used.
 				cancelChanges();
 			}
 		});

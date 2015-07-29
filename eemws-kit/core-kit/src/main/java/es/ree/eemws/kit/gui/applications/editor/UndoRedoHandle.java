@@ -116,7 +116,7 @@ public final class UndoRedoHandle implements UndoableEditListener {
          * edition on History.
          * @param e Event which triggered action.
          */
-        public void actionPerformed(final ActionEvent e) {
+        public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
 
             try {
 
@@ -176,7 +176,7 @@ public final class UndoRedoHandle implements UndoableEditListener {
          * found on History.
          * @param e Event which triggered action.
          */
-        public void actionPerformed(final ActionEvent e) {
+        public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
 
             try {
                 undo.redo();

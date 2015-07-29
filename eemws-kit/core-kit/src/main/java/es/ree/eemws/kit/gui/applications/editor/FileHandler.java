@@ -112,7 +112,7 @@ public final class FileHandler extends DropTargetAdapter {
         JMenuItem newFileMenuItem = new JMenuItem(Messages.getString("EDITOR_MENU_ITEM_NEW"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_NEW))); //$NON-NLS-1$
         newFileMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_NEW_HK").charAt(0)); //$NON-NLS-1$
         newFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                 newFile();
             }
         });
@@ -120,7 +120,7 @@ public final class FileHandler extends DropTargetAdapter {
         JMenuItem openFileMenuItem = new JMenuItem(Messages.getString("EDITOR_MENU_ITEM_OPEN"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_OPEN))); //$NON-NLS-1$
         openFileMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_OPEN_HK").charAt(0)); //$NON-NLS-1$
         openFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 openFile();
             }
         });
@@ -129,7 +129,7 @@ public final class FileHandler extends DropTargetAdapter {
         saveMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_SAVE_HK").charAt(0)); //$NON-NLS-1$
         saveMenuItem.setAccelerator(KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK));
         saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 saveFile();
             }
         });
@@ -137,7 +137,7 @@ public final class FileHandler extends DropTargetAdapter {
         JMenuItem saveAsMenuItem = new JMenuItem(Messages.getString("EDITOR_MENU_ITEM_SAVE_AS"), new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_SAVE_AS))); //$NON-NLS-1$
         saveAsMenuItem.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_SAVE_AS_HK").charAt(0)); //$NON-NLS-1$
         saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 saveFileAs();
             }
         });
@@ -146,7 +146,7 @@ public final class FileHandler extends DropTargetAdapter {
         menuItemExit.setText(Messages.getString("EDITOR_MENU_ITEM_EXIT")); //$NON-NLS-1$
         menuItemExit.setMnemonic(Messages.getString("EDITOR_MENU_ITEM_EXIT").charAt(0)); //$NON-NLS-1$
         menuItemExit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                 exitProgram();
             }
         });
@@ -176,7 +176,7 @@ public final class FileHandler extends DropTargetAdapter {
         newDocumentButton.setToolTipText(Messages.getString("EDITOR_MENU_ITEM_NEW")); //$NON-NLS-1$
         newDocumentButton.setBorderPainted(false);
         newDocumentButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                 newFile();
             }
         });
@@ -186,7 +186,7 @@ public final class FileHandler extends DropTargetAdapter {
         openFileButton.setBorderPainted(false);
         openFileButton.setIcon(new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_OPEN)));
         openFileButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                 openFile();
             }
         });
@@ -196,7 +196,7 @@ public final class FileHandler extends DropTargetAdapter {
         saveFileButton.setToolTipText(Messages.getString("EDITOR_MENU_ITEM_SAVE")); //$NON-NLS-1$
         saveFileButton.setBorderPainted(false);
         saveFileButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                 saveFile();
             }
         });

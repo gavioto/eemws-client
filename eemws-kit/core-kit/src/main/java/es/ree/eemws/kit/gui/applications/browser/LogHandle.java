@@ -67,14 +67,14 @@ public final class LogHandle implements LoggerListener {
         miDeleteLog.setText(Messages.getString("BROWSER_LOG_CLEAR_MENU_ITEM")); //$NON-NLS-1$
         miDeleteLog.setMnemonic(Messages.getString("BROWSER_LOG_CLEAR_MENU_ITEM_HK").charAt(0)); //$NON-NLS-1$
         miDeleteLog.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {   // NOSONAR event is not used.
                 log.deleteLog();
             }
         });
         miShowLog.setText(Messages.getString("BROWSER_LOG_SHOW_MENU_ITEM")); //$NON-NLS-1$
         miShowLog.setMnemonic(Messages.getString("BROWSER_LOG_SHOW_MENU_ITEM_HK").charAt(0)); //$NON-NLS-1$
         miShowLog.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
             	log.setVisible(miShowLog.isSelected());
             }
         });

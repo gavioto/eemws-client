@@ -198,7 +198,15 @@ public final class ListMessageSender {
             data[row][ColumnsId.ID.ordinal()] = message.getMessageIdentification();
             data[row][ColumnsId.TYPE.ordinal()] = message.getType();
             data[row][ColumnsId.VERSION.ordinal()] = message.getVersion();
-            data[row][ColumnsId.STATUS.ordinal()] = new MessageStatus(message.getStatus());
+            
+            String status = message.getStatus();
+            
+            if (status == null) {
+                data[row][ColumnsId.STATUS.ordinal()] = null;
+            } else {
+                data[row][ColumnsId.STATUS.ordinal()] = new MessageStatus(status);
+            }
+            
             data[row][ColumnsId.APPLICATION_ST_TIME.ordinal()] = message.getApplicationStartTime();
             data[row][ColumnsId.APPLICATION_END_TIME.ordinal()] = message.getApplicationEndTime();
             data[row][ColumnsId.SERVER_TIMESTAMP.ordinal()] = message.getServerTimestamp();

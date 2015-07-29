@@ -75,7 +75,7 @@ public final class ColumnVisibilityHandle {
         simpleView.setMnemonic(Messages.getString("BROWSER_SIMPLE_VIEW_HK").charAt(0)); //$NON-NLS-1$
         simpleView.setSelected(true);
         simpleView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                 simpleView();
             }
         });
@@ -85,7 +85,7 @@ public final class ColumnVisibilityHandle {
         fullView.setMnemonic(Messages.getString("BROWSER_FULL_VIEW_HK").charAt(0)); //$NON-NLS-1$
         fullView.setSelected(false);
         fullView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {  // NOSONAR event is not used.
                 fullView();
             }
         });
@@ -122,7 +122,7 @@ public final class ColumnVisibilityHandle {
                 }
             }
             arColumnsMenuItem[cont].addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
                     updateColumnVisibility();
                 }
             });

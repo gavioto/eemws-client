@@ -70,7 +70,8 @@ public final class StatusIcon {
 	 * and there is still one thread busy. Idle = 0
 	 */
     private static Integer numBusy = 0;
-
+    
+    
     /**
      * Initializes the class.
      */
@@ -166,5 +167,14 @@ public final class StatusIcon {
         if (answer == JOptionPane.OK_OPTION) {
             System.exit(0); //NOSONAR We want to force application to exit.
         }
+    }
+    
+    /**
+     * Private constructor.
+     * Utility classes should not have a public constructor.
+     */
+    private StatusIcon() {
+        
+        /* Utility classes should not have a public constructor. */
     }
 }

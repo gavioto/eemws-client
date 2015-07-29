@@ -299,9 +299,9 @@ public final class Main extends ParentMain {
 			socket.setSoTimeout(SO_TIMEOUT);
 			socket.startHandshake();
 		} catch (UnknownHostException uhe) {
-			LOGGER.severe((Messages.getString("TRUSTSERVER_UNKNOW_HOST", urlEndPoint))); //$NON-NLS-1$
+			LOGGER.severe(Messages.getString("TRUSTSERVER_UNKNOW_HOST", urlEndPoint)); //$NON-NLS-1$
 		} catch (ConnectException ce) {
-			LOGGER.severe((Messages.getString("TRUSTSERVER_CANNOT_CONNECT", urlEndPoint))); //$NON-NLS-1$
+			LOGGER.severe(Messages.getString("TRUSTSERVER_CANNOT_CONNECT", urlEndPoint)); //$NON-NLS-1$
 		} catch (IOException ioe) {
 			LOGGER.log(Level.FINE, Messages.getString("TRUSTSERVER_CANNOT_CONNECT", urlEndPoint), ioe); //$NON-NLS-1$
 		} finally {

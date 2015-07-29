@@ -71,4 +71,13 @@ public final class ExecutionControl {
 
 		return isRunning; 
 	}
+	
+	 /**
+     * Private constructor.
+     * Utility classes should not have a public constructor.
+     */
+    private ExecutionControl() {
+        
+        /* Utility classes should not have a public constructor. */
+    }	
 }
