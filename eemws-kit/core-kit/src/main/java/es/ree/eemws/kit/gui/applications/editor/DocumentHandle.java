@@ -200,8 +200,7 @@ public final class DocumentHandle {
      */
     public String getPlainText() {
 
-        String retText = editableText.getTextRange(0, editableText.getCharCount());
-        return retText;
+        return editableText.getTextRange(0, editableText.getCharCount());
     }
 
     /**

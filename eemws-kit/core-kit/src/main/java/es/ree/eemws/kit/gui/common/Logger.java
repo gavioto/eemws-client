@@ -107,7 +107,7 @@ public final class Logger extends JFrame {
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(Constants.ICON_PATH)));
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(final WindowEvent e) {
+            public void windowClosing(final WindowEvent e) {  // NOSONAR event is not used.
                 close();
             }
         });

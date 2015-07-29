@@ -287,7 +287,7 @@ public final class ListMessages extends ParentClient {
         try {
 
             Element message = payload.getAnies().get(0);
-            MessageList messageList = (MessageList) XMLElementUtil.elment2Obj(message, MessageList.class);
+            MessageList messageList = (MessageList) XMLElementUtil.element2Obj(message, MessageList.class);
 
             List<Message> listaMensajes = messageList.getMessages();
             for (Message msg : listaMensajes) {

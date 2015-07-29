@@ -185,7 +185,7 @@ public final class ProxyPanel extends JPanel {
 		proxyDontUseProxyChoice.setText(Messages.getString("SETTINGS_PROXY_DIRECT_CONNECTION")); //$NON-NLS-1$
 		proxyDontUseProxyChoice.setBounds(new Rectangle(43, 34, 215, 24));
 		proxyDontUseProxyChoice.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {   // NOSONAR event is not used.
 				enableProxyElements(false);
 			}
 		});
@@ -195,7 +195,7 @@ public final class ProxyPanel extends JPanel {
 		proxyUseProxyChoice.setText(Messages.getString("SETTINGS_PROXY_USE_PROXY")); //$NON-NLS-1$
 		proxyUseProxyChoice.setBounds(new Rectangle(43, 59, 213, 24));
 		proxyUseProxyChoice.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {   // NOSONAR event is not used.
 				enableProxyElements(true);
 			}
 		});

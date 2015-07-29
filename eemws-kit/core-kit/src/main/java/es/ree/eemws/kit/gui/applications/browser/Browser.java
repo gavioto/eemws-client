@@ -206,13 +206,13 @@ public final class Browser extends JFrame implements ServiceMenuListener {
         setResizable(true);
 
         addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(final WindowEvent e) {
+            public void windowClosing(final WindowEvent e) { // NOSONAR event is not used.
                 fileHandle.exitApplication();
             }
         });
 
         addComponentListener(new ComponentAdapter() {
-            public void componentResized(final ComponentEvent e) {
+            public void componentResized(final ComponentEvent e) { // NOSONAR event is not used.
                 modifySize();
             }
         });
