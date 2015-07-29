@@ -28,6 +28,6 @@
       </plugins>
     </build>
     <properties>
-        <jgitflow.version>1.0-m4.3</jgitflow.version>
+        <jgitflow.version>1.0-m5.1</jgitflow.version>
     </properties>
 </project>
