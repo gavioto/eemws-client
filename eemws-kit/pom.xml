@@ -11,7 +11,7 @@
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<izpack.version>5.0.0-rc1</izpack.version>
+		<izpack.version>5.0.0-rc5</izpack.version>
 		<izpack.staging>${basedir}/resources/izpack/staging</izpack.staging>
 	</properties>
 
