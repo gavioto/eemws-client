@@ -1,3 +1,3 @@
 #!/bin/sh
 . ./commEnv.sh
-javaw $MEM_ARGS $JAVA_ARGS es.ree.eemws.kit.cmd.put.Main $*
+javaw $MEM_ARGS $JAVA_OPTIONS $CONSOLE_LOG es.ree.eemws.kit.cmd.put.Main $*
