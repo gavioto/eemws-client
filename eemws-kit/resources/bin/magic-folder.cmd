@@ -6,4 +6,4 @@ if NOT EXIST ../log (
 	CD bin
 ) 
 @REM do not include argument "-Dinteractive" in no-interctative environments  (ie daemons, background process, etc.)
-start javaw %MEM_ARGS% %FILE_LOG% -Dinteractive es.ree.eemws.kit.folders.FolderManager
+start javaw %MEM_ARGS% %JAVA_OPTIONS% %FILE_LOG% -Dinteractive es.ree.eemws.kit.folders.FolderManager

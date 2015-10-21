@@ -114,7 +114,7 @@ public final class ListMessageSender {
             filterData = mainWindow.getFilter().getFilterData();
         } catch (FilterException ex) {
             JOptionPane.showMessageDialog(mainWindow, Messages.getString("BROWSER_CHECK_FILTER_ERROR_MSG", ex.getMessage()),  //$NON-NLS-1$
-            		Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ 
+                    Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
         }
 
         return filterData;
@@ -157,10 +157,10 @@ public final class ListMessageSender {
                     logger.logMessage(msg);
                     status.setStatus(msg);
                     JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("BROWSER_NO_MESSAGES_TITLE"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
-                } else {                    
-                	String msg = Messages.getString("BROWSER_STATUS_MESSAGES_RETRIEVED", len); //$NON-NLS-1$
-                	status.setStatus(msg);
-                	logger.logMessage(msg);
+                } else {
+                    String msg = Messages.getString("BROWSER_STATUS_MESSAGES_RETRIEVED", len); //$NON-NLS-1$
+                    status.setStatus(msg);
+                    logger.logMessage(msg);
                 }
 
             } catch (ClientException ex) {
@@ -170,11 +170,11 @@ public final class ListMessageSender {
                         JOptionPane.ERROR_MESSAGE);
                 logger.logMessage(Messages.getString("BROWSER_UNABLE_TO_LIST", ex.getMessage())); //$NON-NLS-1$
             } catch (Exception e) {
-            	JOptionPane.showMessageDialog(mainWindow,
+                JOptionPane.showMessageDialog(mainWindow,
                         Messages.getString("BROWSER_UNABLE_TO_BROWSER_UNKNOW"), //$NON-NLS-1$
                         Messages.getString("MSG_ERROR_TITLE"),  //$NON-NLS-1$
                         JOptionPane.ERROR_MESSAGE);
-            	logger.logException(Messages.getString("BROWSER_UNABLE_TO_BROWSER_UNKNOW"), e); //$NON-NLS-1$
+                logger.logException(Messages.getString("BROWSER_UNABLE_TO_BROWSER_UNKNOW"), e); //$NON-NLS-1$
             }
         }
 
@@ -198,15 +198,15 @@ public final class ListMessageSender {
             data[row][ColumnsId.ID.ordinal()] = message.getMessageIdentification();
             data[row][ColumnsId.TYPE.ordinal()] = message.getType();
             data[row][ColumnsId.VERSION.ordinal()] = message.getVersion();
-            
-            String status = message.getStatus();
-            
-            if (status == null) {
+
+            String messageStatus = message.getStatus();
+
+            if (messageStatus == null) {
                 data[row][ColumnsId.STATUS.ordinal()] = null;
             } else {
-                data[row][ColumnsId.STATUS.ordinal()] = new MessageStatus(status);
+                data[row][ColumnsId.STATUS.ordinal()] = new MessageStatus(messageStatus);
             }
-            
+
             data[row][ColumnsId.APPLICATION_ST_TIME.ordinal()] = message.getApplicationStartTime();
             data[row][ColumnsId.APPLICATION_END_TIME.ordinal()] = message.getApplicationEndTime();
             data[row][ColumnsId.SERVER_TIMESTAMP.ordinal()] = message.getServerTimestamp();
@@ -217,5 +217,4 @@ public final class ListMessageSender {
 
         return data;
     }
-
 }

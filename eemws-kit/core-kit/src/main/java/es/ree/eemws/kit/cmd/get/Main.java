@@ -118,15 +118,17 @@ public final class Main extends ParentMain {
 
 			} else {
 
-				if (messageId == null || messageVersion == null) {
+				if (messageId == null) {
 
 					throw new IllegalArgumentException(Messages.getString("GET_INCORRECT_PARAMETERS_4", PARAMETER_CODE, GET_PARAMETER_QUEUE, PARAMETER_MSG_ID, GET_PARAMETER_MSG_VER)); //$NON-NLS-1$
 				}
 
-				try {
-					iMessageVersion = Integer.valueOf(messageVersion);
-				} catch (NumberFormatException e) {
-					throw new IllegalArgumentException(Messages.getString("GET_INCORRECT_PARAMETERS_5", messageVersion)); //$NON-NLS-1$
+				if (messageVersion != null) {
+				    try {
+				        iMessageVersion = Integer.valueOf(messageVersion);
+				    } catch (NumberFormatException e) {
+				        throw new IllegalArgumentException(Messages.getString("GET_INCORRECT_PARAMETERS_5", messageVersion)); //$NON-NLS-1$
+				    }
 				}
 			}
 
