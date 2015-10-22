@@ -3,13 +3,13 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>eemws</groupId>
     <artifactId>eemws-kit</artifactId>
-    <version>1.0-m8</version>
+    <version>1.0-m9</version>
     <packaging>pom</packaging>
     <name>eemws-kit</name>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<izpack.version>5.0.0-rc1</izpack.version>
+		<izpack.version>5.0.5</izpack.version>
 		<izpack.staging>${basedir}/resources/izpack/staging</izpack.staging>
       <!-- Explicit redefine needed in order for izpack to see it during install.xml properties substitution -->
       <project.version>${project.version}</project.version>

@@ -96,14 +96,14 @@ public final class Editor extends JFrame {
 
         } catch (ConfigException ex) {
 
-            JOptionPane.showMessageDialog(null, ex.getMessage(), Messages.getString("EDITOR_NO_CONFIGURATION"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+            JOptionPane.showMessageDialog(null, ex.getMessage(), Messages.getString("SETTINGS_NO_CONFIGURATION"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 
         }
 
         if (excep != null) {
 
-            JOptionPane.showMessageDialog(null, Messages.getString("EDITOR_NO_GUI") + excep.getMessage(),  //$NON-NLS-1$
-                    Messages.getString("EDITOR_NO_GUI"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+            JOptionPane.showMessageDialog(null, Messages.getString("SETTINGS_NO_GUI") + excep.getMessage(),  //$NON-NLS-1$
+                    Messages.getString("SETTINGS_NO_GUI"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
         }
     }
 
