@@ -131,8 +131,8 @@ public final class Browser extends JFrame implements ServiceMenuListener {
             b.setVisible(true);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             JOptionPane.showMessageDialog(null,
-                    Messages.getString("GUI_NO_GUI"), //$NON-NLS-1$
-                    Messages.getString("GUI_NO_GUI_TITLE"), //$NON-NLS-1$
+                    Messages.getString("SETTINGS_NO_GUI"), //$NON-NLS-1$
+                    Messages.getString("SETTINGS_NO_GUI"), //$NON-NLS-1$
                     JOptionPane.ERROR_MESSAGE);
         }
 
@@ -150,7 +150,7 @@ public final class Browser extends JFrame implements ServiceMenuListener {
             Configuration cf = new Configuration();
             cf.readConfiguration();
             if (!cf.hasMinimumConfiguration()) {
-                throw new ConfigException(Messages.getString("GUI_NO_CONFIGURATION")); //$NON-NLS-1$
+                throw new ConfigException(Messages.getString("SETTINGS_NO_CONFIGURATION")); //$NON-NLS-1$
             }
             endPoint = cf.getUrlEndPoint().toString();
             requestSend = new GetMessageSender(cf.getUrlEndPoint(), this);
@@ -158,7 +158,7 @@ public final class Browser extends JFrame implements ServiceMenuListener {
             jbInit();
 
         } catch (ConfigException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage(), Messages.getString("GUI_NO_CONFIGURATION_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+            JOptionPane.showMessageDialog(null, ex.getMessage(), Messages.getString("SETTINGS_NO_CONFIGURATION"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
             System.exit(1); //NOSONAR We want to force application to exit.
         }
     }
