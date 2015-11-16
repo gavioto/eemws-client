@@ -73,8 +73,8 @@ public final class OutputTask implements Runnable {
 	private static final String TMP_PREFIX = "_tmp_out_"; //$NON-NLS-1$
 
     /** File name extension separator. */
-    private static final String FILE_NAME_EXTENSION_SEPARATOR = ".";
-
+    private static final String FILE_ELEMENTS_SEPARTOR = ".";
+ 
     /** File name extesion for "xml". */
     private static final String FILE_NAME_EXTENSION_XML = "xml";
 
@@ -82,7 +82,7 @@ public final class OutputTask implements Runnable {
     private static String[] HEADER_VALUES = {"BZh91AY", "7z", "PDF", "PK", "PNG", "JFIF"};
     
     /** File extensions according to the header value. */
-    private static String[] EXTENSION_VALUES = {".bz2", ".7z", ".pdf", ".zip", ".png", ".jpg"};
+    private static String[] EXTENSION_VALUES = {"bz2", "7z", "pdf", "zip", "png", "jpg"};
     
 	/**
 	 * Constructor. Initializes parameters for detection thread.
@@ -126,9 +126,6 @@ public final class OutputTask implements Runnable {
 	    boolean lockFile = lh.tryLock(codeStr);
 				
 		if (lockFile) {
-
-			StringBuilder messageIdVersionCode = new StringBuilder();
-			messageIdVersionCode.append(mle.getMessageIdentification());
 						
 			try {
 				if (mle.getVersion() == null) {
@@ -145,7 +142,7 @@ public final class OutputTask implements Runnable {
 					LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE", codeStr, mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
 				}				
 								
-				String abosoluteFileName = outputFolder + File.separator + response.getFileName() + getFileNameExtension(response);
+				String abosoluteFileName = outputFolder + File.separator + getFileName(mle, response);
 								
 				if (FileUtil.exists(abosoluteFileName)) {
 				    
@@ -187,48 +184,51 @@ public final class OutputTask implements Runnable {
 	}
 	
 	/**
-	 * Returns the file name extension according to the configuration.
+	 * Returns the file name  according to the configuration and the retrieved message.
+	 * @param mle message entry which file name will be returned.
 	 * @param response Retrieved message.
-	 * @return Proper file name extension according to the configuration. 
+	 * @return Proper file name. 
 	 */ 	
-	private String getFileNameExtension(final RetrievedMessage response) {
+	private String getFileName(final MessageListEntry mle, final RetrievedMessage response) {
 	    
-	    String retValue;
+	    StringBuilder retValue = new StringBuilder();
 	    
-	    if (fileNameExtension.equalsIgnoreCase(Configuration.FILE_NAME_EXTENSION_NONE)) {
-	        retValue = "";
-	    } else if (fileNameExtension.equalsIgnoreCase(Configuration.FILE_NAME_EXTENSION_AUTO)) {
+	    if (response.isBinary()) {
+	        retValue.append(response.getFileName());
+	    } else {
+	        retValue.append(mle.getMessageIdentification());
+	        
+	        if (mle.getVersion() != null) {
+	            retValue.append(FILE_ELEMENTS_SEPARTOR);
+	            retValue.append(mle.getVersion());
+	        }
+	    }
+	    
+	    if (fileNameExtension.equalsIgnoreCase(Configuration.FILE_NAME_EXTENSION_AUTO)) {
             if (response.isBinary()) {
                 byte[] b = response.getBinaryPayload();
                 if (b.length > 20) {
                     String headerValue = new String(response.getBinaryPayload(), 0, 20);
-                    String ext = null;
-                    for (int cont = 0; cont < HEADER_VALUES.length && ext == null; cont++) {
+                    boolean found = false;
+                    for (int cont = 0; cont < HEADER_VALUES.length && !found ; cont++) {
                         if (headerValue.indexOf(HEADER_VALUES[cont]) != -1) {
-                            ext = EXTENSION_VALUES[cont];
+                            retValue.append(FILE_ELEMENTS_SEPARTOR);
+                            retValue.append(EXTENSION_VALUES[cont]);
+                            found = true;
                         }
                     }
-                    
-                    /* No proper extension was found. */
-                    if (ext == null) {
-                        ext = "";
-                    }
-                    
-                    retValue = ext;
-                    
-                } else {
-                    
-                    retValue = "";
-                    
                 }
+                
             } else {
-                retValue = FILE_NAME_EXTENSION_SEPARATOR + FILE_NAME_EXTENSION_XML;
+                retValue.append(FILE_ELEMENTS_SEPARTOR);
+                retValue.append(FILE_NAME_EXTENSION_XML);
             }
-        } else {
-            retValue = FILE_NAME_EXTENSION_SEPARATOR + fileNameExtension;
+        } else if (!fileNameExtension.equalsIgnoreCase(Configuration.FILE_NAME_EXTENSION_NONE)) { 
+            retValue.append(FILE_ELEMENTS_SEPARTOR);
+            retValue.append(fileNameExtension);
         }
 	    
-	    return retValue;        
+	    return retValue.toString();        
     }
 
     /**
