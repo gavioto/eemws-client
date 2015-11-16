@@ -457,6 +457,8 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
         instanceID = cm.getValue(INSTANCE_ID_KEY);
         if (instanceID != null && instanceID.trim().isEmpty()) {
             instanceID = null;
+        } else {
+            StatusIcon.setIdentification(instanceID);
         }
 
         inputFolder = cm.getValue(INPUT_FOLDER_KEY);
