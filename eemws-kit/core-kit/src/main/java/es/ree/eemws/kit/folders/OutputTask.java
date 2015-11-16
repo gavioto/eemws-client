@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2015 Red Eléctrica de España, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -40,13 +40,10 @@ import es.ree.eemws.core.utils.file.FileUtil;
  * Execute a list + get loop to retrieve messages.
  * 
  * @author Red Eléctrica de España, S.A.U.
- * @version 1.0 29/05/2014
+ * @version 1.1 02/11/2015
  * 
  */
 public final class OutputTask implements Runnable {
-
-	/** Filename extension. */
-	private static final String XML_FILE_EXTENSION = "xml"; //$NON-NLS-1$
 
 	/** Output folder. */
 	private String outputFolder;
@@ -66,12 +63,27 @@ public final class OutputTask implements Runnable {
 	/** List of message types to retrieve. */
 	private List<String> typesToRetrieveList = null;
 
+	/** File name extension to be used. */
+    private String fileNameExtension;
+
 	/** Log system. */
 	private static final Logger LOGGER = Logger.getLogger(OutputTask.class.getName());
 
 	/** Temporary file prefix. */
 	private static final String TMP_PREFIX = "_tmp_out_"; //$NON-NLS-1$
 
+    /** File name extension separator. */
+    private static final String FILE_NAME_EXTENSION_SEPARATOR = ".";
+
+    /** File name extesion for "xml". */
+    private static final String FILE_NAME_EXTENSION_XML = "xml";
+
+    /** Headers values that identifies the file type. */
+    private static String[] HEADER_VALUES = {"BZh91AY", "7z", "PDF", "PK", "PNG", "JFIF"};
+    
+    /** File extensions according to the header value. */
+    private static String[] EXTENSION_VALUES = {".bz2", ".7z", ".pdf", ".zip", ".png", ".jpg"};
+    
 	/**
 	 * Constructor. Initializes parameters for detection thread.
 	 * @param lockHandler Lock Manager.
@@ -82,6 +94,7 @@ public final class OutputTask implements Runnable {
 		outputFolder = config.getOutputFolder();
 		URL endPoint = config.getUrlEndPoint();
 		typesToRetrieveList = config.getMessagesTypeList();
+		fileNameExtension = config.getFileNameExtension();
 		lastListCode = 0;
 		lh = lockHandler;
 
@@ -96,6 +109,7 @@ public final class OutputTask implements Runnable {
 		msg.append("\n").append(Messages.getString("MF_CONFIG_OUTPUT_FOLDER", outputFolder)); //$NON-NLS-1$ //$NON-NLS-2$
 		msg.append("\n").append(Messages.getString("MF_CONFIG_DELAY_TIME_O", config.getSleepTimeOutput()));  //$NON-NLS-1$//$NON-NLS-2$
 		msg.append("\n").append(Messages.getString("MF_CONFIG_URL_O", endPoint.toString())); //$NON-NLS-1$ //$NON-NLS-2$
+		msg.append("\n").append(Messages.getString("MF_FILE_NAME_EXTENSION", fileNameExtension)); //$NON-NLS-1$ //$NON-NLS-2$
 				
 		LOGGER.info(msg.toString());
 	}
@@ -105,42 +119,54 @@ public final class OutputTask implements Runnable {
 	 * @param mle List element retrieved in detection process.
 	 */
 	private void retrieveAndStore(final MessageListEntry mle) {
-
-		String fileName = getMessageFileName(mle);
-
-		boolean lockFile = lh.tryLock(fileName);
-		long code = mle.getCode().longValue();
-
-		if (lockFile && !FileUtil.exists(outputFolder + File.separator + fileName)) {
+		
+        long code = mle.getCode().longValue();
+        String codeStr = String.valueOf(code);
+        
+	    boolean lockFile = lh.tryLock(codeStr);
+				
+		if (lockFile) {
 
 			StringBuilder messageIdVersionCode = new StringBuilder();
 			messageIdVersionCode.append(mle.getMessageIdentification());
-			
-			
+						
 			try {
 				if (mle.getVersion() == null) {
-					LOGGER.info(Messages.getString("MF_RETRIEVING_MESSAGE_WO_VERSION", String.valueOf(code), mle.getMessageIdentification())); //$NON-NLS-1$
+					LOGGER.info(Messages.getString("MF_RETRIEVING_MESSAGE_WO_VERSION", codeStr, mle.getMessageIdentification())); //$NON-NLS-1$
 				} else {
-					LOGGER.info(Messages.getString("MF_RETRIEVING_MESSAGE", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
+					LOGGER.info(Messages.getString("MF_RETRIEVING_MESSAGE", codeStr, mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
 				}
 				
 				RetrievedMessage response = get.get(code);
 				
 				if (mle.getVersion() == null) {
-					LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE_WO_VERSION", String.valueOf(code), mle.getMessageIdentification())); //$NON-NLS-1$
+					LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE_WO_VERSION", codeStr, mle.getMessageIdentification())); //$NON-NLS-1$
 				} else {
-					LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
-				}
+					LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE", codeStr, mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
+				}				
+								
+				String abosoluteFileName = outputFolder + File.separator + response.getFileName() + getFileNameExtension(response);
+								
+				if (FileUtil.exists(abosoluteFileName)) {
+				    
+				    LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE_ALREADY_EXISTS", abosoluteFileName));
 				
-				File tmpFile;
-				tmpFile = File.createTempFile(TMP_PREFIX, null, new File(outputFolder));
-				if (response.isBinary()) {
-				    FileUtil.write(tmpFile.getAbsolutePath(), response.getBinaryPayload());
 				} else {
-				    FileUtil.writeUTF8(tmpFile.getAbsolutePath(), response.getPrettyPayload());    
-				}
+				    
+				    /* 
+				     * Avoid "broken files" in case of anormal program termination. 
+				     * First write into a temporaly file then rename it.
+				     */
+				    File tmpFile;
+				    tmpFile = File.createTempFile(TMP_PREFIX, null, new File(outputFolder));
+				    if (response.isBinary()) {
+				        FileUtil.write(tmpFile.getAbsolutePath(), response.getBinaryPayload());
+				    } else {
+				        FileUtil.writeUTF8(tmpFile.getAbsolutePath(), response.getPrettyPayload());    
+				    }
 				
-				tmpFile.renameTo(new File(outputFolder + File.separator + fileName));
+				    tmpFile.renameTo(new File(abosoluteFileName));
+				}
 
 			} catch (ClientException e) {
 				if (mle.getVersion() == null) {
@@ -154,33 +180,58 @@ public final class OutputTask implements Runnable {
 				} else {
 					LOGGER.log(Level.SEVERE, Messages.getString("MF_UNABLE_SAVE_GET", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion()), e); //$NON-NLS-1$
 				}
+			} finally {
+			    lh.releaseLock(codeStr);
 			}
 		}
-
-		lh.releaseLock(fileName);
 	}
-
+	
 	/**
-	 * Creates a filename for the given message list entry.
-	 * @param messageListElement A message list entry.
-	 * @return File name build as <identification>.<version>.xml or <identification>.xml if the message has no version
-	 * information available.
-	 */
-	private String getMessageFileName(final MessageListEntry messageListElement) {
-		StringBuilder fileName = new StringBuilder();
-		fileName.append(messageListElement.getMessageIdentification());
+	 * Returns the file name extension according to the configuration.
+	 * @param response Retrieved message.
+	 * @return Proper file name extension according to the configuration. 
+	 */ 	
+	private String getFileNameExtension(final RetrievedMessage response) {
+	    
+	    String retValue;
+	    
+	    if (fileNameExtension.equalsIgnoreCase(Configuration.FILE_NAME_EXTENSION_NONE)) {
+	        retValue = "";
+	    } else if (fileNameExtension.equalsIgnoreCase(Configuration.FILE_NAME_EXTENSION_AUTO)) {
+            if (response.isBinary()) {
+                byte[] b = response.getBinaryPayload();
+                if (b.length > 20) {
+                    String headerValue = new String(response.getBinaryPayload(), 0, 20);
+                    String ext = null;
+                    for (int cont = 0; cont < HEADER_VALUES.length && ext == null; cont++) {
+                        if (headerValue.indexOf(HEADER_VALUES[cont]) != -1) {
+                            ext = EXTENSION_VALUES[cont];
+                        }
+                    }
+                    
+                    /* No proper extension was found. */
+                    if (ext == null) {
+                        ext = "";
+                    }
+                    
+                    retValue = ext;
+                    
+                } else {
+                    
+                    retValue = "";
+                    
+                }
+            } else {
+                retValue = FILE_NAME_EXTENSION_SEPARATOR + FILE_NAME_EXTENSION_XML;
+            }
+        } else {
+            retValue = FILE_NAME_EXTENSION_SEPARATOR + fileNameExtension;
+        }
+	    
+	    return retValue;        
+    }
 
-		if (messageListElement.getVersion() != null) {
-			fileName.append('.');
-			fileName.append(messageListElement.getVersion());
-		}
-
-		fileName.append(XML_FILE_EXTENSION);
-
-		return fileName.toString();
-	}
-
-	/**
+    /**
 	 * Gets a message list using the last list code.
 	 * @return A message list. <code>null</code> if the client cannot connect with the server.
 	 */
