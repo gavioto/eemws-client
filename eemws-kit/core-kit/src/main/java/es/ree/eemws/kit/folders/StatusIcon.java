@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2015 Red Eléctrica de España, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -33,6 +33,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import es.ree.eemws.kit.common.Messages;
 
@@ -41,7 +43,7 @@ import es.ree.eemws.kit.common.Messages;
  * Handles a basic menu to exit the application. Not available in all the platforms.
  *
  * @author Red Eléctrica de España, S.A.U.
- * @version 1.0 29/05/2014
+ * @version 1.1 16/11/2015
  *
  */
 public final class StatusIcon {
@@ -63,6 +65,9 @@ public final class StatusIcon {
 
     /** Task bar icon on notification area.*/
     private static TrayIcon trayIcon = null;
+    
+    /** Magic folder instance identification. */ 
+    private static String identification = null;
 
 	/** 
 	 * Number of invocations to the <code>setBusy</code> method. 
@@ -107,6 +112,14 @@ public final class StatusIcon {
     
     }
     
+    /** 
+     * Sets this MF identification. Will be shown in the system tray.
+     * @param id This MF instance identification.
+     */
+    public static void setIdentification(final String id) {
+        identification = id;
+    }
+    
     /**
      * Removes the icon from the system tray.
      */
@@ -133,7 +146,11 @@ public final class StatusIcon {
         if (trayIcon != null) {
         	synchronized (numBusy) {
                 numBusy ++;
-                trayIcon.setToolTip(Messages.getString("MF_STATUS_BUSY")); //$NON-NLS-1$
+                if (identification == null) {
+                    trayIcon.setToolTip(Messages.getString("MF_STATUS_BUSY")); //$NON-NLS-1$
+                } else {
+                    trayIcon.setToolTip(Messages.getString("MF_STATUS_BUSY") + " (" + identification + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                }
                 trayIcon.setImage(imageBusy);
         	}
         }
@@ -150,7 +167,11 @@ public final class StatusIcon {
                 	numBusy = 0;
                 }
                 if (numBusy == 0) {
-                	trayIcon.setToolTip(Messages.getString("MF_STATUS_IDLE")); //$NON-NLS-1$
+                    if (identification == null) {
+                        trayIcon.setToolTip(Messages.getString("MF_STATUS_IDLE")); //$NON-NLS-1$
+                    } else {
+                        trayIcon.setToolTip(Messages.getString("MF_STATUS_IDLE") + " (" + identification + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    }
                 	trayIcon.setImage(imgIdle);
                 }
         	}
@@ -161,8 +182,22 @@ public final class StatusIcon {
      * Ask for confirmation to exit the application.
      */
     private static void exit() {
-        int answer = JOptionPane.showConfirmDialog(null, Messages.getString("MF_EXIT_APPLICATION"), Messages.getString("MF_EXIT_APPLICATION_TITLE"), //$NON-NLS-1$ //$NON-NLS-2$
+               
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+            
+            // Ignore the exception, go ahead with the current UI..
+        }
+        
+        int answer;
+        if (identification == null) {
+            answer = JOptionPane.showConfirmDialog(null, Messages.getString("MF_EXIT_APPLICATION"), Messages.getString("MF_EXIT_APPLICATION_TITLE"), //$NON-NLS-1$ //$NON-NLS-2$
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        } else {
+            answer = JOptionPane.showConfirmDialog(null, Messages.getString("MF_EXIT_APPLICATION"), Messages.getString("MF_EXIT_APPLICATION_TITLE") //$NON-NLS-1$ //$NON-NLS-2$
+                    + " (" + identification + ")", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+        }
 
         if (answer == JOptionPane.OK_OPTION) {
             System.exit(0); //NOSONAR We want to force application to exit.
