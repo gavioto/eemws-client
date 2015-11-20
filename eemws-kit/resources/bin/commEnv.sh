@@ -13,5 +13,11 @@ export FILE_LOG=-Djava.util.logging.config.file="%INSTALL_PATH/config/file-loggi
 # Default memory options. Increase Xmx value to support "huge" messages e.g. -Xmx2048m
 export MEM_ARGS="-Xms32m -Xmx700m"
 
+# Add here any aditional java options you want to pass to the program.
+export JAVA_OPTIONS=
+
 # Uncomment if you have to deal with systems that cannot handle SHA-2 algorithm
-#export JAVA_OPTIONS=-DUSE_LEGACY_SHA1
+#export JAVA_OPTIONS=$JAVA_OPTIONS -DUSE_LEGACY_SHA1
+
+# Uncomment if you want to send as binary compressed XML payload which size is greater than the specified number of characters (here 1000)
+#export JAVA_OPTIONS=$JAVA_OPTIONS -DXML_TO_BINARY_THRESHOLD_CHARS=1000

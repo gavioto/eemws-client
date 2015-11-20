@@ -50,7 +50,13 @@ public final class PutMessage extends ParentClient {
 
     /** Put response messages signature are validated by default. */
     private static final boolean VERIFY_RESPONSE = true;
-
+    
+    /** System property name that sets the threshold in characteres from which the document is sent compressed. */
+    private static final String COMPRESS_XML_THRESHOLD_CHARS_KEY = "COMPRESS_XML_THRESHOLD_CHARS";
+    
+    /** Current compress XML threshold in characters. If not null, payloads with size > compressXmlThresholdChars will be sent compressed. */                                
+    private static Long compressXmlThresholdChars = Long.getLong(COMPRESS_XML_THRESHOLD_CHARS_KEY); 
+        
     /**
      * Constructor.
      */
@@ -114,8 +120,19 @@ public final class PutMessage extends ParentClient {
         String retValue = null;
         
         try {
-            String noun = XMLUtil.getRootTag(xmlMessage);
-            RequestMessage requestMessage = MessageUtil.createRequestWithPayload(EnumVerb.CREATE.toString(), noun, xmlMessage);
+            
+            RequestMessage requestMessage;
+            
+            if (compressXmlThresholdChars != null && xmlMessage.length() > compressXmlThresholdChars.longValue()) {
+
+                requestMessage = MessageUtil.createRequestWithCompressedXmlPayload(xmlMessage);
+                
+            } else {
+                
+                String noun = XMLUtil.getRootTag(xmlMessage);
+                requestMessage = MessageUtil.createRequestWithPayload(EnumVerb.CREATE.toString(), noun, xmlMessage);
+            }
+            
             ResponseMessage responseMessage = sendMessage(requestMessage);
             
             if (!isPayloadEmpty(responseMessage)) {
@@ -129,6 +146,7 @@ public final class PutMessage extends ParentClient {
         
         return retValue;
     }
+   
     
     /**
      * Checks weather the response menssaje has payload. 
