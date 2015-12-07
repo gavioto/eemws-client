@@ -52,7 +52,7 @@ public final class PutMessage extends ParentClient {
     private static final boolean VERIFY_RESPONSE = true;
     
     /** System property name that sets the threshold in characteres from which the document is sent compressed. */
-    private static final String COMPRESS_XML_THRESHOLD_CHARS_KEY = "COMPRESS_XML_THRESHOLD_CHARS";
+    private static final String COMPRESS_XML_THRESHOLD_CHARS_KEY = "XML_TO_BINARY_THRESHOLD_CHARS";
     
     /** Current compress XML threshold in characters. If not null, payloads with size > compressXmlThresholdChars will be sent compressed. */                                
     private static Long compressXmlThresholdChars = Long.getLong(COMPRESS_XML_THRESHOLD_CHARS_KEY); 
