@@ -26,9 +26,9 @@ import java.net.URL;
 
 import javax.swing.JOptionPane;
 
-import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.client.get.GetMessage;
 import es.ree.eemws.client.get.RetrievedMessage;
+import es.ree.eemws.core.utils.operations.get.GetOperationException;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.gui.common.Logger;
 
@@ -155,7 +155,7 @@ public final class GetMessageSender {
 
             FileHandle ficheroHandle = mainWindow.getFileHandle();
             ficheroHandle.saveFile(idMensaje, response);
-        } catch (ClientException e) {
+        } catch (GetOperationException e) {
         	msg = Messages.getString("BROWSER_UNABLE_TO_GET", e.getMessage()); //$NON-NLS-1$
             status.setStatus(msg);
             logger.logMessage(msg);
@@ -175,8 +175,7 @@ public final class GetMessageSender {
      * @param dataTable Data table.
      * @return Identification of the message that appears at row <code>row</code>
      */
-
-	private String getMessageId(final int row, DataTable dataTable) {
+	private String getMessageId(final int row, final DataTable dataTable) {
 		String idMensaje = (String) dataTable.getModel().getAbsoluteValueAt(row, ColumnsId.ID.ordinal());
         BigInteger version = (BigInteger) dataTable.getModel().getAbsoluteValueAt(row, ColumnsId.VERSION.ordinal());
         

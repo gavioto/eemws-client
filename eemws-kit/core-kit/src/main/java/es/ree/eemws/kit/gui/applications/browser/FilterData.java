@@ -73,7 +73,7 @@ public final class FilterData {
         try {
             code = Long.parseLong(strCode);
         } catch (NumberFormatException ex) {
-            throw new FilterException(Messages.getString("INCORRECT_CODE", strCode)); //$NON-NLS-1$
+            throw new FilterException(Messages.getString("BROWSER_FILETER_INCORRECT_CODE", strCode)); //$NON-NLS-1$
         }
     }
  
@@ -144,7 +144,7 @@ public final class FilterData {
      * Returns a Date object from a formatted string.
      * @param date Date entered by user with dd/MM/yyyy format.
      * @param dateName Name of the date (for error information)
-     * @return Date object containing date given as a <code>String</string>.
+     * @return Date object containing date given as a <code>String</code>.
      */
     private Date getDateFromStr(final String date, final String dateName) {
         Date retValue = null;
@@ -153,13 +153,13 @@ public final class FilterData {
             try {
                 retValue = sdf.parse(date);
             } catch (ParseException e) {
-            	throw new FilterException(Messages.getString("INCORRECT_DATE_FORMAT", dateName, date, Filter.DATE_FORMAT)); //$NON-NLS-1$
+            	throw new FilterException(Messages.getString("BROWSER_FILTER_INCORRECT_DATE_FORMAT", dateName, date, Filter.DATE_FORMAT)); //$NON-NLS-1$
             }
 
             String originDate = sdf.format(retValue);
 
             if (!originDate.equals(date)) {
-            	throw new FilterException(Messages.getString("INCORRECT_DATE_FORMAT", dateName, date, Filter.DATE_FORMAT)); //$NON-NLS-1$
+            	throw new FilterException(Messages.getString("BROWSER_FILTER_INCORRECT_DATE_FORMAT", dateName, date, Filter.DATE_FORMAT)); //$NON-NLS-1$
             }
         }
 

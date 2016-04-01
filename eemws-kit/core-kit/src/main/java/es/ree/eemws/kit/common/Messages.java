@@ -22,7 +22,7 @@ package es.ree.eemws.kit.common;
 
 import java.util.ResourceBundle;
 
-import es.ree.eemws.core.utils.messages.AbstractMessages;
+import es.ree.eemws.core.utils.i18n.AbstractMessages;
 
 
 /**
