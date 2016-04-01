@@ -41,12 +41,13 @@ public final class ExecutionControl {
 	/** Path to locking file. Will use a temporary path, if not possible "user dir" will be used instead. */
 	private static String lockFileFolder = System.getProperty("java.io.tmpdir", System.getProperty("user.home", File.separator)); //$NON-NLS-1$ //$NON-NLS-2$
 
+	/** File lock. Detects if other process has the control file locked. */
 	private static FileLock fl; 
 	
 	/**
-	 * Check if is there a an existent locking.
-	 * Do no close the resources, lock them until program termination.
-	 * @return <code>true</code> If locking exists. <code>false</code> otherwise.
+	 * Checks if there is another instance with the given id running.
+	 * @param id Instance id or <code>null</code> for default id.
+	 * @return <code>true</code> If there is another instance running. <code>false</code> otherwise.
 	 */
 	@SuppressWarnings("resource")
 	public static boolean isRunning(final String id) {

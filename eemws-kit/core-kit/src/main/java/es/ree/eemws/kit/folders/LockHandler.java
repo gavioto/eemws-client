@@ -130,8 +130,8 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 
 	/**
 	 * Retrieve remote references to neighbors.
-	 * @param membersRmiUrls
-	 * @param urls URLs of the services to inspect.
+	 * @param membersRmiUrls List of all members' URL.
+	 * @param thisMemberUrl This member URL.
 	 * @throws RemoteException If the settings of any server are incorrect.
 	 */
 	private void getRemoteReferences(final List<String> membersRmiUrls, final String thisMemberUrl) throws RemoteException {
@@ -348,16 +348,16 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 		 * @param url URL of the member.
 		 * @param remIterf Remote interface.
 		 */
-		public Member(String url, LockHandlerIntf remIterf) {
+		Member(final String url, final LockHandlerIntf remIterf) {
 			rmiUrl = url;
 			remoteReference = remIterf;
 		}
 
 		/** 
-		 * Sets the remote interface of a member (update)
+		 * Sets the remote interface of a member (update).
 		 * @param remoteRef Remote interface of a member.
 		 */
-		public void setRemoteReference(LockHandlerIntf remoteRef) {
+		public void setRemoteReference(final LockHandlerIntf remoteRef) {
 			remoteReference = remoteRef;
 		}
 
