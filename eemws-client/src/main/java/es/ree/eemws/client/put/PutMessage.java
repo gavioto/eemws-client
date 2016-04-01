@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Red Eléctrica de España, S.A.U.
+ * Copyright 2016 Red Eléctrica de España, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -21,27 +21,32 @@
 package es.ree.eemws.client.put;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import _504.iec62325.wss._1._0.MsgFaultMsg;
+import ch.iec.tc57._2011.schema.message.PayloadType;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
-import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.client.common.ParentClient;
+import es.ree.eemws.core.utils.error.EnumErrorCatalog;
 import es.ree.eemws.core.utils.iec61968100.EnumMessageFormat;
 import es.ree.eemws.core.utils.iec61968100.EnumVerb;
 import es.ree.eemws.core.utils.iec61968100.MessageUtil;
+import es.ree.eemws.core.utils.operations.HandlerException;
+import es.ree.eemws.core.utils.operations.put.PutOperationException;
+import es.ree.eemws.core.utils.xml.XMLElementUtil;
 import es.ree.eemws.core.utils.xml.XMLUtil;
 
 /**
- * The Put Message service is used to send a message to the server for further processing
- * following the rules of the European Energy Markets for Electricity.
+ * Send a message to the server for  processing.
  *
  * @author Red Eléctrica de España S.A.U.
- * @version 1.0 13/02/2015
+ * @version 1.1 10/01/2016
  */
 public final class PutMessage extends ParentClient {
 
@@ -49,12 +54,12 @@ public final class PutMessage extends ParentClient {
     private static final boolean SIGN_REQUEST = true;
 
     /** Put response messages signature are validated by default. */
-    private static final boolean VERIFY_RESPONSE = true;
+    private static final boolean VERIFY_RESPONSE_SIGNATURE = true;
     
     /** System property name that sets the threshold in characteres from which the document is sent compressed. */
-    private static final String COMPRESS_XML_THRESHOLD_CHARS_KEY = "XML_TO_BINARY_THRESHOLD_CHARS";
+    private static final String COMPRESS_XML_THRESHOLD_CHARS_KEY = "XML_TO_BINARY_THRESHOLD_CHARS"; //$NON-NLS-1$
     
-    /** Current compress XML threshold in characters. If not null, payloads with size > compressXmlThresholdChars will be sent compressed. */                                
+    /** Compress XML threshold in characters. If not null, payloads with size > compressXmlThresholdChars will be sent compressed. */                                
     private static Long compressXmlThresholdChars = Long.getLong(COMPRESS_XML_THRESHOLD_CHARS_KEY); 
         
     /**
@@ -63,64 +68,62 @@ public final class PutMessage extends ParentClient {
     public PutMessage() {
 
         setSignRequest(SIGN_REQUEST);
-        setVerifyResponse(VERIFY_RESPONSE);
+        setVerifyResponse(VERIFY_RESPONSE_SIGNATURE);
     }
 
     /**
-     * This method is used to send a message to the server for further processing
-     * following the rules of the European Energy Markets for Electricity.
+     * Sends an XML message as binary to the server for further processing (format = null).
      * @param name Name of the binary file.
      * @param data Binary content.
-     * @return String with the XML response message. <code>null</code> if the response has no payload.
-     * @throws ClientException Exception with the error.
+     * @return String with the server's response. <code>null</code> if the response has no payload.
+     * @throws PutOperationException If the retrieved message has an invalid format or the application cannot handle it
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    public String put(final String name, final byte[] data) throws ClientException {
+    public String put(final String name, final byte[] data) throws PutOperationException {
 
         return put(name, data, null);
     }
 
     /**
-     * This method is used to send a message to the server for further processing
-     * following the rules of the European Energy Markets for Electricity.
+     * Sends a binary message to the server for further processing.
      * @param name Name of the binary file.
      * @param data Binary content.
-     * @param format Hint to format of payload.
-     * @return String with the XML response message. <code>null</code> if the response has no payload.
-     * @throws ClientException Exception with the error.
+     * @param format Message's format. Can be <code>null</code> to use default format.
+     * @return String with the server's response. <code>null</code> if the response has no payload.
+     * @throws PutOperationException If the retrieved message has an invalid format or the application cannot handle it
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    public String put(final String name, final byte[] data, final EnumMessageFormat format) throws ClientException {
-        
+    public String put(final String name, final byte[] data, final EnumMessageFormat format) throws PutOperationException {
+
         String retValue = null;
-        
         try {
-
             RequestMessage requestMessage = MessageUtil.createRequestWithBinaryPayload(name, data, format);
-            ResponseMessage responseMessage = sendMessage(requestMessage);
-            
-            if (!isPayloadEmpty(responseMessage)) {
-                retValue = getPrettyPrintPayloadMessage(responseMessage);
-            }
-
-        } catch (MsgFaultMsg e) {
-
-            throw new ClientException(e.getMessage(), e);
+            ResponseMessage response = sendMessage(requestMessage);
+            validateResponse(response, true);
+            retValue = responsePayload2String(response);
+        } catch (TransformerException | ParserConfigurationException e) {
+            throw new PutOperationException(EnumErrorCatalog.ERR_PUT_014, e, e.getMessage());
+        } catch (HandlerException e) {
+            throw new PutOperationException(e);
         }
         
         return retValue;
+       
     }
 
     /**
-     * Sends a XML message to the server for further processing following the rules of the European Energy Markets for Electricity.
-     * @param xmlMessage The xml message that is being sent to the server.
+     * Sends a binary message to the server for further processing.
+     * @param xmlMessage Xml message to be sent.
      * @return String with the XML response message. <code>null</code> if the response has no payload.
-     * @throws ClientException Exception with the error.
+     * @throws PutOperationException If the retrieved message has an invalid format or the application cannot handle it
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    public String put(final StringBuilder xmlMessage) throws ClientException {
+    public String put(final StringBuilder xmlMessage) throws PutOperationException {
         
         String retValue = null;
+        EnumErrorCatalog err = EnumErrorCatalog.ERR_PUT_014;
         
         try {
-            
             RequestMessage requestMessage;
             
             if (compressXmlThresholdChars != null && xmlMessage.length() > compressXmlThresholdChars.longValue()) {
@@ -133,29 +136,46 @@ public final class PutMessage extends ParentClient {
                 requestMessage = MessageUtil.createRequestWithPayload(EnumVerb.CREATE.toString(), noun, xmlMessage);
             }
             
-            ResponseMessage responseMessage = sendMessage(requestMessage);
+            ResponseMessage response = sendMessage(requestMessage);
+            validateResponse(response, true);
             
-            if (!isPayloadEmpty(responseMessage)) {
-                retValue = getPrettyPrintPayloadMessage(responseMessage);
-            }
+            err = EnumErrorCatalog.ERR_PUT_015;                
+            retValue = responsePayload2String(response);
 
-        } catch (MsgFaultMsg | ParserConfigurationException | SAXException | IOException e) {
+        } catch (ParserConfigurationException | SAXException | IOException | TransformerException e) {
 
-            throw new ClientException(e.getMessage(), e);
+            throw new PutOperationException(err, e, e.getMessage());
+        
+        }  catch (HandlerException e) {
+        
+            throw new PutOperationException(e);
         }
         
         return retValue;
     }
-   
-    
-    /**
-     * Checks weather the response menssaje has payload. 
-     * In certaint cases, a put message could receive an empty response. 
-     * @param response Response menssaje.
-     * @return <code>true</code> if the response has no payload. <code>false</code> otherwise.
-     */
-    private boolean isPayloadEmpty(final ResponseMessage response) {
         
-        return response.getPayload() == null || response.getPayload().getAnies().get(0) == null;
+    /**
+     * Returns the operation response's payload content as a String.
+     * @param responseMessage Response message received from server.
+     * @return Operation response (tipically an acknowledgement) as string. 
+     * If the servers has returned no payload (for asynchronous communication) <code>null</code> is returned. 
+     * @throws TransformerException If the response cannot be transformed as an String.
+     * @throws ParserConfigurationException If the response cannot be transformed as an string.
+     */
+    private String responsePayload2String(final ResponseMessage responseMessage) throws TransformerException, ParserConfigurationException {
+        String retValue = null;
+        
+        PayloadType payload = responseMessage.getPayload();
+
+        List<Element> anies = payload.getAnies();
+        
+        if (!anies.isEmpty()) { 
+        
+            retValue = XMLElementUtil.element2String(payload.getAnies().get(0));
+            
+        }
+
+        return retValue;
     }
+   
 }

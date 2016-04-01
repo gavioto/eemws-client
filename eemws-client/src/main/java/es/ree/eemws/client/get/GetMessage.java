@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Red Eléctrica de España, S.A.U.
+ * Copyright 2016 Red Eléctrica de España, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -18,129 +18,141 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
+
 package es.ree.eemws.client.get;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import _504.iec62325.wss._1._0.MsgFaultMsg;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
-import es.ree.eemws.client.common.ClientException;
-import es.ree.eemws.client.common.Messages;
+import ch.iec.tc57._2011.schema.message.ResponseMessage;
 import es.ree.eemws.client.common.ParentClient;
 import es.ree.eemws.core.utils.iec61968100.EnumFilterElement;
 import es.ree.eemws.core.utils.iec61968100.EnumNoun;
 import es.ree.eemws.core.utils.iec61968100.EnumVerb;
 import es.ree.eemws.core.utils.iec61968100.MessageUtil;
+import es.ree.eemws.core.utils.operations.HandlerException;
+import es.ree.eemws.core.utils.operations.get.GetOperationException;
+import es.ree.eemws.core.utils.operations.get.GetRequestMessageValidator; 
 
 /**
  * Retrieves the message according to the given parameters (filters).
  * 
  * @author Red Eléctrica de España S.A.U.
- * @version 1.1 13/02/2015
+ * @version 1.1 10/01/2016
  */
 public final class GetMessage extends ParentClient {
 
-    /** Queue value should be alwyas "NEXT". */
-    private static final String QUEUE_NEXT_VALUE = "NEXT"; //$NON-NLS-1$
-
-    /** Get request messages are not signed. */
+    /** Get request is not signed. */
     private static final boolean SIGN_REQUEST = false;
 
-    /** Get response messages signature are validated. */
-    private static final boolean VERIFY_RESPONSE = true;
+    /** Get response's signature is validated. */
+    private static final boolean VERIFY_RESPONSE_SIGNATURE = true;
 
     /**
      * Constructor.
      */
     public GetMessage() {
         setSignRequest(SIGN_REQUEST);
-        setVerifyResponse(VERIFY_RESPONSE);
+        setVerifyResponse(VERIFY_RESPONSE_SIGNATURE);
     }
 
     /**
-     * This method obtain the message associated to the given parameter (filter).
-     * @param messageIdentification Specifies the Message Identification of the requested message.
-     * @param messageVersion Specifies the Message Version of the requested message. If more than one message in the
-     * server have the same MessageIdentification and MessageVersion, the most recent one will be returned.
+     * Gets the message with the given identification and version.
+     * @param messageIdentification Message's identification.
+     * @param messageVersion Message's version. Can be <code>null</code> if no version applies.
      * @return Response message wrapper with the server's response.
-     * @throws ClientException Exception with the error.
+     * @throws GetOperationException If the retrieved message has an invalid format or the application cannot handle it
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    public RetrievedMessage get(final String messageIdentification, final Integer messageVersion) throws ClientException {
+    public RetrievedMessage get(final String messageIdentification, final Integer messageVersion) throws GetOperationException {
 
         return get(messageIdentification, messageVersion, null, null);
     }
 
     /**
-     * This method obtain the message associated to the given parameter (filter).
-     * @param code Specifies the internal identification number of the requested message.
+     * Gets the message with the given code.
+     * @param code Message's code.
      * @return Response message wrapper with the server's response.
-     * @throws ClientException Exception with the error.
+     * @throws GetOperationException If the retrieved message has an invalid format or the application cannot handle it
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    public RetrievedMessage get(final Long code) throws ClientException {
+    public RetrievedMessage get(final Long code) throws GetOperationException {
 
         return get(null, null, code, null);
     }
 
     /**
-     * This method obtain the message associated to the given parameter (filter).
-     * @param queue Indicates that the server will decide which message will be returned. Its value must be
-     * <code>NEXT</code> or <code>null</code>
+     * Gets the message from the queue.
+     * @param queue Queue value.
      * @return Response message wrapper with the server's response.
-     * @throws ClientException Exception with the error.
+     * @throws GetOperationException If the retrieved message has an invalid format or the application cannot handle it
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    public RetrievedMessage get(final String queue) throws ClientException {
+    public RetrievedMessage get(final String queue) throws GetOperationException {
 
-        if (queue != null && !QUEUE_NEXT_VALUE.equals(queue)) {
-
-            throw new ClientException(Messages.getString("INVALID_QUEUE", QUEUE_NEXT_VALUE, queue)); //$NON-NLS-1$
-        }
-
-        return get(null, null, null, QUEUE_NEXT_VALUE);
+        return get(null, null, null, queue);
     }
 
     /**
-     * Sends a XML message to the server for further processing following the rules of the European Energy Markets for Electricity.
-     * @param xmlMessage The xml message that is being sent to the server.
+     * Gets the message using the given parameters.
+     * @param msgOptions List options as a Map which key must be on the EnumFilterElement list.
      * @return Response message wrapper with the server's response.
-     * @throws ClientException Exception with the error.
+     * @throws GetOperationException If the retrieved message has an invalid format or the application cannot handle it
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    private RetrievedMessage get(final String messageIdentification, final Integer messageVersion, final Long code, final String queue) throws ClientException {
-
+    public RetrievedMessage get(final Map<String, String> msgOptions) throws GetOperationException {
         RetrievedMessage retValue = new RetrievedMessage();
 
         try {
-
-            Map<String, String> msgOptions = new HashMap<>();
-
-            if (messageIdentification != null) {
-                msgOptions.put(EnumFilterElement.MESSAGE_IDENTIFICATION.toString(), messageIdentification);
-                retValue.setMsgIdentification(messageIdentification);
-            }
-
-            if (messageVersion != null) {
-                msgOptions.put(EnumFilterElement.MESSAGE_VERSION.toString(), messageVersion.toString());
-                retValue.setMsgVersion(messageVersion);
-            }
-
-            if (code != null) {
-                msgOptions.put(EnumFilterElement.CODE.toString(), code.toString());
-                retValue.setCode(code);
-            }
-
-            if (queue != null) {
-                msgOptions.put(EnumFilterElement.QUEUE.toString(), queue);
-            }
-
-            RequestMessage requestMessage = MessageUtil.createRequestWithOptions(EnumVerb.GET, EnumNoun.ANY, msgOptions);
-
-            retValue.setMessage(sendMessage(requestMessage));
             
-        } catch (MsgFaultMsg e) {
+            retValue.setMsgIdentification(msgOptions.get(EnumFilterElement.MESSAGE_IDENTIFICATION.toString()));
+            retValue.setMsgVersion(msgOptions.get(EnumFilterElement.MESSAGE_VERSION.toString()));
+            retValue.setMsgIdentification(msgOptions.get(EnumFilterElement.CODE.toString()));
+   
+            RequestMessage requestMessage = MessageUtil.createRequestWithOptions(EnumVerb.GET, EnumNoun.ANY, msgOptions);
+            GetRequestMessageValidator.validate(requestMessage);
+            ResponseMessage response = sendMessage(requestMessage);
+            validateResponse(response, false);
+            retValue.setMessage(response);
 
-            throw new ClientException(e);
+        } catch (HandlerException e) {
+            throw new GetOperationException(e);
+        }  
+        
+        return retValue;
+    }
+
+    /**
+     * Gets the message using the given parameters.
+     * @param messageIdentification Message's identification.
+     * @param messageVersion Message's version. Can be <code>null</code> if no version applies.   
+     * @param code Message's code.
+     * @param queue Queue value.
+     * @return Response message wrapper with the server's response.
+     * @throws GetOperationException If the retrieved message has an invalid format or the application cannot handle it
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
+     */
+    public RetrievedMessage get(final String messageIdentification, final Integer messageVersion, final Long code, final String queue) throws GetOperationException {
+
+        Map<String, String> msgOptions = new HashMap<>();
+
+        if (messageIdentification != null) {
+            msgOptions.put(EnumFilterElement.MESSAGE_IDENTIFICATION.toString(), messageIdentification);
         }
 
-        return retValue;
+        if (messageVersion != null) {
+            msgOptions.put(EnumFilterElement.MESSAGE_VERSION.toString(), messageVersion.toString());
+        }
+
+        if (code != null) {
+            msgOptions.put(EnumFilterElement.CODE.toString(), code.toString());
+        }
+
+        if (queue != null) {
+            msgOptions.put(EnumFilterElement.QUEUE.toString(), queue);
+        }
+
+        return get(msgOptions);
     }
 }
