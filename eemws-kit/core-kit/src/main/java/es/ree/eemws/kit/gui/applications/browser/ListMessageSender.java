@@ -27,9 +27,9 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.client.list.ListMessages;
 import es.ree.eemws.client.list.MessageListEntry;
+import es.ree.eemws.core.utils.operations.list.ListOperationException;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.gui.common.Logger;
 
@@ -163,7 +163,7 @@ public final class ListMessageSender {
                     logger.logMessage(msg);
                 }
 
-            } catch (ClientException ex) {
+            } catch (ListOperationException ex) {
                 JOptionPane.showMessageDialog(mainWindow,
                         Messages.getString("BROWSER_UNABLE_TO_LIST", ex.getMessage()), //$NON-NLS-1$
                         Messages.getString("MSG_ERROR_TITLE"),  //$NON-NLS-1$

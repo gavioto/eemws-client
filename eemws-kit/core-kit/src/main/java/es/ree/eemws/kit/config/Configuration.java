@@ -107,7 +107,7 @@ public class Configuration {
 
         keyStoreFile = cm.getValue(KEY_STORE_FILE_KEY);
         keyStorePassword = cm.getValue(KEY_STORE_PASSWORD_KEY);
-        keyStoreType= cm.getValue(KEY_STORE_TYPE_KEY);
+        keyStoreType = cm.getValue(KEY_STORE_TYPE_KEY);
         
         proxyHost = cm.getValue(PROXY_HOST_KEY);
         proxyPort = cm.getValue(PROXY_PORT_KEY);
@@ -131,7 +131,7 @@ public class Configuration {
         
         try {
         	cm.readConfigFile(CONFIG_FILE);
-        } catch(ConfigException ex) {
+        } catch (ConfigException ex) {
         	
         	/* Ignore config exception if the configuration is not valid. */
         	/* Ignore errors on load. */
@@ -373,8 +373,8 @@ public class Configuration {
     }
     
     /**
-     * Returns the key store type (JKS, PKCS12)
-     * @return Key store type (JKS, PKCS12). If <code>null<code> PKCS12 will be returned.
+     * Returns the key store type (JKS, PKCS12).
+     * @return Key store type (JKS, PKCS12). If <code>null</code> PKCS12 will be returned.
      */
     public final String getKeyStoreType() {
     	String retValue = keyStoreType;

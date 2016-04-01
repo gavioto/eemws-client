@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2016 Red Eléctrica de España, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -36,26 +36,25 @@ import _504.iec62325.messages._1._0.MessageList;
 import _504.iec62325.messages._1._0.MessageList.Message;
 import _504.iec62325.messages._1._0.StatusType;
 import _504.iec62325.messages._1._0.TimeIntervalType;
-import _504.iec62325.wss._1._0.MsgFaultMsg;
-import ch.iec.tc57._2011.schema.message.HeaderType;
-import ch.iec.tc57._2011.schema.message.PayloadType;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
-import es.ree.eemws.client.common.ClientException;
-import es.ree.eemws.client.common.Messages;
 import es.ree.eemws.client.common.ParentClient;
+import es.ree.eemws.core.utils.error.EnumErrorCatalog;
 import es.ree.eemws.core.utils.iec61968100.EnumFilterElement;
 import es.ree.eemws.core.utils.iec61968100.EnumIntervalTimeType;
 import es.ree.eemws.core.utils.iec61968100.EnumNoun;
 import es.ree.eemws.core.utils.iec61968100.EnumVerb;
 import es.ree.eemws.core.utils.iec61968100.MessageUtil;
+import es.ree.eemws.core.utils.operations.HandlerException;
+import es.ree.eemws.core.utils.operations.list.ListOperationException;
+import es.ree.eemws.core.utils.operations.list.ListRequestMessageValidator;
 import es.ree.eemws.core.utils.xml.XMLElementUtil;
 
 /**
- * Obtains a list of available messages for the client according to a given filter.
+ * Obtains a list of available messages according to filters.
  * 
  * @author Red Eléctrica de España S.A.U.
- * @version 1.0 13/06/2014
+ * @version 1.1 10/01/2016
  */
 public final class ListMessages extends ParentClient {
 
@@ -63,7 +62,7 @@ public final class ListMessages extends ParentClient {
     private static final boolean SIGN_REQUEST = false;
 
     /** List response messages signature are not validated by default. */
-    private static final boolean VERIFY_RESPONSE = false;
+    private static final boolean VERIFY_RESPONSE_SIGNATURE = false;
 
     /**
      * Constructor.
@@ -71,43 +70,44 @@ public final class ListMessages extends ParentClient {
     public ListMessages() {
 
         setSignRequest(SIGN_REQUEST);
-        setVerifyResponse(VERIFY_RESPONSE);
+        setVerifyResponse(VERIFY_RESPONSE_SIGNATURE);
     }
 
     /**
-     * This method obtain a list of available messages for the client according to a given filter.
+     * Obtains a list of available messages for the client according to a given filter.
      * @param startTime Specifies that the list of messages returned should only include messages whose end of their
      * Application TimeInterval (Document TimeInterval) or Server Timestamp comes after the provided date.
      * @param endTime Specifies that the list of messages returned should only include messages whose start of their
      * Application TimeInterval or ServerTimestamp (when the message was received or published in the server) comes
      * before the provided date.
-     * @return List of data message.
-     * @throws ClientException Exception with the error.
+     * @return A list of <code>MessageListEntry</code> elements.
+     * @throws ListOperationException If the retrieved message has an invalid format or the application cannot handle it 
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    public List<MessageListEntry> list(final Date startTime, final Date endTime) throws ClientException {
+    public List<MessageListEntry> list(final Date startTime, final Date endTime) throws ListOperationException {
 
         return list(startTime, endTime, null, null, null, null);
     }
 
     /**
-     * This method obtain a list of available messages for the client according to a given filter.
+     * Obtains a list of available messages for the client according to a given filter.
      * @param startTime Specifies that the list of messages returned should only include messages whose end of their
      * Application TimeInterval (Document TimeInterval) or Server Timestamp comes after the provided date.
      * @param endTime Specifies that the list of messages returned should only include messages whose start of their
      * Application TimeInterval or ServerTimestamp (when the message was received or published in the server) comes
      * before the provided date.
-     * @param intervalType Indicates whether the StartTime and EndTime refer to Application TimeInterval or to Server
-     * Timestamp. Permitted values: "Application" (default), "Server".
-     * @return List of data message.
-     * @throws ClientException Exception with the error.
-     */
-    public List<MessageListEntry> list(final Date startTime, final Date endTime, final EnumIntervalTimeType intervalType) throws ClientException {
+     * @param intervalType Indicates whether the StartTime and EndTime refer to Application TimeInterval or to Server Timestamp.
+     * @return A list of <code>MessageListEntry</code> elements.
+     * @throws ListOperationException If the retrieved message has an invalid format or the application cannot handle it 
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
+    */
+    public List<MessageListEntry> list(final Date startTime, final Date endTime, final EnumIntervalTimeType intervalType) throws ListOperationException {
 
         return list(startTime, endTime, intervalType, null, null, null);
     }
 
     /**
-     * This method obtain a list of available messages for the client according to a given filter.
+     * Obtains a list of available messages for the client according to a given filter.
      * @param startTime Specifies that the list of messages returned should only include messages whose end of their
      * Application TimeInterval (Document TimeInterval) or Server Timestamp comes after the provided date.
      * @param endTime Specifies that the list of messages returned should only include messages whose start of their
@@ -117,52 +117,82 @@ public final class ListMessages extends ParentClient {
      * Timestamp. Permitted values: "Application" (default), "Server".
      * @param messageIdentification Specifies that the list of messages returned should only include messages whose
      * Message Identification is compliant with the pattern provided in this parameter. ("*" can be used as a wildcard).
-     * @param msgType Specifies that the list of messages returned should only include messages of the provided type.
-     * @param owner Specifies that the list of messages returned should only include messages belonging to the provided
-     * Owner.
-     * @return List of data message.
-     * @throws ClientException Exception with the error.
+     * @param msgType Specifies that the list of messages returned should only include messages of the given type.
+     * @param owner Specifies that the list of messages returned should only include messages belonging to the given Owner.
+     * @return A list of <code>MessageListEntry</code> elements.
+     * @throws ListOperationException If the retrieved message has an invalid format or the application cannot handle it 
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    public List<MessageListEntry> list(final Date startTime, final Date endTime, final EnumIntervalTimeType intervalType, final String messageIdentification, final String msgType, final String owner) throws ClientException {
+    public List<MessageListEntry> list(final Date startTime, final Date endTime, final EnumIntervalTimeType intervalType, 
+            final String messageIdentification, final String msgType, final String owner) throws ListOperationException {
 
         return list(null, startTime, endTime, intervalType, messageIdentification, msgType, owner);
     }
 
     /**
-     * This method obtain a list of available messages for the client according to a given filter.
+     * Obtains a list of available messages for the client according to a given filter.
      * @param code Specifies that the list of messages returned should only include messages with an internal
      * identification number higher than the provided code. This means that the list will contain messages that are
      * newer to the given one. For optimization purposes, if this filter is used, only messages available since the
      * 00.00 of D-1 (day before) are guaranteed to be included in the response list
-     * @return List of data message.
-     * @throws ClientException Exception with the error.
+     * @return A list of <code>MessageListEntry</code> elements.
+     * @throws ListOperationException If the retrieved message has an invalid format or the application cannot handle it 
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    public List<MessageListEntry> list(final Long code) throws ClientException {
+    public List<MessageListEntry> list(final Long code) throws ListOperationException {
 
         return list(code, null, null, null);
     }
 
     /**
-     * This method obtain a list of available messages for the client according to a given filter.
+     * Obtains a list of available messages for the client according to a given filter.
      * @param code Specifies that the list of messages returned should only include messages with an internal
      * identification number higher than the provided code. This means that the list will contain messages that are
      * newer to the given one. For optimization purposes, if this filter is used, only messages available since the
      * 00.00 of D-1 (day before) are guaranteed to be included in the response list
      * @param messageIdentification Specifies that the list of messages returned should only include messages whose
      * Message Identification is compliant with the pattern provided in this parameter. ("*" can be used as a wildcard).
-     * @param msgType Specifies that the list of messages returned should only include messages of the provided type.
-     * @param owner Specifies that the list of messages returned should only include messages belonging to the provided
-     * Owner.
-     * @return List of data message.
-     * @throws ClientException Exception with the error.
+     * @param msgType Specifies that the list of messages returned should only include messages of the given type.
+     * @param owner Specifies that the list of messages returned should only include messages belonging to the given Owner.
+     * @return A list of <code>MessageListEntry</code> elements.
+     * @throws ListOperationException If the retrieved message has an invalid format or the application cannot handle it 
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    public List<MessageListEntry> list(final Long code, final String messageIdentification, final String msgType, final String owner) throws ClientException {
+    public List<MessageListEntry> list(final Long code, final String messageIdentification, final String msgType, final String owner) throws ListOperationException {
 
         return list(code, null, null, null, messageIdentification, msgType, owner);
     }
+    
+    
+    /**
+     * Obtains a list of available messages for the client according to a given filter.
+     * @param msgOptions List options as a Map which key must be on the EnumFilterElement list.
+     * @return A list of <code>MessageListEntry</code> elements.
+     * @throws ListOperationException If the retrieved message has an invalid format or the application cannot handle it 
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
+     */
+    public List<MessageListEntry> list(final Map<String, String> msgOptions) throws ListOperationException {
+
+        List<MessageListEntry> retValue = null;
+                
+        try {
+            RequestMessage requestMessage = MessageUtil.createRequestWithOptions(EnumVerb.GET, EnumNoun.MESSAGE_LIST, msgOptions);
+            ListRequestMessageValidator.validate(requestMessage);
+            ResponseMessage response = sendMessage(requestMessage);
+            validateResponse(response, EnumNoun.MESSAGE_LIST.toString());
+            retValue = processPayload(response);
+
+        } catch (HandlerException e) {
+
+            throw new ListOperationException(e);
+
+        }
+
+        return retValue;
+    }
 
     /**
-     * This method obtain a list of available messages for the client according to a given filter.
+     * Obtains a list of available messages for the client according to a given filter.
      * @param code Specifies that the list of messages returned should only include messages with an internal
      * identification number higher than the provided code. This means that the list will contain messages that are
      * newer to the given one. For optimization purposes, if this filter is used, only messages available since the
@@ -176,121 +206,69 @@ public final class ListMessages extends ParentClient {
      * Timestamp. Permitted values: "Application" (default), "Server".
      * @param messageIdentification Specifies that the list of messages returned should only include messages whose
      * Message Identification is compliant with the pattern provided in this parameter. ("*" can be used as a wildcard).
-     * @param msgType Specifies that the list of messages returned should only include messages of the provided type.
-     * @param owner Specifies that the list of messages returned should only include messages belonging to the provided
-     * Owner.
-     * @return List of data message.
-     * @throws ClientException Exception with the error.
+     * @param msgType Specifies that the list of messages returned should only include messages of the given type.
+     * @param owner Specifies that the list of messages returned should only include messages belonging to the given Owner.
+     * @return A list of <code>MessageListEntry</code> elements.
+     * @throws ListOperationException If the retrieved message has an invalid format or the application cannot handle it 
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
-    private List<MessageListEntry> list(final Long code, final Date startTime, final Date endTime, final EnumIntervalTimeType intervalType, final String messageIdentification, final String msgType, final String owner) throws ClientException {
+    private List<MessageListEntry> list(final Long code, final Date startTime, final Date endTime, final EnumIntervalTimeType intervalType, 
+            final String messageIdentification, final String msgType, final String owner) throws ListOperationException {
+
+        Map<String, String> msgOptions = new HashMap<>();
+
+        if (code != null) {
+            msgOptions.put(EnumFilterElement.CODE.toString(), Long.toString(code));
+        }
+
+        DateFormat df = DateFormat.getInstance();
+
+        if (startTime != null) {
+            msgOptions.put(EnumFilterElement.START_TIME.toString(), df.format(startTime));
+        }
+
+        if (endTime != null) {
+            msgOptions.put(EnumFilterElement.END_TIME.toString(), df.format(endTime));
+        }
+
+        if (intervalType != null) {
+            msgOptions.put(EnumFilterElement.INTERVAL_TYPE.toString(), intervalType.toString());
+        }
+
+        if (messageIdentification != null) {
+            msgOptions.put(EnumFilterElement.MESSAGE_IDENTIFICATION.toString(), messageIdentification);
+        }
+
+        if (msgType != null) {
+            msgOptions.put(EnumFilterElement.MESSAGE_TYPE.toString(), msgType);
+        }
+
+        if (owner != null) {
+            msgOptions.put(EnumFilterElement.OWNER.toString(), owner);
+        }
+
+        return list(msgOptions);
+    }
+
+    /**
+     * Process the list response creating a list of <code>MessageListEntry</code> elements. 
+     * Note that this method does not perform any kind of validation on the returned elements.
+     * @param responseMessage Response message from the server with the list values.
+     * @return A list of <code>MessageListEntry</code> elements.
+     * @throws ListOperationException If the method cannot create a <code>MessageList</code> object from the given payload.
+     */
+    private List<MessageListEntry> processPayload(final ResponseMessage responseMessage) throws ListOperationException {
+
+        List<MessageListEntry> listMessageData = new ArrayList<>();
 
         try {
 
-            Map<String, String> msgOptions = new HashMap<>();
-
-            if (code != null && (startTime != null || endTime != null || intervalType != null)) {
-
-                throw new ClientException(Messages.getString("LIST_INVALID_FILTER")); //$NON-NLS-1$
-            }
-
-            if (code != null) {
-
-                if (code < 0) {
-                    throw new ClientException(Messages.getString("LIST_INVALID_CODE")); //$NON-NLS-1$
-                }
-
-                msgOptions.put(EnumFilterElement.CODE.toString(), Long.toString(code));
-
-            } else if (startTime != null && endTime != null) {
-                
-                DateFormat df = DateFormat.getInstance();
-                
-                msgOptions.put(EnumFilterElement.START_TIME.toString(), df.format(startTime));
-                msgOptions.put(EnumFilterElement.END_TIME.toString(), df.format(endTime));
-
-                /* Interval type only applies with time intervals. */
-                if (intervalType == null) {
-                    msgOptions.put(EnumFilterElement.INTERVAL_TYPE.toString(), EnumIntervalTimeType.DEFAULT_INTERVAL_TYPE.toString());
-                } else {
-                    msgOptions.put(EnumFilterElement.INTERVAL_TYPE.toString(), intervalType.toString());
-                }
-            }
-
-            if (messageIdentification != null) {
-                msgOptions.put(EnumFilterElement.MESSAGE_IDENTIFICATION.toString(), messageIdentification);
-            }
-
-            if (msgType != null) {
-                msgOptions.put(EnumFilterElement.MESSAGE_TYPE.toString(), msgType);
-            }
-
-            if (owner != null) {
-                msgOptions.put(EnumFilterElement.OWNER.toString(), owner);
-            }
-
-            RequestMessage requestMessage = MessageUtil.createRequestWithOptions(EnumVerb.GET, EnumNoun.MESSAGE_LIST, msgOptions);
-
-            ResponseMessage responseMessage = sendMessage(requestMessage);
-            return getListMessageData(responseMessage);
-
-        } catch (MsgFaultMsg e) {
-
-            throw new ClientException(e);
-        }
-    }
-
-    /**
-     * This method process the response message.
-     * @param responseMessage Response message.
-     * @return List of data message.
-     * @throws ClientException Exception with the error.
-     */
-    private List<MessageListEntry> getListMessageData(final ResponseMessage responseMessage) throws ClientException {
-
-        HeaderType header = responseMessage.getHeader();
-        checkHeaderResponse(header);
-
-        PayloadType payload = responseMessage.getPayload();
-        return processPayload(payload);
-    }
-
-    /**
-     * Checks the header of the response.
-     * @param header Header of the response.
-     * @throws ClientException Exception with the error.
-     */
-    private void checkHeaderResponse(final HeaderType header) throws ClientException {
-
-        if (header == null) {
-            throw new ClientException(Messages.getString("NO_HEADER")); //$NON-NLS-1$
-        }
-
-        String verb = header.getVerb();
-        String noun = header.getNoun();
-
-        if (!EnumVerb.REPLY.toString().equals(verb) || !EnumNoun.MESSAGE_LIST.toString().equals(noun)) {
-
-            throw new ClientException(Messages.getString("INVALID_HEADER", verb, noun, EnumVerb.REPLY.toString(), EnumNoun.MESSAGE_LIST.toString())); //$NON-NLS-1$
-        }
-    }
-
-    /**
-     * This method process the payload of the message.
-     * @param payload Payload of the message.
-     * @return List of data message.
-     * @throws ClientException Exception with the error.
-     */
-    private List<MessageListEntry> processPayload(final PayloadType payload) throws ClientException {
-
-        List<MessageListEntry> listMessageData = new ArrayList<MessageListEntry>();
-
-        try {
-
-            Element message = payload.getAnies().get(0);
+            Element message = responseMessage.getPayload().getAnies().get(0);
             MessageList messageList = (MessageList) XMLElementUtil.element2Obj(message, MessageList.class);
 
-            List<Message> listaMensajes = messageList.getMessages();
-            for (Message msg : listaMensajes) {
+            List<Message> lstMsgs = messageList.getMessages();
+
+            for (Message msg : lstMsgs) {
 
                 MessageListEntry messageData = new MessageListEntry();
                 messageData.setCode(msg.getCode());
@@ -298,13 +276,11 @@ public final class ListMessages extends ParentClient {
 
                 BigInteger version = msg.getMessageVersion();
                 if (version != null) {
-
                     messageData.setVersion(version);
                 }
 
                 StatusType status = msg.getStatus();
                 if (status != null) {
-
                     messageData.setStatus(status.value());
                 }
 
@@ -312,13 +288,10 @@ public final class ListMessages extends ParentClient {
                 if (interval != null) {
 
                     if (interval.getStart() != null) {
-                        
-                        messageData.setApplicationStartTime(interval.getStart().toGregorianCalendar());    
+                        messageData.setApplicationStartTime(interval.getStart().toGregorianCalendar());
                     }
-                    
 
                     if (interval.getEnd() != null) {
-
                         messageData.setApplicationEndTime(interval.getEnd().toGregorianCalendar());
                     }
                 }
@@ -330,9 +303,9 @@ public final class ListMessages extends ParentClient {
                 listMessageData.add(messageData);
             }
 
-        } catch (JAXBException e) {
+        } catch (JAXBException ex) {
 
-            throw new ClientException(Messages.getString("NO_PAYLOAD", e.getMessage()), e); //$NON-NLS-1$
+            throw new ListOperationException(EnumErrorCatalog.ERR_LST_019, ex, ex.getMessage());
         }
 
         return listMessageData;

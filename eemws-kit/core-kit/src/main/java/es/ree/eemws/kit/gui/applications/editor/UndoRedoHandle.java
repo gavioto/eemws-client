@@ -156,7 +156,7 @@ public final class UndoRedoHandle implements UndoableEditListener {
         /**
          * Undoes action.
          */
-        public UndoAction() {
+        UndoAction() {
             super();
             update();
         }
@@ -199,7 +199,7 @@ public final class UndoRedoHandle implements UndoableEditListener {
         /**
          * Redoes an undone action.
          */
-        public RedoAction() {
+        RedoAction() {
             super();
             update();
         }

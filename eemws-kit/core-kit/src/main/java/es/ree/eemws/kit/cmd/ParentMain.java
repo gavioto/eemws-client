@@ -20,7 +20,11 @@
  */
 package es.ree.eemws.kit.cmd;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.kit.config.Configuration;
@@ -41,6 +45,30 @@ public abstract class ParentMain {
 	protected static final String DATE_FORMAT_PATTERN = "dd-MM-yyyy"; //$NON-NLS-1$
 
 
+    /**
+     * Returns the first parameter name duplicated in the given list.
+     * @param args Argument list.
+     * @param parametersNames Expected parameter names (others will be ignored)
+     * @return First element duplicated in the given list. <code>null</code> if there
+     * is no duplicate.
+     */
+	protected static String findDuplicates(final List<String> args, final String ... parametersNames) {
+
+        String retValue = null;
+        Set<String> uniq = new HashSet<>();
+        List<String> copy = new ArrayList<>(args);
+        copy.retainAll(Arrays.asList(parametersNames));
+        
+        int size = copy.size();
+        for (int k = 0; k < size && retValue == null; k++) {
+            if (!uniq.add(copy.get(k))) {
+                retValue = copy.get(k);
+            }
+        }
+
+        return retValue;
+    }
+	
     /**
      * Returns the value of a command line parameter given the list of the parameters and the prefix.
      * If list of parameters contain the prefix, the method will return the value n+1 where n is the 

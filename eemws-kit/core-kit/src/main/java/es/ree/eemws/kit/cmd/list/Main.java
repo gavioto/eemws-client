@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2016 Red Eléctrica de España, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -21,38 +21,40 @@
 package es.ree.eemws.kit.cmd.list;
 
 import java.net.MalformedURLException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import es.ree.eemws.client.common.ClientException;
 import es.ree.eemws.client.list.ListMessages;
 import es.ree.eemws.client.list.MessageListEntry;
 import es.ree.eemws.core.utils.config.ConfigException;
+import es.ree.eemws.core.utils.error.EnumErrorCatalog;
+import es.ree.eemws.core.utils.iec61968100.EnumFilterElement;
 import es.ree.eemws.core.utils.iec61968100.EnumIntervalTimeType;
+import es.ree.eemws.core.utils.operations.list.ListOperationException;
 import es.ree.eemws.kit.cmd.ParentMain;
 import es.ree.eemws.kit.common.Messages;
 
 /**
- * Implements the command line for list messages.
+ * Lists messages using the command line.
  * 
  * @author Red Eléctrica de España S.A.U.
- * @version 1.0 13/06/2014
+ * @version 1.1 13/02/2016
  */
 
 public final class Main extends ParentMain {
 
-    /** Name of the command. */
-    private static final String COMMAND_NAME = "list"; //$NON-NLS-1$
-
     /** Log messages. */
-    private static final Logger LOGGER = Logger.getLogger(COMMAND_NAME);
+    private static final Logger LOGGER = Logger.getLogger("list"); //$NON-NLS-1$
 
     /** Sets text for parameter <code>code</code>. */
     private static final String PARAMETER_CODE = Messages.getString("PARAMETER_CODE"); //$NON-NLS-1$
@@ -103,7 +105,7 @@ public final class Main extends ParentMain {
     private static final String DATE_FORMAT = "%" + DATE_FORMAT_MINUTES.length() + "s"; //$NON-NLS-1$ //$NON-NLS-2$
 
     /**
-     * Main. Execute the list command.
+     * Main. Executes the list command.
      * @param args command line arguments.
      */
     public static void main(final String[] args) {
@@ -112,14 +114,17 @@ public final class Main extends ParentMain {
 
         try {
 
-            SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_PATTERN);
-            Date dateStartTime = null;
-            Date dateEndTime = null;
-            Long lCode = null;
-            EnumIntervalTimeType intervalTypeVal = null;
-
+            /* Reads command line parameters, store its values. */
             List<String> arguments = new ArrayList<>(Arrays.asList(args));
 
+            /* If the list has duplicates must stop the execution. */
+            String dup = findDuplicates(arguments, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE, PARAMETER_CODE, PARAMETER_MSG_ID,
+                    LIST_PARAMETER_MSG_TYPE, LIST_PARAMETER_MSG_OWNER, PARAMETER_URL);
+            
+            if (dup != null) {
+                throw new ListOperationException(EnumErrorCatalog.ERR_LST_010, Messages.getString("PARAMETER_REPEATED", dup)); //$NON-NLS-1$
+            }
+            
             String startTime = readParameter(arguments, PARAMETER_START_TIME);
             String endTime = readParameter(arguments, PARAMETER_END_TIME);
             String intervalType = readParameter(arguments, LIST_PARAMETER_INTERVAL_TYPE);
@@ -128,24 +133,33 @@ public final class Main extends ParentMain {
             String msgType = readParameter(arguments, LIST_PARAMETER_MSG_TYPE);
             String owner = readParameter(arguments, LIST_PARAMETER_MSG_OWNER);
             urlEndPoint = readParameter(arguments, PARAMETER_URL);
-
+            
+            /* If the list is not empty means that user has put at least one "unknown" or repeated parameter. Show only first. */
             if (!arguments.isEmpty()) {
-                throw new IllegalArgumentException(Messages.getString("UNKNOWN_PARAMETERS", arguments.toString())); //$NON-NLS-1$
+                throw new ListOperationException(EnumErrorCatalog.ERR_LST_011, arguments.get(0));
             }
 
-            if (code == null) {
+            /* Creates a request with all the parameters. Do not make any validation here. */
+            Map<String, String> msgOptions = new HashMap<>();
 
-                if (startTime == null) {
-                    throw new IllegalArgumentException(Messages.getString("LIST_NO_PARAMETERS", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE)); //$NON-NLS-1$
-                }
+            if (code != null) {
+                msgOptions.put(EnumFilterElement.CODE.toString(), code);
+            }
 
+            if (startTime != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+                DateFormat df = DateFormat.getInstance();
+
+                Date dateStartTime = null;
                 try {
                     dateStartTime = sdf.parse(startTime);
+                    msgOptions.put(EnumFilterElement.START_TIME.toString(), df.format(dateStartTime));
                 } catch (ParseException e) {
-                    throw new IllegalArgumentException(Messages.getString("LIST_INVALID_DATE_FORMAT", startTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
+                    throw new ListOperationException(EnumErrorCatalog.ERR_LST_010, Messages.getString("LIST_INVALID_DATE_FORMAT", startTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
                 }
 
-                // By default, endTime = end of the day of startTime
+                /* By default, endTime = end of the day of startTime */
+                Date dateEndTime;
                 if (endTime == null) {
                     Calendar cal = Calendar.getInstance();
                     cal.setTime(dateStartTime);
@@ -156,58 +170,70 @@ public final class Main extends ParentMain {
                     try {
                         dateEndTime = sdf.parse(endTime);
                     } catch (ParseException e) {
-                        throw new IllegalArgumentException(Messages.getString("LIST_INVALID_DATE_FORMAT", endTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
+                        throw new ListOperationException(EnumErrorCatalog.ERR_LST_010, Messages.getString("LIST_INVALID_DATE_FORMAT", endTime, DATE_FORMAT_PATTERN)); //$NON-NLS-1$
                     }
                 }
 
-                if (dateStartTime.after(dateEndTime)) {
-                    throw new IllegalArgumentException(Messages.getString("LIST_END_BEFORE_START", startTime, endTime)); //$NON-NLS-1$
-                }
-
-                if (intervalType != null) {
-                    intervalTypeVal = EnumIntervalTimeType.fromString(intervalType);
-                    if (intervalTypeVal == null) {
-                        throw new IllegalArgumentException(Messages.getString("LIST_INVALID_INTERVAL_TYPE", LIST_PARAMETER_INTERVAL_TYPE, //$NON-NLS-1$
-                                EnumIntervalTimeType.APPLICATION.toString(), EnumIntervalTimeType.SERVER.toString()));
-                    }
-                }
-
-            } else {
-
-                if (startTime != null || endTime != null || intervalType != null) {
-                    throw new IllegalArgumentException(Messages.getString("LIST_INCOMPATIBLE_PARAMETERS", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE)); //$NON-NLS-1$
-                }
-
-                try {
-                    lCode = Long.valueOf(code);
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException(Messages.getString("INCORRECT_CODE", code)); //$NON-NLS-1$
-                }
+                msgOptions.put(EnumFilterElement.END_TIME.toString(), df.format(dateEndTime));
             }
 
+            if (intervalType != null) {
+                msgOptions.put(EnumFilterElement.INTERVAL_TYPE.toString(), intervalType);
+            }
+
+            if (msgId != null) {
+                msgOptions.put(EnumFilterElement.MESSAGE_IDENTIFICATION.toString(), msgId);
+            }
+
+            if (msgType != null) {
+                msgOptions.put(EnumFilterElement.MESSAGE_TYPE.toString(), msgType);
+            }
+
+            if (owner != null) {
+                msgOptions.put(EnumFilterElement.OWNER.toString(), owner);
+            }
+
+            /* Sets the url, if no url is provided by arguments, use the one configured. */
             urlEndPoint = setConfig(urlEndPoint);
 
+            /* Creates and set up a get object. */
             ListMessages list = new ListMessages();
             list.setEndPoint(urlEndPoint);
 
+            /* Send the request (list operation will validate at this point the parameters) */
             long init = System.currentTimeMillis();
-
-            List<MessageListEntry> response = null;
-
-            if (lCode != null) {
-                response = list.list(lCode, msgId, msgType, owner);
-            } else {
-                response = list.list(dateStartTime, dateEndTime, intervalTypeVal, msgId, msgType, owner);
-            }
-
-            showResults(response);
-
+            showResults(list.list(msgOptions));
             long end = System.currentTimeMillis();
+
+            /* Writes performance values on screen. */
             LOGGER.info(Messages.getString("EXECUTION_TIME", getPerformance(init, end))); //$NON-NLS-1$
 
-        } catch (ClientException e) {
+        } catch (ListOperationException e) {
 
-            LOGGER.severe(e.getMessage());
+            String code = e.getCode();
+
+            if (code.equals(EnumErrorCatalog.ERR_HAND_010.getCode())) {
+                
+                LOGGER.log(Level.SEVERE, e.getCode() + ": " + e.getMessage() + " " + e.getCause().getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
+
+            } else {
+                
+                LOGGER.log(Level.SEVERE, e.getCode() + ": " + e.getMessage(), e.getCause()); //$NON-NLS-1$
+
+                /* Bad parameters? show usage! */
+
+                if (code.equals(EnumErrorCatalog.ERR_LST_010.getCode()) 
+                        || code.equals(EnumErrorCatalog.ERR_LST_005.getCode()) 
+                        || code.equals(EnumErrorCatalog.ERR_LST_011.getCode())) {
+
+                    LOGGER.info(Messages.getString("LIST_USAGE", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE, //$NON-NLS-1$
+                            PARAMETER_MSG_ID, LIST_PARAMETER_MSG_TYPE, LIST_PARAMETER_MSG_OWNER, PARAMETER_URL, new Date(), 
+                            EnumIntervalTimeType.APPLICATION.toString(), EnumIntervalTimeType.SERVER.toString()));
+                }
+            }
+            
+            /* Show full stack trace in debug. */
+            LOGGER.log(Level.FINE, "", e); //$NON-NLS-1$
 
         } catch (MalformedURLException e) {
 
@@ -220,11 +246,6 @@ public final class Main extends ParentMain {
             /* Shows stack trace only for debug. Don't bother the user with this details. */
             LOGGER.log(Level.FINE, Messages.getString("INVALID_CONFIGURATION", e.getMessage()), e); //$NON-NLS-1$
 
-        } catch (IllegalArgumentException e) {
-
-            LOGGER.info(e.getMessage());
-            LOGGER.info(Messages.getString("LIST_USAGE", PARAMETER_CODE, PARAMETER_START_TIME, PARAMETER_END_TIME, LIST_PARAMETER_INTERVAL_TYPE, //$NON-NLS-1$
-                    PARAMETER_MSG_ID, LIST_PARAMETER_MSG_TYPE, LIST_PARAMETER_MSG_OWNER, PARAMETER_URL, new Date(), EnumIntervalTimeType.APPLICATION.toString(), EnumIntervalTimeType.SERVER.toString()));
         }
     }
 
@@ -249,9 +270,9 @@ public final class Main extends ParentMain {
             long maxCode = -1;
 
             for (MessageListEntry msgData : response) {
-                
+
                 int bufferPos = sb.length();
-                
+
                 try {
 
                     sb.append("\n"); //$NON-NLS-1$
@@ -295,18 +316,19 @@ public final class Main extends ParentMain {
                     maxCode = Math.max(msgData.getCode().longValue(), maxCode);
 
                 } catch (NullPointerException npe) {
-                    
-                    /* Don't stop the loop if the server sends one (or more) non-valid entries.
-                     * Put these entries information into a special error buffer. 
+
+                    /*
+                     * Don't stop the loop if the server sends one (or more) non-valid entries. Put these entries
+                     * information into a special error buffer.
                      */
                     sb.delete(bufferPos, sb.length());
-                    
+
                     try {
                         msgData.checkMandatoryElements();
-                    } catch(ClientException e) {
+                    } catch (ListOperationException e) {
                         error.append(e.toString());
                         error.append("\n"); //$NON-NLS-1$
-                    }                    
+                    }
                 }
             }
 
@@ -318,7 +340,7 @@ public final class Main extends ParentMain {
             sb.append(Messages.getString("LIST_MAX_CODE", String.valueOf(maxCode))); //$NON-NLS-1$
 
             LOGGER.info(sb.toString());
-            
+
             if (error.length() > 0) {
                 LOGGER.severe(error.toString());
             }

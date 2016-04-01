@@ -67,7 +67,7 @@ public enum ColumnsId {
      * Constructor. Sets the visible text column.
      * @param text Visible text column.
      */
-    private ColumnsId(final String text) {
+    ColumnsId(final String text) {
         columnText = text;
     }
 

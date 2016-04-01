@@ -9,6 +9,7 @@
 		<appname>Connection Kit</appname>
 		<appversion>@{project.version}</appversion>
 		<url>http://www.ree.es</url>
+		<writeinstallationinformation>false</writeinstallationinformation>
 		<authors>
 			<author name="Red Eléctrica de España" email="soportesios@ree.es"/>
 		</authors>

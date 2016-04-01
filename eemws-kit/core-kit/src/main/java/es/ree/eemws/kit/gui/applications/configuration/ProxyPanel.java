@@ -240,7 +240,7 @@ public final class ProxyPanel extends JPanel {
 	}
 
 	/**
-	 * Disables proxy form fields when direct Internet connection is enabled
+	 * Disables proxy form fields when direct Internet connection is enabled.
 	 * @param useProxy <code>true</code> user selects use proxy. <code>false</code> otherwise.
 	 */
 	private void enableProxyElements(final boolean useProxy) {

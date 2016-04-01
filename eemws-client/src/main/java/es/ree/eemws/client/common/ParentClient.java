@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2016 Red Eléctrica de España, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -18,6 +18,7 @@
  * reference to Red Eléctrica de España, S.A.U. as the copyright owner of
  * the program.
  */
+
 package es.ree.eemws.client.common;
 
 import java.net.MalformedURLException;
@@ -27,8 +28,6 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 import javax.xml.namespace.QName;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.ws.Binding;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.handler.Handler;
@@ -42,34 +41,35 @@ import ch.iec.tc57._2011.schema.message.HeaderType;
 import ch.iec.tc57._2011.schema.message.PayloadType;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
+import es.ree.eemws.core.utils.error.EnumErrorCatalog;
+import es.ree.eemws.core.utils.error.ErrorMessages;
+import es.ree.eemws.core.utils.iec61968100.EnumNoun;
 import es.ree.eemws.core.utils.iec61968100.EnumVerb;
+import es.ree.eemws.core.utils.iec61968100.FaultUtil;
 import es.ree.eemws.core.utils.iec61968100.MessageMetaData;
-import es.ree.eemws.core.utils.iec61968100.StringBuilderMessage;
-import es.ree.eemws.core.utils.xml.XMLElementUtil;
-import es.ree.eemws.core.utils.xml.XMLUtil;
-
+import es.ree.eemws.core.utils.operations.HandlerException;
 
 /**
- * Parent class of messages that communicate with the Web Service EME.
+ * Parent class for all client's operations.
  *
  * @author Red Eléctrica de España S.A.U.
- * @version 1.0 13/06/2014
+ * @version 1.1 10/01/2016
  */
 public abstract class ParentClient {
 
     /** Service name of the Web Service EME. */
     private static final QName SERVICE_NAME = new QName("urn:iec62325.504:wss:1:0", "ServiceEME"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    /** WSDL file name. This avoids connection to the remote server just to retrieve it. */
+    /** WSDL file name in order to avoid connection to the remote server just to retrieve it. */
     private static final String WSDL_FILE = "urn-iec62325-504-wss-1-0.wsdl"; //$NON-NLS-1$
 
-    /** URL of the end point of the web service. */
+    /** Web service's URL endpoint . */
     private URL endPoint = null;
 
-    /** Check to sign the request. */
+    /** Flag to sign the request. */
     private boolean signRequest = true;
 
-    /** Check to verify the response. */
+    /** Flag to verify response's signature. */
     private boolean verifyResponse = true;
 
     /** Certificate to sign request. */
@@ -79,13 +79,10 @@ public abstract class ParentClient {
     private PrivateKey privateKey = null;
 
     /** Message metadata. */
-    private MessageMetaData messageMetaData = null;
-    
-    /** Message as a StringBuilder. */
-    private StringBuilderMessage sbmessage = null;
-    
+    private MessageMetaData messageMetaData =  new MessageMetaData();
+
     /**
-     * This method sets the URL of the end point of the web service.
+     * Sets the URL of the end point of the web service.
      * @param url URL of the end point of the web service.
      * @throws MalformedURLException if the given address is not valid.
      */
@@ -95,7 +92,7 @@ public abstract class ParentClient {
     }
 
     /**
-     * This method sets the URL of the end point of the web service.
+     * Sets the URL of the end point of the web service.
      * @param url URL of the end point of the web service.
      */
     public final void setEndPoint(final URL url) {
@@ -104,25 +101,25 @@ public abstract class ParentClient {
     }
 
     /**
-     * This method sets whether signs the request.
-     * @param check Check to sign the request.
+     * Sets whether the request has to be signed.
+     * @param flag <code>true</code> if request has to be signed.
      */
-    public final void setSignRequest(final boolean check) {
+    public final void setSignRequest(final boolean flag) {
 
-        signRequest = check;
+        signRequest = flag;
     }
 
     /**
-     * This method sets whether checks the response signature.
-     * @param check Check to verify the response.
+     * Sets whether the response's signature has to be validated.
+     * @param flag <code>true</code> if the response's signature has to be validated.
      */
-    public final void setVerifyResponse(final boolean check) {
+    public final void setVerifyResponse(final boolean flag) {
 
-        verifyResponse = check;
+        verifyResponse = flag;
     }
 
     /**
-     * This method sets the certificate to sign request.
+     * Sets the certificate to sign the request.
      * @param inCertificate Certificate to sign request.
      */
     public final void setCertificate(final X509Certificate inCertificate) {
@@ -131,8 +128,8 @@ public abstract class ParentClient {
     }
 
     /**
-     * This method sets the private key of the certificate.
-     * @param inPrivateKey Private key of the certificate.
+     * Sets the private key to sign the request.
+     * @param inPrivateKey Private key to sign the request.
      */
     public final void setPrivateKey(final PrivateKey inPrivateKey) {
 
@@ -140,94 +137,160 @@ public abstract class ParentClient {
     }
 
     /**
-     * This method gets the metadata of the message.
-     * @return Data of the message.
+     * Gets message's metadata. Metadata holds information that is not
+     * present neither in the request nor in the response such as certificate information or status.
+     * @return Message's metadata.
      */
     public final MessageMetaData getMessageMetaData() {
-
         return messageMetaData;
     }
 
     /**
-     * This method gets the iec 61968100 message as StringBuilder
-     * @return IEC 61968100 message as StringBuilder
-     */
-    public final StringBuilderMessage getStringBuilderMessage() {
-
-        return sbmessage;
-    }
-    
-    /**
-     * This method sends a message.
-     *
+     * Sends the given request message to the configured URL.
      * @param message Message to send.
      * @return Response to the message.
-     * @throws MsgFaultMsg Fault message.
+     * @throws HandlerException If it is not possible to send the message or if the received response has errors.
      */
     @SuppressWarnings("rawtypes")
-    protected final ResponseMessage sendMessage(final RequestMessage message) throws MsgFaultMsg {
+    protected final ResponseMessage sendMessage(final RequestMessage message) throws HandlerException {
 
-        ServiceEME service = new ServiceEME(getClass().getClassLoader().getResource(WSDL_FILE), SERVICE_NAME);
-        PortTFEDIType port = service.getServiceEMEPort();
-        BindingProvider bindingProvider = (BindingProvider) port;
-        bindingProvider.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint.toString());
+        ResponseMessage retValue = null;
 
-        sbmessage = new StringBuilderMessage();
-        messageMetaData = new MessageMetaData();
+        try {
+            ServiceEME service = new ServiceEME(getClass().getClassLoader().getResource(WSDL_FILE), SERVICE_NAME);
+            PortTFEDIType port = service.getServiceEMEPort();
+            BindingProvider bindingProvider = (BindingProvider) port;
+            bindingProvider.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint.toString());
+
+            /* sets a handler in order to sign and verify signature. The handler is useful also for debug. */
+            messageMetaData = new MessageMetaData();
+            Binding binding = bindingProvider.getBinding();
+            List<Handler> handlerList = binding.getHandlerChain();
+            handlerList.add(new SendHandler(signRequest, verifyResponse, messageMetaData, certificate, privateKey));
+            binding.setHandlerChain(handlerList);
+
+            retValue = port.request(message);
+
+            /* Throws exception if the retrieved message has an invalid signature. */
+            MessageMetaData metadata = getMessageMetaData();
+            if (metadata.getException() != null) {
+                throw (HandlerException) metadata.getException();
+            }
+
+        } catch (MsgFaultMsg ex) {
+            
+            throw new HandlerException(EnumErrorCatalog.ERR_HAND_010, ex);
         
-        Binding binding = bindingProvider.getBinding();
-        List<Handler> handlerList = binding.getHandlerChain();
-        handlerList.add(new SendHandler(signRequest, verifyResponse, messageMetaData, sbmessage, certificate, privateKey));
-        binding.setHandlerChain(handlerList);
+        } catch (RuntimeException ex) {
+            
+            /* Translate into plain English most common connection issues: */
+            String errStr = ex.getMessage();
+            if (errStr.indexOf("trustAnchors") != -1 || errStr.indexOf("PKIX path building failed") != -1) { //$NON-NLS-1$ //$NON-NLS-2$
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_013);
+            } else if (errStr.indexOf("No subject alternative") != -1) {  //$NON-NLS-1$
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_014);
+            } else if (errStr.indexOf("UnknownHostException") != -1) { //$NON-NLS-1$
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_015);
+            } else if (errStr.indexOf("The server sent HTTP status code 404:") != -1) { //$NON-NLS-1$
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_016);
+            } else if (errStr.indexOf("The server sent HTTP status code 403:") != -1) { //$NON-NLS-1$
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_017);
+            } else if (errStr.indexOf("The server sent HTTP status code 401:") != -1) { //$NON-NLS-1$
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_018);
+            } else if (errStr.indexOf("The server sent HTTP status code 200:") != -1) { //$NON-NLS-1$
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_019);
+            } else if (errStr.indexOf("Connection refused") != -1 || errStr.indexOf("Connection timed out") != -1) { //$NON-NLS-1$ //$NON-NLS-2$
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_020);
+            } else {
+                throw ex;
+            }
+        }
 
-        return port.request(message);
+        return retValue;
     }
-  
+
     /**
-     * Gets the pretty print version of the response payload.
-     * For performance considere to use: <code>getMessageData().getPayload()</code> instead.
-     * @param responseMessage Response message.
-     * @return String with the payload message.
-     * @throws ClientException If the response has no payload or if the relation between payload and header is not fulfilled.
+     * Validates the received response.
+     * @param responseMessage Received response.
+     * @param expectedNoun Expected noun, according to the operation.
+     * @throws HandlerException If the response is not valid.
      */
-    protected final String getPrettyPrintPayloadMessage(final ResponseMessage responseMessage)
-            throws ClientException {
+    protected void validateResponse(final ResponseMessage responseMessage, final String expectedNoun) throws HandlerException {
+        validateResponse(responseMessage, expectedNoun, false);
+    }
+
+    /**
+     * Validates the received response.
+     * @param responseMessage Received response.
+     * @param canBeEmpty <code>true</code> if the response can be empty.
+     * @throws HandlerException If the response is not valid.
+     */
+    protected void validateResponse(final ResponseMessage responseMessage, final boolean canBeEmpty) throws HandlerException {
+        validateResponse(responseMessage, null, canBeEmpty);
+    }
+
+    /**
+     * Validates the received response.
+     * <li>Must have a header.
+     * <li>Must have a payload
+     * <li>The verb must be "reply"
+     * <li>Noun must match with the given one and if no noun is provided, must match with the root tag.
+     * @param responseMessage Received response.
+     * @param expectedNoun Expected noun, according to the operation.
+     * @param canBeEmpty <code>true</code> if the server can return an empty response (only for "put" operations)
+     * @throws HandlerException If the response is not valid (has no header, noun + verb missmatch, etc.)
+     */
+    private void validateResponse(final ResponseMessage responseMessage, final String expectedNoun, final boolean canBeEmpty) throws HandlerException {
 
         HeaderType header = responseMessage.getHeader();
-        PayloadType payload = responseMessage.getPayload();
+
+        if (header == null) {
+            throw new HandlerException(EnumErrorCatalog.ERR_HAND_002, ErrorMessages.NO_HEADER);
+        }
+
         String verb = header.getVerb();
         String noun = header.getNoun();
-        String retValue = null;
-        
-        if (payload == null) {
-        	throw new ClientException(Messages.getString("NO_PAYLOAD", "Payload load is null")); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-            
-        Element message = payload.getAnies().get(0);
-            
-        if (message == null) {
-            	
-        	throw new ClientException(Messages.getString("PAYLOAD_EMPTY")); //$NON-NLS-1$
-        }
-            
-        String rootTag = message.getLocalName();
-            	
-        if (!EnumVerb.REPLY.toString().equals(verb) || !rootTag.equals(noun)) {
-                	
-        	throw new ClientException(Messages.getString("INVALID_HEADER", verb, noun, EnumVerb.REPLY, rootTag)); //$NON-NLS-1$
-        }
-       
-       
-       try {
-               
-    	   retValue = XMLUtil.prettyPrint(XMLUtil.removeNameSpaces(XMLElementUtil.element2String(message)).toString()).toString();
-                
-       } catch (TransformerException | ParserConfigurationException e) {
 
-           	throw new ClientException(Messages.getString("NO_PAYLOAD", e.getMessage()), e); //$NON-NLS-1$
-       }
-       
-       return retValue;
-    
+        if (expectedNoun != null && !expectedNoun.equals(noun)) {
+            throw new HandlerException(EnumErrorCatalog.ERR_HAND_012, verb, noun, EnumVerb.REPLY.toString(), expectedNoun);
+        }
+
+        PayloadType payload = responseMessage.getPayload();
+
+        if (payload == null) {
+            throw new HandlerException(EnumErrorCatalog.ERR_HAND_011);
+        }
+
+        List<Element> anies = payload.getAnies();
+        boolean compressed = payload.getCompressed() != null;
+        boolean empty = anies.isEmpty() && !compressed;
+
+        if (empty) {
+            if (canBeEmpty) {
+                if (!EnumVerb.REPLY.toString().equals(verb)) {
+                    throw new HandlerException(EnumErrorCatalog.ERR_HAND_012, verb, ErrorMessages.NO_NOUN_EXPECTED, EnumVerb.REPLY.toString(), ErrorMessages.NO_NOUN_EXPECTED);
+                }
+            } else {
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_011);
+            }
+        } else {
+
+            String rootTag;
+            if (compressed) {
+                rootTag = EnumNoun.COMPRESSED.toString();
+            } else {
+
+                Element message = anies.get(0);
+                if (message == null) {
+                    throw new HandlerException(EnumErrorCatalog.ERR_HAND_011);
+                }
+                rootTag = message.getLocalName();
+            }
+
+            if (!EnumVerb.REPLY.toString().equals(verb) || !rootTag.equals(noun)) {
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_012, verb, noun, EnumVerb.REPLY.toString(), rootTag);
+            }
+        }
     }
+
 }

@@ -101,7 +101,7 @@ public final class ColumnVisibilityHandle {
          * Creates menu entry for each column name. Sets the hot key for each menu entry
          * avoiding the use of any previous used hot key.
          */
-        ArrayList<Character> alMnemonics  = new ArrayList<Character>();
+        ArrayList<Character> alMnemonics  = new ArrayList<>();
         alMnemonics.add(Messages.getString("BROWSER_SIMPLE_VIEW_HK").charAt(0)); //$NON-NLS-1$
         alMnemonics.add(Messages.getString("BROWSER_FULL_VIEW_HK").charAt(0)); //$NON-NLS-1$
         for (int cont = 0; cont < len; cont++) {
