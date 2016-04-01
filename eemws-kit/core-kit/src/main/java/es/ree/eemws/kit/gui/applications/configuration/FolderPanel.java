@@ -69,8 +69,7 @@ public final class FolderPanel extends JPanel {
 	private JTextField txtBackupFolderPath = null;
 
 	/**
-	 * Obtain panel containing folder settings.
-	 * @return panel containing folder settings.
+	 * Obtains panel containing folder settings.
 	 */
 	public FolderPanel() {
 		setLayout(null);
@@ -283,10 +282,10 @@ public final class FolderPanel extends JPanel {
 
 		Configuration cf = new Configuration();
 		cf.readConfiguration();
-		txtInputFolderPath.setText(changeFileNameSeparator(cf.getInputFolder()));
-		txtResponseFolderPath.setText(changeFileNameSeparator(cf.getResponseFolder()));
-		txtProcessedFolderPath.setText(changeFileNameSeparator(cf.getProcessedFolder()));
-		txtOutputFolderPath.setText(changeFileNameSeparator(cf.getOutputFolder()));
+		txtInputFolderPath.setText(changeFileNameSeparator(cf.getInputFolder(0)));
+		txtResponseFolderPath.setText(changeFileNameSeparator(cf.getResponseFolder(0)));
+		txtProcessedFolderPath.setText(changeFileNameSeparator(cf.getProcessedFolder(0)));
+		txtOutputFolderPath.setText(changeFileNameSeparator(cf.getOutputFolder(0)));
 		txtBackupFolderPath.setText(changeFileNameSeparator(cf.getBackupFolder()));
 	}
 

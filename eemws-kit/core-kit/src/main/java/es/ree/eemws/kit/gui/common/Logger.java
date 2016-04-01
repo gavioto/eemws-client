@@ -35,8 +35,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
 
 import es.ree.eemws.kit.common.Messages;
-import es.ree.eemws.kit.gui.common.Constants;
-
 
 /**
  * Grafical log window. Implements a simple text area where the application can show messages.
@@ -151,7 +149,7 @@ public final class Logger extends JFrame {
      * @param msg Descritive message.
      * @param e Exception.
      */
-	public void logException(String msg, Exception e) {
+	public void logException(final String msg, final Exception e) {
 		StringWriter sw = new StringWriter();
 		e.printStackTrace(new PrintWriter(sw));  //NOSONAR - Here we are dumping the stack trace to a writer not to the console.
 		String exceptionDetails = sw.toString();

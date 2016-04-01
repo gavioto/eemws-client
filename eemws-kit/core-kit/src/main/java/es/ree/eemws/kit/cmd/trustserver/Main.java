@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2016 Red Eléctrica de España, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -53,12 +53,13 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.xml.ws.WebServiceException;
 
-import es.ree.eemws.client.common.ClientException; 
 import es.ree.eemws.client.get.GetMessage;
 import es.ree.eemws.client.list.ListMessages;
 import es.ree.eemws.client.list.MessageListEntry;
-import es.ree.eemws.core.utils.config.ConfigException; 
+import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.core.utils.iec61968100.MessageMetaData;
+import es.ree.eemws.core.utils.operations.get.GetOperationException;
+import es.ree.eemws.core.utils.operations.list.ListOperationException;
 import es.ree.eemws.core.utils.security.X509Util;
 import es.ree.eemws.kit.cmd.ParentMain;
 import es.ree.eemws.kit.common.Messages;
@@ -67,21 +68,15 @@ import es.ree.eemws.kit.common.Messages;
  * Adds the given server to the list of trusted servers.
  * 
  * @author Red Eléctrica de España S.A.U.
- * @version 1.0 13/06/2014
+ * @version 1.0 01/02/2016
  */
 public final class Main extends ParentMain {
 
-	/** Name of the command. */
-	private static final String COMMAND_NAME = "trustserver"; //$NON-NLS-1$
-
 	/** Sets text for parameter <code>url</code>. */
 	private static final String PARAMETER_URL = Messages.getString("PARAMETER_URL"); //$NON-NLS-1$
-
-	/** Sets text for parameter <code>force</code>. */
-    private static final String PARAMETER_FORCE = Messages.getString("TRUSTSERVER_FORCE"); //$NON-NLS-1$
 	
 	/** Log messages. */
-	private static final Logger LOGGER = Logger.getLogger(COMMAND_NAME);
+	private static final Logger LOGGER = Logger.getLogger("trustserver");  //$NON-NLS-1$
 
 	/** Default https port. */
 	private static final int DEFAULT_HTTPS_PORT = 443;
@@ -90,7 +85,7 @@ public final class Main extends ParentMain {
 	private static final String HTTPS_PROTOCOL = "https"; //$NON-NLS-1$
 
 	/** TSL protocol string. */
-	private static final String TSL_PROTOCOL = "TLS"; //$NON-NLS-1$
+	private static final String TLS_PROTOCOL = "TLS"; //$NON-NLS-1$
 
 	/** SO_TIMEOUT value. */
 	private static final int SO_TIMEOUT = 10000;
@@ -101,13 +96,11 @@ public final class Main extends ParentMain {
 	/** Java system property to get the trust store file. */
 	private static final String LOCAL_TRUST_STORE_FILE_KEY = "javax.net.ssl.trustStore"; //$NON-NLS-1$
 
-
-
 	/** Local trust store. */
 	private static KeyStore localTrustStore;
 
 	/** A list of added certificates avoid trying to add twice the same certificate. */
-	private static List<X509Certificate> addedCertificates = new ArrayList<X509Certificate>();
+	private static List<X509Certificate> addedCertificates = new ArrayList<>();
 
 	/**
 	 * Main. Opens a connection to the remote server and adds its certificates to the local trust store.
@@ -118,15 +111,16 @@ public final class Main extends ParentMain {
 		String urlEndPoint = ""; //$NON-NLS-1$
 		try {
 
+		    /* Reads command line parameters, store its values. */
 			List<String> arguments = new ArrayList<>(Arrays.asList(args));
 
+			/* If the list has duplicates must stop the execution. */
+            String dup = findDuplicates(arguments, PARAMETER_URL);
+            if (dup != null) {
+                throw new IllegalArgumentException(Messages.getString("PARAMETER_REPEATED", dup)); //$NON-NLS-1$
+            }   
+			
 			urlEndPoint = readParameter(arguments, PARAMETER_URL);
-				
-			boolean force = false; 
-			if (arguments.contains(PARAMETER_FORCE)) {
-			    force = true;
-			    arguments.remove(PARAMETER_FORCE);
-			}
 			
 			if (!arguments.isEmpty()) {
 				throw new IllegalArgumentException(Messages.getString("UNKNOWN_PARAMETERS", arguments.toString())); //$NON-NLS-1$
@@ -157,7 +151,7 @@ public final class Main extends ParentMain {
 			LOGGER.info(""); //$NON-NLS-1$
 			LOGGER.info(Messages.getString("TRUSTSERVER_GETTING_SERVER_CERTICATES")); //$NON-NLS-1$
 			
-			boolean certAdded  = addServerCerts(urlEndPoint, force);
+			boolean certAdded  = addServerCerts(urlEndPoint);
 			
 			if (certAdded) {
 				LOGGER.info(Messages.getString("TRUSTSERVER_RERUN_COMMAND")); //$NON-NLS-1$
@@ -183,19 +177,19 @@ public final class Main extends ParentMain {
 			LOGGER.log(Level.SEVERE, Messages.getString("TRUSTSERVER_BAD_KEYSTORE"), e.getMessage()); //$NON-NLS-1$
 		} catch (IllegalArgumentException e) {
 			LOGGER.info(e.getMessage());
-			LOGGER.info(Messages.getString("TRUSTSERVER_USAGE", PARAMETER_URL, PARAMETER_FORCE)); //$NON-NLS-1$
+			LOGGER.info(Messages.getString("TRUSTSERVER_USAGE", PARAMETER_URL)); //$NON-NLS-1$
 		}
 
 	}
 
 	/**
-	 * Loads the local trust store	
+	 * Loads the local trust store.	
 	 * @param filePath Full trust store file path.
 	 * @param passwd Trust store password. 
 	 * @throws IOException if it's no possible to open the configured trust store. 
 	 */
 	private static void loadLocalTrustStore(final String filePath, final char[] passwd) throws IOException {
-		File localCacert = new File (filePath);
+		File localCacert = new File(filePath);
 		try (InputStream in = new FileInputStream(localCacert)) {
 			localTrustStore = KeyStore.getInstance(KeyStore.getDefaultType());
 			localTrustStore.load(in, passwd);
@@ -205,13 +199,13 @@ public final class Main extends ParentMain {
 	}
 
 	/**
-	 * Saves (stores) the local trust store	
+	 * Saves (stores) the local trust store.	
 	 * @param filePath Full trust store file path.
 	 * @param passwd Trust store password. 
 	 * @throws IOException if it's no possible to open the configured trust store. 
 	 */
 	private static void storeLocalTrustStore(final String filePath, final char[] passwd) throws IOException {
-		File localCacert = new File (filePath);
+		File localCacert = new File(filePath);
 		try (OutputStream out = new FileOutputStream(localCacert)) {
 			localTrustStore.store(out, passwd);
 		} catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException ex) {
@@ -247,7 +241,7 @@ public final class Main extends ParentMain {
 				LOGGER.info(Messages.getString("TRUSTSERVER_MSG_GET", String.valueOf(listMsg.get(0).getCode().longValue()))); //$NON-NLS-1$
 				get.get(listMsg.get(0).getCode().longValue());
 			}
-		} catch (ClientException ce) {
+		} catch (ListOperationException | GetOperationException ce) {
 			
 			LOGGER.log(Level.FINE, Messages.getString("TRUSTSERVER_UNABLE_TO_CONNECT_WITH_SERVER", ce.getMessage()), ce); //$NON-NLS-1$
 		} catch (WebServiceException ce) {
@@ -260,7 +254,8 @@ public final class Main extends ParentMain {
 				if (md != null) {
 					X509Certificate certificate = md.getSignatureCertificate();
 					if (certificate != null) {
-						addCertificate(url.getHost() + " (" + certificate.getSubjectDN().getName() + ") (" + Messages.getString("TRUSTSERVER_SIGNATURE") + ") ", certificate); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$		
+						addCertificate(url.getHost() + " (" + certificate.getSubjectDN().getName() + ") ("  //$NON-NLS-1$ //$NON-NLS-2$
+						            + Messages.getString("TRUSTSERVER_SIGNATURE") + ") ", certificate); 	 //$NON-NLS-1$ //$NON-NLS-2$
 					}
 				}
 			}
@@ -270,14 +265,14 @@ public final class Main extends ParentMain {
 	/**
 	 * Adds the all the certificates in the server's certificate chain to the local trust store.
 	 * @param urlEndPoint Url to connect with in order to retrieve the certificate chain.
-	 * @param force If the certificate should be added even if it's not a CA certificate.
 	 * @return <code>true</code> if a least one certificate is added.
 	 * @throws MalformedURLException If the current url is incorrecto (impossible at this point) 
 	 * @throws KeyStoreException If the method is unable to add the retrieved certificate.
 	 * @throws NoSuchAlgorithmException If the system is unable to deal with TSL protocol (Is this possible by the way?)
 	 * @throws KeyManagementException If it is not possible to initialize the SSL context with the local trust store.
 	 */
-	private static boolean addServerCerts(final String urlEndPoint, final boolean force) throws MalformedURLException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+	private static boolean addServerCerts(final String urlEndPoint) 
+	        throws MalformedURLException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
 
 		boolean certsAdded = false;
 		
@@ -289,7 +284,7 @@ public final class Main extends ParentMain {
 		}
 
 		ProxyTrustManager tm = new ProxyTrustManager();
-		SSLContext context = SSLContext.getInstance(TSL_PROTOCOL);
+		SSLContext context = SSLContext.getInstance(TLS_PROTOCOL);
 		context.init(null, new TrustManager[] { tm }, null);
 		SSLSocketFactory factory = context.getSocketFactory();
 
@@ -312,15 +307,10 @@ public final class Main extends ParentMain {
 				
 				for (X509Certificate certificate : chain) {
 					String subjectDN = certificate.getSubjectDN().getName();
-					String issuer = certificate.getIssuerDN().getName();
-   
-					if (force || issuer.equals(subjectDN)) {
-						if (addCertificate(host + " (" + subjectDN + ") ", certificate)) { //$NON-NLS-1$ //$NON-NLS-2$
-							certsAdded = true;
-						}						
-					} else {
-						LOGGER.info(Messages.getString("TRUSTSERVER_SKIPPING_NO_ROOT_CERTIFICATE", subjectDN)); //$NON-NLS-1$
-					}
+					
+					if (addCertificate(host + " (" + subjectDN + ") ", certificate)) { //$NON-NLS-1$ //$NON-NLS-2$
+					    certsAdded = true;
+					} 
 				}
 			}
 		}
@@ -335,21 +325,22 @@ public final class Main extends ParentMain {
 	 * @return <code>true</code> if the certificate is added to the trust store. <code>false</code> otherwise.
 	 * @throws KeyStoreException If the method cannot modify the local trust store.
 	 */
-	private static boolean addCertificate(String alias, X509Certificate certificate) throws KeyStoreException {
+	private static boolean addCertificate(final String alias, final X509Certificate certificate) throws KeyStoreException {
 		boolean certAdded = false;
 		String subjectDN = certificate.getSubjectDN().getName();
+		String issuer = certificate.getIssuerDN().getName();
 		try {
 			X509Util.checkCertificate(certificate);
-			LOGGER.info(Messages.getString("TRUSTSERVER_SKIPPING_CERTIFICATE", subjectDN)); //$NON-NLS-1$
+			LOGGER.info(Messages.getString("TRUSTSERVER_SKIPPING_CERTIFICATE", subjectDN, issuer)); //$NON-NLS-1$
 		} catch (CertificateExpiredException e) {
-			LOGGER.info(Messages.getString("TRUSTSERVER_SKIPPING_EXPIRED", subjectDN)); //$NON-NLS-1$
+			LOGGER.info(Messages.getString("TRUSTSERVER_SKIPPING_EXPIRED", subjectDN, issuer)); //$NON-NLS-1$
 		} catch (CertificateNotYetValidException e) {
-			LOGGER.info(Messages.getString("TRUSTSERVER_SKIPPING_NOT_YET_VALID", subjectDN)); //$NON-NLS-1$
+			LOGGER.info(Messages.getString("TRUSTSERVER_SKIPPING_NOT_YET_VALID", subjectDN, issuer)); //$NON-NLS-1$
 		} catch (CertificateException e1) {
 			if (addedCertificates.contains(certificate)) {
 				LOGGER.info(Messages.getString("TRUSTSERVER_SKIPPING_ALREADY_ADDED", subjectDN)); //$NON-NLS-1$
 			} else {
-				LOGGER.info(Messages.getString("TRUSTSERVER_ADDING_CERTIFICATE", subjectDN)); //$NON-NLS-1$
+				LOGGER.info(Messages.getString("TRUSTSERVER_ADDING_CERTIFICATE", subjectDN, issuer)); //$NON-NLS-1$
 				addedCertificates.add(certificate);
 				certAdded = true;
 				localTrustStore.setCertificateEntry(alias, certificate);
@@ -364,7 +355,7 @@ public final class Main extends ParentMain {
 	 */
 	private static class ProxyTrustManager implements X509TrustManager {
 
-		/** Default trust manager (real trust manager) */
+		/** Default trust manager (real trust manager). */
 		private final X509TrustManager defaultTrustManager;
 
 		/** Server certificates chain. */
@@ -372,12 +363,10 @@ public final class Main extends ParentMain {
 
 		/**
 		 * Creates a new ProxyTrustManager using the given keystore as trusted server's CAs.
-		 * @param ks Trust store with all the trusted server's CAs.
-		 * @throws NoSuchAlgorithmException If it's not possible to get a TrustManagerFactory instance for the default
-		 * algorithm.
+		 * @throws NoSuchAlgorithmException If it's not possible to get a TrustManagerFactory instance for the default algorithm.
 		 * @throws KeyStoreException if it's not possible to inicialize the trust manager with the given key store.
 		 */
-		public ProxyTrustManager() throws NoSuchAlgorithmException, KeyStoreException {
+		ProxyTrustManager() throws NoSuchAlgorithmException, KeyStoreException {
 
 			TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 			tmf.init(localTrustStore);

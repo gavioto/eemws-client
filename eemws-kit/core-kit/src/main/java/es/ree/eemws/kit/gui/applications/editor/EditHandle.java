@@ -398,7 +398,7 @@ public final class EditHandle {
                     }
 
                     if (ocurrences > 0) {
-                        JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_REPLACE_NUM_REPLACEMENTS" , ocurrences),  //$NON-NLS-1$
+                        JOptionPane.showMessageDialog(mainWindow, Messages.getString("EDITOR_REPLACE_NUM_REPLACEMENTS", ocurrences),  //$NON-NLS-1$
                                 Messages.getString("MSG_INFO_TITLE"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
                     }
                 }
@@ -494,7 +494,7 @@ public final class EditHandle {
          * @param window Main window.
          * @param isReplace toggle between search and replace modes.
          */
-        public SearchAndReplaceDialogue(final Frame window, final boolean isReplace) {
+        SearchAndReplaceDialogue(final Frame window, final boolean isReplace) {
 
             super(window);
             setModal(true);

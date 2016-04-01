@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2016 Red Eléctrica de España, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -24,252 +24,238 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Calendar;
 
-import es.ree.eemws.client.common.Messages;
-import es.ree.eemws.client.common.ClientException;
+import es.ree.eemws.core.utils.error.EnumErrorCatalog;
+import es.ree.eemws.core.utils.operations.list.ListOperationException;
 
 /**
- * Data of the message.
+ * Keeps the values of a list element.
  *
  * @author Red Eléctrica de España S.A.U.
- * @version 1.0 13/06/2014
+ * @version 1.1 10/01/2016
  */
 public final class MessageListEntry implements Serializable {
 
-	/** Serial version UID. */
-   	private static final long serialVersionUID = 1076971563035450358L;
+    /** Serial version UID. */
+    private static final long serialVersionUID = 1592261739373083411L;
 
-	/** Code. */
+    /** Message's code. */
     private BigInteger code = null;
 
-    /** Message identification. */
+    /** Message's identification. */
     private String messageIdentification = null;
 
-    /** Message version. */
+    /** Message's version. */
     private BigInteger version = null;
 
-    /** Status. */
+    /** Message's status. */
     private String status = null;
 
-    /** Application start time. */
+    /** Message's application start time. */
     private Calendar applicationStartTime = null;
 
-    /** Application end time. */
+    /** Message's application end time. */
     private Calendar applicationEndTime = null;
 
-    /** Server date. */
+    /** Message's server date. */
     private Calendar serverTimestamp = null;
 
-    /** Type. */
+    /** Message's type. */
     private String type = null;
 
-    /** Owner. */
+    /** Message's owner. */
     private String owner = null;
     
-   
+    /** Join message's identification and version. */    
+    private static final char NAME_VERSION_SEPARATOR = '.';
+
     /**
-     * This method get the code.
-     * @return Code.
+     * Gets this message's code.
+     * @return This message's code.
      */
     public BigInteger getCode() {
-
         return code;
+    }
+    
+    /**
+     * Sets this message's code.
+     * @param cod This message's code.
+     */
+    public void setCode(final BigInteger cod) {
+        code = cod;
     }
 
     /**
-     * This method get the message identification.
-     * @return Message identification.
+     * Gets this message's identification.
+     * @return This message's identification.
      */
     public String getMessageIdentification() {
-
         return messageIdentification;
     }
 
     /**
-     * This method get the message version.
-     * @return Message version.
+     * Sets this message's identification.
+     * @param id This message's identification.
+     */
+    public void setMessageIdentification(final String id) {
+        messageIdentification = id;
+    }
+    
+    /**
+     * Gets this message's version.
+     * @return This message's version.
      */
     public BigInteger getVersion() {
-
         return version;
     }
 
     /**
-     * This method get the status.
-     * @return Status.
+     * Sets this message's version.
+     * @param ver This message's version.
+     */
+    public void setVersion(final BigInteger ver) {
+        version = ver;
+    }
+    
+    /**
+     * Gets this message's status. 
+     * @return This message's status.
      */
     public String getStatus() {
-
         return status;
     }
+    
+    /**
+     * Sets this message's status. 
+     * @param stat This message's status.
+     */
+    public void setStatus(final String stat) {
+        status = stat;
+    }
 
     /**
-     * This method get the application start time.
-     * @return Application start time.
+     * Gets this message's application start time.
+     * @return This message's application start time.
      */
     public Calendar getApplicationStartTime() {
-
         return applicationStartTime;
     }
+    
+    /**
+     * Sets this message's application start time.
+     * @param time This message's application start time.
+     */
+    public void setApplicationStartTime(final Calendar time) {
+
+        applicationStartTime = time;
+    }
 
     /**
-     * This method get the application end time.
-     * @return Application end time.
+     * Gets this message's application end time.
+     * @return This message's application end time.
      */
     public Calendar getApplicationEndTime() {
-
         return applicationEndTime;
     }
-
+    
     /**
-     * This method get the server date.
-     * @return Server date.
+     * Sets this message's application end time.
+     * @param time This message's application end time.
      */
-    public Calendar getServerTimestamp() {
+    public void setApplicationEndTime(final Calendar time) {
 
-        return serverTimestamp;
+        applicationEndTime = time;
     }
 
     /**
-     * This method get the type.
-     * @return Type.
+     * Gets this message's server date.
+     * @return This message's server date.
+     */
+    public Calendar getServerTimestamp() {
+        return serverTimestamp;
+    }
+    
+    /**
+     * Sets this message's server date.
+     * @param time This message's server date.
+     */
+    public void setServerTimestamp(final Calendar time) {
+        serverTimestamp = time;
+    }
+
+    /**
+     * Gets this message's type.
+     * @return This message's type.
      */
     public String getType() {
-
         return type;
     }
 
     /**
-     * This method get the owner.
-     * @return Owner.
+     * Sets this message's type.
+     * @param typ This message's type.
+     */
+    public void setType(final String typ) {
+
+        type = typ;
+    }
+    
+    /**
+     * Gets this message's owner.
+     * @return This message's owner.
      */
     public String getOwner() {
-
         return owner;
-    }
+    }   
 
     /**
-     * This method set the code.
-     * @param inCode Code.
+     * Sets this message's owner.
+     * @param own This message's owner.
      */
-    public void setCode(final BigInteger inCode) {
-
-        code = inCode;
+    public void setOwner(final String own) {
+        owner = own;
     }
 
     /**
-     * This method set the message identification.
-     * @param inMessageIdentification Message identification.
-     */
-    public void setMessageIdentification(final String inMessageIdentification) {
-
-        messageIdentification = inMessageIdentification;
-    }
-
-    /**
-     * This method set the message version.
-     * @param inVersion Message version.
-     */
-    public void setVersion(final BigInteger inVersion) {
-
-        version = inVersion;
-    }
-
-    /**
-     * This method set the status.
-     * @param inStatus Status.
-     */
-    public void setStatus(final String inStatus) {
-
-        status = inStatus;
-    }
-
-    /**
-     * This method set the application start time.
-     * @param inApplicationStartTime Application start time.
-     */
-    public void setApplicationStartTime(final Calendar inApplicationStartTime) {
-
-        applicationStartTime = inApplicationStartTime;
-    }
-
-    /**
-     * This method set the application end time.
-     * @param inApplicationEndTime Application end time.
-     */
-    public void setApplicationEndTime(final Calendar inApplicationEndTime) {
-
-        applicationEndTime = inApplicationEndTime;
-    }
-
-    /**
-     * This method set the server date.
-     * @param inServerTimestamp Server date.
-     */
-    public void setServerTimestamp(final Calendar inServerTimestamp) {
-
-        serverTimestamp = inServerTimestamp;
-    }
-
-    /**
-     * This method set the type.
-     * @param inType Type.
-     */
-    public void setType(final String inType) {
-
-        type = inType;
-    }
-
-    /**
-     * This method set the owner.
-     * @param inOwner Owner.
-     */
-    public void setOwner(final String inOwner) {
-
-        owner = inOwner;
-    }
-
-    
-    /**
-     * Checks the entry has all its mandatory elements.
-     * Note that is faster to check only one element entry that the whole list against schema.
+     * Checks that the entry has all its mandatory elements.
+     * Note it is faster to check only one element entry that the whole list against schema.
      * This method is called only when one entry causes exception (usually because a mandatory element was not provided) 
-     * @throws ClientException If the entry has at least one mandatory element set as <code>null<code>.
+     * @throws ListOperationException If the entry has at least one mandatory element set as <code>null</code>.
      */
-    public void checkMandatoryElements() throws ClientException {
-    	
-    	if (getCode() == null) {
-			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_CODE")); //$NON-NLS-1$
-		}
-		
-    	String codeStr = code.toString();    	
-    	
-		if (getMessageIdentification() == null) {
-			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_ID", codeStr)); //$NON-NLS-1$
-		}
-		
-		String idMsg = getMessageIdentification();
-		
-		if (getVersion() == null) {
-			idMsg = getMessageIdentification();
-		} else {
-			idMsg = getMessageIdentification() + "." + getVersion();  //$NON-NLS-1$
-		}
-		
-		if (getType() == null) {
-			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_TYPE", codeStr, idMsg)); //$NON-NLS-1$
-		}
-		
-		if (getApplicationStartTime() == null) {
-			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_START_TIME", codeStr, idMsg, getType())); //$NON-NLS-1$
-		}
-		
-		if (getServerTimestamp() == null) {
-			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_SERVER_TIMESTAMP", codeStr, idMsg, getType())); //$NON-NLS-1$
-		}
-		
-		if (getOwner() == null) {
-			throw new ClientException(Messages.getString("INVALID_LIST_ENTRY_NO_OWNER", codeStr, idMsg, getType())); //$NON-NLS-1$
-		}
+    public void checkMandatoryElements() throws ListOperationException {
+
+        if (getCode() == null) {
+            throw new ListOperationException(EnumErrorCatalog.ERR_LST_012);
+        }
+
+        String codeStr = code.toString();
+
+        if (getMessageIdentification() == null) {
+            throw new ListOperationException(EnumErrorCatalog.ERR_LST_013);
+        }
+
+        String idMsg = getMessageIdentification();
+
+        if (getVersion() == null) {
+            idMsg = getMessageIdentification();
+        } else {
+            idMsg = getMessageIdentification() + NAME_VERSION_SEPARATOR + getVersion();
+        }
+
+        if (getType() == null) {
+            throw new ListOperationException(EnumErrorCatalog.ERR_LST_014, codeStr, idMsg);
+        }
+
+        if (getApplicationStartTime() == null) {
+            throw new ListOperationException(EnumErrorCatalog.ERR_LST_015, codeStr, idMsg, getType());
+        }
+
+        if (getServerTimestamp() == null) {
+            throw new ListOperationException(EnumErrorCatalog.ERR_LST_016, codeStr, idMsg, getType());
+        }
+
+        if (getOwner() == null) {
+            throw new ListOperationException(EnumErrorCatalog.ERR_LST_017, codeStr, idMsg, getType());
+        }
     }
-    
+
 }

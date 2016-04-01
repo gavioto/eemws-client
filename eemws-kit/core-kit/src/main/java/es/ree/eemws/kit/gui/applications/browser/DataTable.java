@@ -172,7 +172,7 @@ public final class DataTable {
     }
 
     /**
-     * Changes status bar text according to table's status (num rows, num of selected rows)
+     * Changes status bar text according to table's status (num rows, num of selected rows).
      */
     private void changeSelectionStatus() {
         int totalRowNum = tableModel.getRowCount();

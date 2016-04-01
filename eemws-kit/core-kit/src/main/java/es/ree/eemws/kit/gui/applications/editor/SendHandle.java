@@ -32,12 +32,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.xml.ws.WebServiceException;
-
-import es.ree.eemws.client.common.ClientException;
+ 
 import es.ree.eemws.client.put.PutMessage;
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.core.utils.iec61968100.EnumMessageStatus;
+import es.ree.eemws.core.utils.operations.put.PutOperationException;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.config.Configuration;
 import es.ree.eemws.kit.gui.common.Logger;
@@ -187,9 +186,11 @@ public final class SendHandle implements ServiceMenuListener {
             l = (System.currentTimeMillis() - l) / 1000;
 
             log.logMessage(Messages.getString("EDITOR_ACK_RECEIVED")); //$NON-NLS-1$
-            log.logMessage(response);
+            if (response != null) {
+                log.logMessage(response);
+            }
 
-            EnumMessageStatus status = put.getStringBuilderMessage().getStatus();
+            EnumMessageStatus status = put.getMessageMetaData().getStatus();
             
             if (status == null) {
                 JOptionPane.showMessageDialog(mainWindow, 
@@ -199,7 +200,7 @@ public final class SendHandle implements ServiceMenuListener {
                 
             } else if (status.equals(EnumMessageStatus.OK)) {
                 JOptionPane.showMessageDialog(mainWindow, 
-                        Messages.getString("EDITOR_ACK_OK"),  //$NON-NLS-1$
+                        Messages.getString("EDITOR_ACK_OK", l),  //$NON-NLS-1$
                         Messages.getString("MSG_INFO_TITLE"),  //$NON-NLS-1$
                         JOptionPane.INFORMATION_MESSAGE);
             } else {
@@ -210,7 +211,7 @@ public final class SendHandle implements ServiceMenuListener {
             }
          
 
-        } catch (ClientException | WebServiceException ex) {
+        } catch (PutOperationException ex) {
             
             String msg = Messages.getString("EDITOR_UNABLE_TO_SEND"); //$NON-NLS-1$
             JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$

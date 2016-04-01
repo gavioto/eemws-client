@@ -72,7 +72,8 @@ public final class FolderManager {
             
             if (ExecutionControl.isRunning(config.getInstanceID())) {
                 if (StatusIcon.isInteractive()) {
-                    JOptionPane.showMessageDialog(null, Messages.getString("MF_ALREADY_RUNNING"), Messages.getString("MF_TITLE_ERROR"), JOptionPane.ERROR_MESSAGE);  //$NON-NLS-1$//$NON-NLS-2$
+                    JOptionPane.showMessageDialog(null, Messages.getString("MF_ALREADY_RUNNING"), //$NON-NLS-1$
+                            Messages.getString("MF_TITLE_ERROR"), JOptionPane.ERROR_MESSAGE);  //$NON-NLS-1$
                 }
                 
                 LOGGER.info(Messages.getString("MF_ALREADY_RUNNING"));  //$NON-NLS-1$
@@ -85,25 +86,25 @@ public final class FolderManager {
                 /* Creates lock handler. */
                 LockHandler lh = new LockHandler(config);
 
-            	scheduler = Executors.newScheduledThreadPool(3);
+            	scheduler = Executors.newScheduledThreadPool(config.getMaxNumThreads());
                 
                 /* Creates input detector only if an input folder is set. */
-                if (config.getInputFolder() != null) {
-                	InputTask it = new InputTask(lh, config);
-                	long sleep = config.getSleepTimeInput();
+            	for (int k = 0; config.getInputFolder(k) != null; k++) {
+                	InputTask it = new InputTask(lh, k, config);
+                	long sleep = config.getSleepTimeInput(k);
                 	scheduler.scheduleAtFixedRate(it, 0, sleep, TimeUnit.MILLISECONDS);
                 }
 
                 /* Create output detector only if an output folder is set. */
-                if (config.getOutputFolder() != null) {
-                	OutputTask ot = new OutputTask(lh, config);
-                	long sleep = config.getSleepTimeInput();
+            	if (config.getOutputFolder(0) != null) {
+            	    OutputTask ot = new OutputTask(lh, config);
+                	long sleep = config.getSleepTimeOutput();
                 	scheduler.scheduleAtFixedRate(ot, 0, sleep, TimeUnit.MILLISECONDS);
                 }
 
                 /* Create deletion / backup folder. */
                 if (config.getBackupFolder() != null) {
-                	DeleteFilesTask dft = new DeleteFilesTask (lh, config);
+                	DeleteFilesTask dft = new DeleteFilesTask(lh, config);
                 	int numDays = config.getNumOfDaysKept();
                 	scheduler.scheduleAtFixedRate(dft, numDays, numDays, TimeUnit.DAYS);
                 }
@@ -118,7 +119,8 @@ public final class FolderManager {
         	}
         	
         	if (StatusIcon.isInteractive()) {
-                JOptionPane.showMessageDialog(null, Messages.getString("INVALID_CONFIGURATION", ex.getMessage()), Messages.getString("MF_TITLE_ERROR"), JOptionPane.ERROR_MESSAGE);  //$NON-NLS-1$//$NON-NLS-2$
+                JOptionPane.showMessageDialog(null, Messages.getString("INVALID_CONFIGURATION", ex.getMessage()), //$NON-NLS-1$
+                        Messages.getString("MF_TITLE_ERROR"), JOptionPane.ERROR_MESSAGE);  //$NON-NLS-1$
             }            
         	LOGGER.log(Level.SEVERE, Messages.getString("INVALID_CONFIGURATION"), ex.getMessage()); //$NON-NLS-1$
         	
@@ -129,7 +131,8 @@ public final class FolderManager {
         } catch (RemoteException ex) {
         	
         	if (StatusIcon.isInteractive()) {
-                JOptionPane.showMessageDialog(null, Messages.getString("INVALID_CONFIGURATION", ex.getMessage()), Messages.getString("MF_TITLE_ERROR"), JOptionPane.ERROR_MESSAGE);  //$NON-NLS-1$//$NON-NLS-2$
+                JOptionPane.showMessageDialog(null, Messages.getString("INVALID_CONFIGURATION", ex.getMessage()), //$NON-NLS-1$   
+                        Messages.getString("MF_TITLE_ERROR"), JOptionPane.ERROR_MESSAGE);   //$NON-NLS-1$
             }
         	LOGGER.log(Level.SEVERE, Messages.getString("MF_CANNOT_REACH_REFERENCES"), ex.getMessage()); //$NON-NLS-1$
         	StatusIcon.removeIcon();

@@ -145,7 +145,7 @@ public final class TableStrippedCellRender extends DefaultTableCellRenderer {
      * Format date values preventing being taken as strings by Table comparator.
      * @param value value to be shown on cell.
      */
-    public final void setValue(final Object value) {
+    public void setValue(final Object value) {
         if (value != null) {
             if (value instanceof Calendar) {
                 setText(sdfDateTime.format(((Calendar) value).getTime()));

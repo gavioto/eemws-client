@@ -1,5 +1,5 @@
 /*
- * Copyright 2015Red Eléctrica de España, S.A.U.
+ * Copyright 2016 Red Eléctrica de España, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -34,48 +34,37 @@ import org.w3c.dom.Element;
 
 import ch.iec.tc57._2011.schema.message.ReplyType.ID;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
-import es.ree.eemws.client.common.ClientException;
-import es.ree.eemws.client.common.Messages;
+import es.ree.eemws.core.utils.error.EnumErrorCatalog;
 import es.ree.eemws.core.utils.file.GZIPUtil;
 import es.ree.eemws.core.utils.iec61968100.EnumMessageFormat;
 import es.ree.eemws.core.utils.iec61968100.EnumNoun;
+import es.ree.eemws.core.utils.operations.get.GetOperationException;
 import es.ree.eemws.core.utils.xml.XMLElementUtil;
 import es.ree.eemws.core.utils.xml.XMLUtil;
 
 /**
- * Payload (or binary) response message wrapper. 
+ * Payload response message wrapper. 
  *
  * @author Red Eléctrica de España S.A.U.
- * @version 1.0 13/06/2014
+ * @version 1.1 10/01/2016
  */
 
-public class RetrievedMessage {
+public final class RetrievedMessage {
 
     /** Identification - Version character separator. Used to create a file name with the format id.version */
-    private static final String VERSION_SEPARATOR = ".";
+    private static final String VERSION_SEPARATOR = "."; //$NON-NLS-1$
 
-    /** Binary content as byte[] */
+    /** Binary content as byte[]. */
     private byte[] binaryContent;
 
     /** Xml content as String. */
     private String xmlContent;
-
-    /** Flag that indicates whether the message is empty. */
-    private boolean empty = true;
-
+   
     /** This message format (default = XML). */
     private EnumMessageFormat format = EnumMessageFormat.XML;
 
     /** This message fileName. */
     private String fileName;
-
-    /**
-     * Returns whether the message is empty.
-     * @return <code>true</code> for empty message. <code>false</code> otherwise.
-     */
-    public boolean isEmpty() {
-        return empty;
-    }
 
     /**
      * Returns whether the message is binary.
@@ -100,7 +89,7 @@ public class RetrievedMessage {
      * Sets this message identification in order to create a proper file name identification.
      * @param messageIdentification Get filter's message identification.
      */
-    public void setMsgIdentification(String messageIdentification) {
+    public void setMsgIdentification(final String messageIdentification) {
         fileName = messageIdentification;
     }
 
@@ -109,16 +98,10 @@ public class RetrievedMessage {
      * This method is called after {@link #setMsgIdentification(String)} only if the version applies.  
      * @param messageVersion Get filter's message version.
      */
-    public void setMsgVersion(Integer messageVersion) {
-        fileName += VERSION_SEPARATOR + messageVersion.toString();
-    }
-
-    /**
-     * Sets this message code in order to create a proper file name identificacion.
-     * @param cod Get filter's code.
-     */
-    public void setCode(Long cod) {
-        fileName = cod.toString();
+    public void setMsgVersion(final String messageVersion) {
+        if (fileName != null) {
+            fileName += VERSION_SEPARATOR + messageVersion;
+        }
     }
 
     /**
@@ -145,7 +128,7 @@ public class RetrievedMessage {
         String retValue = null;
 
         if (xmlContent != null) {
-           retValue = XMLUtil.prettyPrint(XMLUtil.removeNameSpaces(xmlContent).toString()).toString();
+            retValue = XMLUtil.prettyPrint(XMLUtil.removeNameSpaces(xmlContent).toString()).toString();
         }
 
         return retValue;
@@ -154,58 +137,57 @@ public class RetrievedMessage {
     /**
      * Sets this class payload or binary values from a ResponseMessage object.
      * @param response ResponseMessage object with payload or binary values.
-     * @throws ClientException If the BINARY response has an invalid format or if it cannot be unzipped.  
+     * @throws GetOperationException If the BINARY response has an invalid format or if it cannot be unzipped.  
      */
-    public void setMessage(ResponseMessage response) throws ClientException {
+    public void setMessage(final ResponseMessage response) throws GetOperationException {
 
         try {
-            
-            empty = response.getPayload() == null 
-                    || (response.getPayload().getCompressed() == null && (response.getPayload().getAnies() == null || (response.getPayload().getAnies() != null && response.getPayload().getAnies().get(0) == null)));
 
-            if (!empty) {
+            if (response.getHeader().getNoun().equals(EnumNoun.COMPRESSED.toString())) {
 
-                if (response.getHeader().getNoun().equals(EnumNoun.COMPRESSED.toString())) {
+                String msgFormat = response.getPayload().getFormat();
+                if (msgFormat != null) {
+                    format = EnumMessageFormat.fromString(msgFormat);
 
-                    String msgFormat = response.getPayload().getFormat();
-                    if (msgFormat != null) {
-                        format = EnumMessageFormat.fromString(msgFormat);
-
-                        if (format == null) {
-                            throw new ClientException(Messages.getString("GET_INVALID_FORMAT", msgFormat, EnumMessageFormat.getList())); //$NON-NLS-1$ 
-                        }
+                    if (format == null) {
+                        throw new GetOperationException(EnumErrorCatalog.ERR_GET_014, msgFormat, EnumMessageFormat.getList());
                     }
-
-                    binaryContent = DatatypeConverter.parseBase64Binary(response.getPayload().getCompressed());
-
-                    /* Hide binary content if the payload is xml. */
-                    if (msgFormat == null || format.equals(EnumMessageFormat.XML)) {
-                        xmlContent = new String(GZIPUtil.uncompress(binaryContent), StandardCharsets.UTF_8);
-                        binaryContent = null;
-                    }
-
-                    List<ID> lsIds = response.getReply().getIDS();
-                    if (lsIds != null) {
-                        boolean loop = true;
-                        Iterator<ID> ids = lsIds.iterator();
-                        while (ids.hasNext() && loop) {
-                            ID id = ids.next();
-                            if (EnumMessageFormat.BINARY_FILENAME_ID.equals(id.getIdType())) {
-                                fileName = id.getValue();
-                                loop = false;
-                            }
-                        }
-                    }
-
-                } else {
-                    Element message = response.getPayload().getAnies().get(0);
-                    xmlContent = XMLElementUtil.element2String(message);
                 }
+
+                binaryContent = DatatypeConverter.parseBase64Binary(response.getPayload().getCompressed());
+
+                /* Hide binary content if the payload is xml. */
+                if (msgFormat == null || format.equals(EnumMessageFormat.XML)) {
+                    xmlContent = new String(GZIPUtil.uncompress(binaryContent), StandardCharsets.UTF_8);
+                    binaryContent = null;
+                }
+
+                List<ID> lsIds = response.getReply().getIDS();
+                if (lsIds != null) {
+                    boolean loop = true;
+                    Iterator<ID> ids = lsIds.iterator();
+                    while (ids.hasNext() && loop) {
+                        ID id = ids.next();
+                        if (EnumMessageFormat.BINARY_FILENAME_ID.equals(id.getIdType())) {
+                            fileName = id.getValue();
+                            loop = false;
+                        }
+                    }
+                }
+
+                if (isBinary() && fileName == null) {
+                    throw new GetOperationException(EnumErrorCatalog.ERR_GET_018);
+                }
+
+            } else {
+                Element message = response.getPayload().getAnies().get(0);
+                xmlContent = XMLElementUtil.element2String(message);
             }
+
         } catch (IOException e) {
-            throw new ClientException(Messages.getString("GET_UNABLE_TO_UNZIP"), e); //$NON-NLS-1$ 
+            throw new GetOperationException(EnumErrorCatalog.ERR_GET_015, e);
         } catch (TransformerException | ParserConfigurationException e) {
-            throw new ClientException(Messages.getString("GET_UNABLE_TO_GET_PAYLOAD"), e); //$NON-NLS-1$
+            throw new GetOperationException(EnumErrorCatalog.ERR_GET_015, e);
         }
     }
 

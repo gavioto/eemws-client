@@ -22,7 +22,7 @@ package es.ree.eemws.kit.gui.common;
 
 
 /**
- * Common constants for GUI classes
+ * Common constants for GUI classes.
  *
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 09/05/2014
