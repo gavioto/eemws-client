@@ -263,10 +263,10 @@ public final class Browser extends JFrame implements ServiceMenuListener {
             listSend.setEndPoint(new URL(endp));
             requestSend.setEndPoint(new URL(endp));
             endPoint = endp;
-            log.logMessage("Target service set to: " + endPoint);
+            log.logMessage("Target service set to: " + endPoint); //$NON-NLS-1$
 
         } catch (MalformedURLException mue) {
-            JOptionPane.showMessageDialog(null, "Entered URL is not correct.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Entered URL is not correct.", "Error", JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
