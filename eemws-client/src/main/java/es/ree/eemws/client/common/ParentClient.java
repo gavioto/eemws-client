@@ -45,7 +45,6 @@ import es.ree.eemws.core.utils.error.EnumErrorCatalog;
 import es.ree.eemws.core.utils.error.ErrorMessages;
 import es.ree.eemws.core.utils.iec61968100.EnumNoun;
 import es.ree.eemws.core.utils.iec61968100.EnumVerb;
-import es.ree.eemws.core.utils.iec61968100.FaultUtil;
 import es.ree.eemws.core.utils.iec61968100.MessageMetaData;
 import es.ree.eemws.core.utils.operations.HandlerException;
 
