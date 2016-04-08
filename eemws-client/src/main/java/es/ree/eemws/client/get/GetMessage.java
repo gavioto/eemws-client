@@ -21,6 +21,7 @@
 
 package es.ree.eemws.client.get;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,6 +77,21 @@ public final class GetMessage extends ParentClient {
      * @return Response message wrapper with the server's response.
      * @throws GetOperationException If the retrieved message has an invalid format or the application cannot handle it
      * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
+     * @see #get(Long)
+     */
+    public RetrievedMessage get(final BigInteger code) throws GetOperationException {
+
+        return get(null, null, code.longValue(), null);
+    }
+   
+    
+    /**
+     * Gets the message with the given code.
+     * @param code Message's code.
+     * @return Response message wrapper with the server's response.
+     * @throws GetOperationException If the retrieved message has an invalid format or the application cannot handle it
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
+     * @see #get(BigInteger)
      */
     public RetrievedMessage get(final Long code) throws GetOperationException {
 
