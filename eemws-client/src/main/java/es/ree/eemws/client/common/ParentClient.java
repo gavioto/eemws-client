@@ -200,8 +200,12 @@ public abstract class ParentClient {
                 throw new HandlerException(EnumErrorCatalog.ERR_HAND_019);
             } else if (errStr.indexOf("Connection refused") != -1 || errStr.indexOf("Connection timed out") != -1) { //$NON-NLS-1$ //$NON-NLS-2$
                 throw new HandlerException(EnumErrorCatalog.ERR_HAND_020);
+            } else if (errStr.indexOf("The server sent HTTP status code 400:") != -1) { //$NON-NLS-1$ 
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_021);
             } else {
-                throw ex;
+                
+                /* Do no throw a RuntimeException ! */
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_022, ex);
             }
         }
 
