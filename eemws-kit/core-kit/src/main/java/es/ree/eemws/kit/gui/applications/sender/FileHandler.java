@@ -31,24 +31,21 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.prefs.Preferences;
 
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
-
- 
-
-
-
-
-
-
 
 import es.ree.eemws.client.put.PutMessage;
 import es.ree.eemws.core.utils.config.ConfigException;
@@ -72,6 +69,21 @@ public final class FileHandler extends DropTargetAdapter {
     /** Key to store the whether use of binary as preference. */
     private static final String USE_BINARY_FILE = "USE_BINARY_FILE"; //$NON-NLS-1$
 
+    /** Value to setup save mode to "auto-save". */
+    private static final String USE_AUTO_SAVE = "USE_AUTO_SAVE"; //$NON-NLS-1$
+
+    /** Value to setup save mode to "auto-save as". */
+    private static final String USE_SAVE_AS = "USE_SAVE_AS"; //$NON-NLS-1$
+
+    /** Value to setup save mode to "no save". */
+    private static final String USE_NO_SAVE = "USE_NO_SAVE"; //$NON-NLS-1$
+
+    /** Key to store, in the preference set, the selected save mode. */
+    private static final String SAVE_MODE = "SAVE_MODE"; //$NON-NLS-1$
+
+    /** Prefix added to identify response files. */
+    private static final String RESPONSE_ID_PREFIX = "ack_"; //$NON-NLS-1$
+
     /** File type checkbox. */
     private JCheckBoxMenuItem fileType;
 
@@ -86,7 +98,16 @@ public final class FileHandler extends DropTargetAdapter {
 
     /** Logger. */
     private Logger logger;
-    
+
+    /** Menu option for auto save ack. */
+    private JRadioButtonMenuItem autoSave;
+
+    /** Menu option for save as ack. */
+    private JRadioButtonMenuItem saveAs;
+
+    /** Menu option for no save ack. */
+    private JRadioButtonMenuItem noSave;
+
     /**
      * Creates a new instance of the File handler.
      * @param window Reference to main window.
@@ -95,10 +116,10 @@ public final class FileHandler extends DropTargetAdapter {
     public FileHandler(final Sender window, final LogHandle logHandl) {
 
         mainWindow = window;
-        logHandle = logHandl; 
+        logHandle = logHandl;
         logger = logHandle.getLog();
-                
-        /* Enables the editor open files by dropping items. */
+
+        /* Enables file open by dropping items. */
         new DropTarget(window, this);
     }
 
@@ -108,7 +129,9 @@ public final class FileHandler extends DropTargetAdapter {
      */
     public JMenu getMenu() {
 
-        JMenuItem openFileMenuItem = new JMenuItem(Messages.getString("SENDER_MENU_ITEM_OPEN"),  //$NON-NLS-1$
+        Preferences preferences = Preferences.userNodeForPackage(getClass());
+
+        JMenuItem openFileMenuItem = new JMenuItem(Messages.getString("SENDER_MENU_ITEM_OPEN"), //$NON-NLS-1$
                 new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_OPEN)));
         openFileMenuItem.setMnemonic(Messages.getString("SENDER_MENU_ITEM_OPEN_HK").charAt(0)); //$NON-NLS-1$
         openFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -118,10 +141,53 @@ public final class FileHandler extends DropTargetAdapter {
             }
         });
 
+        JMenu saveMenu = new JMenu(Messages.getString("SENDER_MENU_ITEM_SAVE")); //$NON-NLS-1$
+        saveMenu.setMnemonic(Messages.getString("SENDER_MENU_ITEM_SAVE_HK").charAt(0)); //$NON-NLS-1$
+        saveMenu.setIcon(new ImageIcon(getClass().getResource(es.ree.eemws.kit.gui.common.Constants.ICON_SAVE_AS)));
+
+        String saveMode = preferences.get(SAVE_MODE, USE_AUTO_SAVE);
+
+        autoSave = new JRadioButtonMenuItem(Messages.getString("SENDER_SAVE_AUTO")); //$NON-NLS-1$
+        autoSave.setMnemonic(Messages.getString("SENDER_SAVE_AUTO_HK").charAt(0)); //$NON-NLS-1$
+        autoSave.setSelected(saveMode.equals(USE_AUTO_SAVE));
+        saveMenu.add(autoSave);
+        autoSave.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
+                changeSaveType();
+            }
+        });
+
+        saveAs = new JRadioButtonMenuItem(Messages.getString("SENDER_ASK_SAVE")); //$NON-NLS-1$
+        saveAs.setMnemonic(Messages.getString("SENDER_ASK_SAVE_HK").charAt(0)); //$NON-NLS-1$
+        saveAs.setSelected(saveMode.equals(USE_SAVE_AS));
+        saveMenu.add(saveAs);
+        saveAs.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
+                changeSaveType();
+            }
+        });
+
+        noSave = new JRadioButtonMenuItem(Messages.getString("SENDER_NO_SAVE")); //$NON-NLS-1$
+        noSave.setMnemonic(Messages.getString("SENDER_NO_SAVE_HK").charAt(0)); //$NON-NLS-1$
+        noSave.setSelected(saveMode.equals(USE_NO_SAVE));
+        saveMenu.add(noSave);
+        noSave.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) { // NOSONAR event is not used.
+                changeSaveType();
+            }
+        });
+
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(autoSave);
+        bg.add(saveAs);
+        bg.add(noSave);
+
         fileType = new JCheckBoxMenuItem(Messages.getString("SENDER_SEND_AS_BINARY")); //$NON-NLS-1$
         fileType.setMnemonic(Messages.getString("SENDER_SEND_AS_BINARY_HK").charAt(0)); //$NON-NLS-1$
 
-        Preferences preferences = Preferences.userNodeForPackage(getClass());
         boolean useBinary = preferences.getBoolean(USE_BINARY_FILE, false);
         fileType.setSelected(useBinary);
         fileType.addActionListener(new java.awt.event.ActionListener() {
@@ -144,19 +210,34 @@ public final class FileHandler extends DropTargetAdapter {
         fileMenu.setText(Messages.getString("SENDER_MENU_ITEM_FILE")); //$NON-NLS-1$
         fileMenu.setMnemonic(Messages.getString("SENDER_MENU_ITEM_FILE").charAt(0)); //$NON-NLS-1$
         fileMenu.add(openFileMenuItem);
+        fileMenu.add(saveMenu);
         fileMenu.add(fileType);
         fileMenu.addSeparator();
         fileMenu.add(menuItemExit);
 
         return fileMenu;
     }
-    
+
     /**
-     * Stores file type preference when changed.
+     * Stores file type as preferences when changed.
      */
     private void changeFileType() {
         Preferences preferences = Preferences.userNodeForPackage(getClass());
         preferences.putBoolean(USE_BINARY_FILE, fileType.isSelected());
+    }
+
+    /**
+     * Stores save mode as preferences when changed.
+     */
+    private void changeSaveType() {
+        Preferences preferences = Preferences.userNodeForPackage(getClass());
+        if (noSave.isSelected()) {
+            preferences.put(SAVE_MODE, USE_NO_SAVE);
+        } else if (saveAs.isSelected()) {
+            preferences.put(SAVE_MODE, USE_SAVE_AS);
+        } else {
+            preferences.put(SAVE_MODE, USE_AUTO_SAVE);
+        }
     }
 
     /**
@@ -179,7 +260,7 @@ public final class FileHandler extends DropTargetAdapter {
         for (Component comp : fileMenu.getMenuComponents()) {
             comp.setEnabled(enableValue);
         }
-        
+
         logHandle.enable(enableValue);
 
         if (enableValue) {
@@ -211,33 +292,41 @@ public final class FileHandler extends DropTargetAdapter {
             }
             l = (System.currentTimeMillis() - l) / 1000;
 
-            logger.logMessage(response);
-            
+            if (response == null) {
+                logger.logMessage(Messages.getString("SENDER_NO_RESPONSE")); //$NON-NLS-1$
+            } else {
+                logger.logMessage(response);
+            }
+
             EnumMessageStatus status = put.getMessageMetaData().getStatus();
 
             if (status == null) {
                 mainWindow.setSentFailed(file.getName());
-                JOptionPane.showMessageDialog(mainWindow, 
-                        Messages.getString("SENDER_NO_IEC_MESSAGE"),  //$NON-NLS-1$
-                        Messages.getString("MSG_ERROR_TITLE"),  //$NON-NLS-1$
+                JOptionPane.showMessageDialog(mainWindow, Messages.getString("SENDER_NO_IEC_MESSAGE"), //$NON-NLS-1$
+                        Messages.getString("MSG_ERROR_TITLE"), //$NON-NLS-1$
                         JOptionPane.INFORMATION_MESSAGE);
-                
-            } else if (status.equals(EnumMessageStatus.OK)) {
-                mainWindow.setSentOk(file.getName());
-                JOptionPane.showMessageDialog(mainWindow, 
-                        Messages.getString("SENDER_ACK_OK", l),  //$NON-NLS-1$
-                        Messages.getString("MSG_INFO_TITLE"),  //$NON-NLS-1$
-                        JOptionPane.INFORMATION_MESSAGE);
+
             } else {
-                mainWindow.setSentFailed(file.getName());
-                JOptionPane.showMessageDialog(mainWindow, 
-                        Messages.getString("SENDER_ACK_NOOK"),  //$NON-NLS-1$
-                        Messages.getString("MSG_WARNING_TITLE"),  //$NON-NLS-1$
-                        JOptionPane.INFORMATION_MESSAGE);
+                if (status.equals(EnumMessageStatus.OK)) {
+                    mainWindow.setSentOk(file.getName());
+                    JOptionPane.showMessageDialog(mainWindow, Messages.getString("SENDER_ACK_OK", l), //$NON-NLS-1$
+                            Messages.getString("MSG_INFO_TITLE"), //$NON-NLS-1$
+                            JOptionPane.INFORMATION_MESSAGE);
+
+                } else {
+                    mainWindow.setSentFailed(file.getName());
+                    JOptionPane.showMessageDialog(mainWindow, Messages.getString("SENDER_ACK_NOOK"), //$NON-NLS-1$
+                            Messages.getString("MSG_WARNING_TITLE"), //$NON-NLS-1$
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+                
+                if (response != null) {
+                    save(new StringBuilder(response), file);
+                }
             }
-                       
+
         } catch (PutOperationException ex) {
-            
+
             String msg = Messages.getString("SENDER_UNABLE_TO_SEND"); //$NON-NLS-1$
             JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
             logger.logException(msg, ex);
@@ -247,20 +336,97 @@ public final class FileHandler extends DropTargetAdapter {
 
             String msg = Messages.getString("INVALID_CONFIGURATION" + ex.getMessage()); //$NON-NLS-1$
             JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-            
-            
+
         } catch (IOException ex) {
             String msg = Messages.getString("SENDER_CANNOT_OPEN_FILE", file.getName()); //$NON-NLS-1$
-            
+
             logger.logException(msg, ex);
             JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
-            
+
             mainWindow.setSentFailed(file.getName());
         } finally {
             enable(true);
         }
     }
     
+    /**
+     * Saves the response message according to the user preferences.
+     * @param response Response content.
+     * @param file File Send file information.
+     */
+    private void save(final StringBuilder response, final File file) {
+        File ackFile = new File(file.getParent() + File.separator + RESPONSE_ID_PREFIX + file.getName());        
+        
+        if (autoSave.isSelected()) {
+            saveFile(response, ackFile);
+        } else if (saveAs.isSelected()) {
+            saveFileAs(response, ackFile);
+        }
+    }
+    
+    /**
+     * Saves the response using a dialog.
+     * @param response Response content.
+     * @param file File Send file information.
+     */
+    private void saveFileAs(final StringBuilder response, final File file) {
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setSelectedFile(file);
+        int returnVal;
+        boolean loop = false;
+        do {
+            loop = false;
+            returnVal = fileChooser.showSaveDialog(mainWindow);
+
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+                File choosedF = fileChooser.getSelectedFile();
+                if (choosedF.exists()) {
+
+                    int resp = JOptionPane.showConfirmDialog(mainWindow, Messages.getString("SENDER_SAVE_FILE_ALREADY_EXISTS", choosedF.getName()), //$NON-NLS-1$
+                            Messages.getString("MSG_WARNING_TITLE"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
+
+                    if (resp == JOptionPane.OK_OPTION) {
+                        saveFile(response, choosedF);                          
+                    } else {
+                        
+                        /* User does not want to overwrite, ask againg. */
+                        loop = true;
+                    }
+                } else {
+                    saveFile(response, choosedF);
+                }
+            }  
+        } while (loop);
+         
+    }
+  
+    /**
+     * Saves the response in a file.
+     * The response is created in the same path as the send file has using "ack" as file name prefix.
+     * @param response Response content.
+     * @param file File Send file information.
+     */
+    private void saveFile(final StringBuilder response, final File file) {
+
+        try {
+            Path rutaFicheroPath = Paths.get(file.getAbsolutePath());
+            if (Files.deleteIfExists(rutaFicheroPath)) {
+                logger.logMessage(Messages.getString("SENDER_SAVE_FILE_OVERWRITTEN", file.getAbsolutePath())); //$NON-NLS-1$  
+            }
+            
+            FileUtil.writeUTF8(file.getAbsolutePath(), response.toString());
+            logger.logMessage(Messages.getString("SENDER_SAVE_FILE_SAVED", file.getAbsolutePath())); //$NON-NLS-1$
+
+        } catch (IOException ioe) {
+            String errMsg = Messages.getString("SENDER_UNABLE_TO_SAVE", file.getAbsolutePath()); //$NON-NLS-1$
+            JOptionPane.showMessageDialog(mainWindow, errMsg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+            logger.logException(errMsg, ioe);
+            saveFileAs(response, file);
+        }
+    }
+
     /**
      * Opens a file and sends it.
      * @param file File to be opened.
@@ -280,16 +446,16 @@ public final class FileHandler extends DropTargetAdapter {
             });
 
         } else {
-            
+
             // El fichero no existe.
             String msg = Messages.getString("SENDER_CANNOT_OPEN_FILE", file.getAbsoluteFile()); //$NON-NLS-1$
             logger.logMessage(msg);
             JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
         }
     }
-    
+
     /**
-     * Triggered when a link to a file (or any object else) is dropped on editor.
+     * Triggered when a link to a file (or any object else) is dropped on application.
      * @param eventoDrop Event triggered containing data related to dropped object.
      */
     @Override
