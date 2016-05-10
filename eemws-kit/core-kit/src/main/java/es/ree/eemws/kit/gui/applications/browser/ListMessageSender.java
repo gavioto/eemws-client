@@ -84,6 +84,7 @@ public final class ListMessageSender {
         mainWindow.enableScreen(false);
         mainWindow.getDataTable().setData(new Object[0][ColumnsId.values().length]);
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 retrieveListWhenDisabled();
             }

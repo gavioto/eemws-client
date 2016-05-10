@@ -142,20 +142,20 @@ public class Configuration {
 
         	String fullConfigPath = FileUtil.getFullPathOfResoruce(CONFIG_FILE);
         	
-            String fileContent = FileUtil.read(fullConfigPath);
-            fileContent = writeValue(url, cm.getValue(WEBSERVICE_URL_KEY), WEBSERVICE_URL_KEY, fileContent);
+            StringBuilder fileContent = new StringBuilder(FileUtil.read(fullConfigPath));
+            writeValue(url, cm.getValue(WEBSERVICE_URL_KEY), WEBSERVICE_URL_KEY, fileContent);
 
-            fileContent = writeValue(proxyHost, cm.getValue(PROXY_HOST_KEY), PROXY_HOST_KEY, fileContent);
-            fileContent = writeValue(proxyPort, cm.getValue(PROXY_PORT_KEY), PROXY_PORT_KEY, fileContent);
-            fileContent = writeValue(proxyUser, cm.getValue(PROXY_USER_KEY), PROXY_USER_KEY, fileContent);
-            fileContent = writeValue(proxyPassword, cm.getValue(PROXY_PASSWORD_KEY), PROXY_PASSWORD_KEY, fileContent);
+            writeValue(proxyHost, cm.getValue(PROXY_HOST_KEY), PROXY_HOST_KEY, fileContent);
+            writeValue(proxyPort, cm.getValue(PROXY_PORT_KEY), PROXY_PORT_KEY, fileContent);
+            writeValue(proxyUser, cm.getValue(PROXY_USER_KEY), PROXY_USER_KEY, fileContent);
+            writeValue(proxyPassword, cm.getValue(PROXY_PASSWORD_KEY), PROXY_PASSWORD_KEY, fileContent);
 
-            fileContent = writeValue(keyStoreFile, cm.getValue(KEY_STORE_FILE_KEY), KEY_STORE_FILE_KEY, fileContent);
-            fileContent = writeValue(keyStorePassword, cm.getValue(KEY_STORE_PASSWORD_KEY), KEY_STORE_PASSWORD_KEY, fileContent);
-            fileContent = writeValue(keyStoreType, cm.getValue(KEY_STORE_TYPE_KEY), KEY_STORE_TYPE_KEY, fileContent);
+            writeValue(keyStoreFile, cm.getValue(KEY_STORE_FILE_KEY), KEY_STORE_FILE_KEY, fileContent);
+            writeValue(keyStorePassword, cm.getValue(KEY_STORE_PASSWORD_KEY), KEY_STORE_PASSWORD_KEY, fileContent);
+            writeValue(keyStoreType, cm.getValue(KEY_STORE_TYPE_KEY), KEY_STORE_TYPE_KEY, fileContent);
 
             FileUtil.createBackup(fullConfigPath);
-            FileUtil.write(fullConfigPath, fileContent);
+            FileUtil.write(fullConfigPath, fileContent.toString());
 
         } catch (IOException ex) {
 
@@ -172,14 +172,13 @@ public class Configuration {
      * @param current Current configuration value.
      * @param key Mapping key for this value.
      * @param settings Full content of the settings file as a string.
-     * @return Full content of settings file modified if appropriate.
      */
-    protected final String writeValue(final String newValue,
+    protected final void writeValue(final String newValue,
             final String current,
             final String key,
-            final String settings) {
+            final StringBuilder settings) {
 
-        String content = settings;
+        String content = settings.toString();
 
         if ((newValue != null && current != null && !newValue.equals(current))
                 || (newValue == null && current != null)
@@ -248,7 +247,8 @@ public class Configuration {
             }
         }
 
-        return content;
+        settings.setLength(0);
+        settings.append(content);
     }
 
   
@@ -449,16 +449,18 @@ public class Configuration {
      */
     public final boolean hasMinimumConfiguration() {
 
-        return !isEmpty(url) && !isEmpty(keyStoreFile) && !isEmpty(keyStorePassword);
+        return isNotNullAndNotEmpty(url) && isNotNullAndNotEmpty(keyStoreFile) && isNotNullAndNotEmpty(keyStorePassword);
     }
 
     /**
-     * Determine whether an attribute is null or an empty string.
-     * @param st String object
-     * @return true if String is null or empty
+     * Returns <code>true</code> if the provided value is not null
+     * and not empty.
+     * @param value Value to be checked.
+     * @return <code>true</code> if the provided value is not null
+     * and not empty.
      */
-    private boolean isEmpty(final String st) {
-
-        return st == null || "".equals(st.trim()); //$NON-NLS-1$
+    protected boolean isNotNullAndNotEmpty(final String value) {
+        return value != null && !value.trim().isEmpty();
     }
+    
 }

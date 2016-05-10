@@ -137,6 +137,7 @@ class StreamConsumer extends Thread {
     /**
      * Reads the configured input stream until it is empty.
      */
+    @Override
     public void run() {
         try (InputStreamReader isr = new InputStreamReader(inputStrm); BufferedReader br = new BufferedReader(isr);) {
 

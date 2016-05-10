@@ -79,7 +79,7 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 	 * @throws RemoteException If cannot create an RMI register and subscribe to it.
 	 */
 	public LockHandler(final Configuration config) throws RemoteException {
-		String serviceID = config.getServiceID();
+		String serviceID = config.getRmiServiceNumber();
 		List<String> membersRmiUrls = config.getMembersRmiUrls();
 
 		if (serviceID == null || membersRmiUrls == null || membersRmiUrls.size() == ONLY_ONE_SERVER) {
@@ -195,7 +195,8 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 	 * Indicate to this server the existence of a new member in the group.
 	 * @param remoteURL remote URL (rmi://host:port/service) of the new member.
 	 */
-	public void suscribe(final String remoteURL) {
+	@Override
+    public void suscribe(final String remoteURL) {
 
 		try {
 			LockHandlerIntf remoteReference = (LockHandlerIntf) Naming.lookup(remoteURL);
@@ -315,7 +316,8 @@ public final class LockHandler extends UnicastRemoteObject implements LockHandle
 	 * @return <code>true</code> if the message is locked by this member <code>false</code> otherwise.
 	 * @throws RemoteException If there is no response from member.
 	 */
-	public boolean isLocked(final String fileName, final int remoteID) throws RemoteException {
+	@Override
+    public boolean isLocked(final String fileName, final int remoteID) throws RemoteException {
 		boolean retValue = false;
 
 		synchronized (lockFiles) {

@@ -37,7 +37,7 @@ import javax.swing.border.TitledBorder;
 
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.kit.common.Messages;
-import es.ree.eemws.kit.folders.Configuration;
+import es.ree.eemws.kit.folders.BasicConfiguration;
 
 /**
  * Panel containing Magic Folder settings (input, output, backup).
@@ -280,12 +280,12 @@ public final class FolderPanel extends JPanel {
 	 */
 	public void loadValues() throws ConfigException {
 
-		Configuration cf = new Configuration();
+		BasicConfiguration cf = new BasicConfiguration();
 		cf.readConfiguration();
-		txtInputFolderPath.setText(changeFileNameSeparator(cf.getInputFolder(0)));
-		txtResponseFolderPath.setText(changeFileNameSeparator(cf.getResponseFolder(0)));
-		txtProcessedFolderPath.setText(changeFileNameSeparator(cf.getProcessedFolder(0)));
-		txtOutputFolderPath.setText(changeFileNameSeparator(cf.getOutputFolder(0)));
+		txtInputFolderPath.setText(changeFileNameSeparator(cf.getInputFolder()));
+		txtResponseFolderPath.setText(changeFileNameSeparator(cf.getResponseFolder()));
+		txtProcessedFolderPath.setText(changeFileNameSeparator(cf.getProcessedFolder()));
+		txtOutputFolderPath.setText(changeFileNameSeparator(cf.getOutputFolder()));
 		txtBackupFolderPath.setText(changeFileNameSeparator(cf.getBackupFolder()));
 	}
 
@@ -294,7 +294,7 @@ public final class FolderPanel extends JPanel {
 	 */
 	public void setValues() {
 
-		Configuration cf = new Configuration();
+	    BasicConfiguration cf = new BasicConfiguration();
 
 		try {
 			cf.setInputFolder(changeFileNameSeparator(txtInputFolderPath.getText()));
@@ -320,7 +320,7 @@ public final class FolderPanel extends JPanel {
 	 */
 	public void validateConfig() throws ConfigException {
 
-		Configuration cf = new Configuration();
+		BasicConfiguration cf = new BasicConfiguration();
 		
 		String inputFolderPath = changeFileNameSeparator(txtInputFolderPath.getText().trim());
 		if (inputFolderPath.length() == 0) {
@@ -358,7 +358,6 @@ public final class FolderPanel extends JPanel {
 			throw new ConfigException(getPanelName() + " " + Messages.getString("SETTINGS_PANEL_SAYS") + " "   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
 					+ ex.getMessage());
 		}
-
 	}
 
 	/**

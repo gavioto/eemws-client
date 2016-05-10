@@ -145,7 +145,7 @@ public final class StatusIcon {
     public static void setBusy() {
         if (trayIcon != null) {
         	synchronized (numBusy) {
-                numBusy ++;
+                numBusy++;
                 if (identification == null) {
                     trayIcon.setToolTip(Messages.getString("MF_STATUS_BUSY")); //$NON-NLS-1$
                 } else {
@@ -162,8 +162,8 @@ public final class StatusIcon {
     public static void setIdle() {
         if (trayIcon != null) {
         	synchronized (numBusy) {
-                numBusy --;
-                if (numBusy <0) {
+                numBusy--;
+                if (numBusy < 0) {
                 	numBusy = 0;
                 }
                 if (numBusy == 0) {
