@@ -31,9 +31,6 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -46,13 +43,20 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
+import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 
 import es.ree.eemws.client.put.PutMessage;
 import es.ree.eemws.core.utils.config.ConfigException;
+import es.ree.eemws.core.utils.error.EnumErrorCatalog;
 import es.ree.eemws.core.utils.file.FileUtil;
 import es.ree.eemws.core.utils.iec61968100.EnumMessageFormat;
 import es.ree.eemws.core.utils.iec61968100.EnumMessageStatus;
+import es.ree.eemws.core.utils.iec61968100.FaultUtil;
 import es.ree.eemws.core.utils.operations.put.PutOperationException;
+import es.ree.eemws.core.utils.xml.XMLElementUtil;
+import es.ree.eemws.core.utils.xml.XMLUtil;
 import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.kit.config.Configuration;
 import es.ree.eemws.kit.gui.common.LogHandle;
@@ -277,8 +281,10 @@ public final class FileHandler extends DropTargetAdapter {
      */
     private void sendDataAfterDisableComponents(final File file) {
 
+        PutMessage put = new PutMessage();
+        
         try {
-            PutMessage put = new PutMessage();
+            
             Configuration config = new Configuration();
             config.readConfiguration();
             put.setEndPoint(config.getUrlEndPoint());
@@ -295,7 +301,7 @@ public final class FileHandler extends DropTargetAdapter {
             if (response == null) {
                 logger.logMessage(Messages.getString("SENDER_NO_RESPONSE")); //$NON-NLS-1$
             } else {
-                logger.logMessage(response);
+                logger.logMessage(XMLUtil.prettyPrint(response).toString());
             }
 
             EnumMessageStatus status = put.getMessageMetaData().getStatus();
@@ -332,6 +338,24 @@ public final class FileHandler extends DropTargetAdapter {
             logger.logException(msg, ex);
 
             mainWindow.setSentFailed(file.getName());
+            
+            /* Soap Fault, save the fault message. */
+            if (ex.getCode().equals(EnumErrorCatalog.ERR_HAND_010.getCode())) {
+                
+                save(new StringBuilder(put.getMessageMetaData().getRejectText()), file);
+
+            } else {
+                
+                /* Creates a "fake" fault using the exception. */
+                try {
+                    String fault = XMLElementUtil.element2String(XMLElementUtil.obj2Element(FaultUtil.getFaultMessageFromException(ex.getMessage(), ex.getCode())));
+                    save(new StringBuilder(fault), file);
+                    
+                } catch (TransformerException |  ParserConfigurationException |  JAXBException e) {
+                    logger.logException(Messages.getString("SENDER_CANNOT_CREATE_FAULT_MSG"), e); //$NON-NLS-1$
+                }                
+            }            
+            
         } catch (ConfigException ex) {
 
             String msg = Messages.getString("INVALID_CONFIGURATION" + ex.getMessage()); //$NON-NLS-1$
@@ -344,6 +368,7 @@ public final class FileHandler extends DropTargetAdapter {
             JOptionPane.showMessageDialog(mainWindow, msg, Messages.getString("MSG_ERROR_TITLE"), JOptionPane.INFORMATION_MESSAGE); //$NON-NLS-1$
 
             mainWindow.setSentFailed(file.getName());
+            
         } finally {
             enable(true);
         }
@@ -411,11 +436,7 @@ public final class FileHandler extends DropTargetAdapter {
     private void saveFile(final StringBuilder response, final File file) {
 
         try {
-            Path rutaFicheroPath = Paths.get(file.getAbsolutePath());
-            if (Files.deleteIfExists(rutaFicheroPath)) {
-                logger.logMessage(Messages.getString("SENDER_SAVE_FILE_OVERWRITTEN", file.getAbsolutePath())); //$NON-NLS-1$  
-            }
-            
+            FileUtil.createBackup(file.getAbsolutePath());
             FileUtil.writeUTF8(file.getAbsolutePath(), response.toString());
             logger.logMessage(Messages.getString("SENDER_SAVE_FILE_SAVED", file.getAbsolutePath())); //$NON-NLS-1$
 
