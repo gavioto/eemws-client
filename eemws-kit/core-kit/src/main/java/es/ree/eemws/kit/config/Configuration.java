@@ -195,12 +195,14 @@ public class Configuration {
                 pos4 = pos + 1;
 
                 /* Position of the character previous to key. */
-                while (content.charAt(pos3) != '\n') {
+                while (content.charAt(pos3) != '\n' && pos3 != 0) {
 
                     pos3--;
                 }
 
-                pos3++;
+                if (pos3 != 0) {
+                    pos3++;
+                }
 
                 /* Position of symbol '=' for current key. */
                 pos = content.indexOf('=', pos);
