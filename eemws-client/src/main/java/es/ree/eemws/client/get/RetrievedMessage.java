@@ -90,7 +90,9 @@ public final class RetrievedMessage {
      * @param messageIdentification Get filter's message identification.
      */
     public void setMsgIdentification(final String messageIdentification) {
-        fileName = messageIdentification;
+        if (messageIdentification != null) {
+            fileName = messageIdentification;
+        }
     }
 
     /**

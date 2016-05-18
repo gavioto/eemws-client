@@ -22,36 +22,23 @@ package es.ree.eemws.kit.folders;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import es.ree.eemws.core.utils.config.ConfigException;
 import es.ree.eemws.core.utils.config.ConfigManager;
-import es.ree.eemws.core.utils.file.FileUtil;
 import es.ree.eemws.kit.common.Messages;
 
 /**
  * Magic folder configuration settings.
  * 
  * @author Red Eléctrica de España, S.A.U.
- * @version 1.0 01/02/2016
+ * @version 2.0 27/04/2016
  */
-public final class Configuration extends es.ree.eemws.kit.config.Configuration {
-
-    /** File name extension "auto". */
-    public static final String FILE_NAME_EXTENSION_AUTO = "AUTO"; //$NON-NLS-1$
-
-    /** File name extension "none". */
-    public static final String FILE_NAME_EXTENSION_NONE = "NONE"; //$NON-NLS-1$
-
-    /** Settings file for Folder manager. */
-    private static final String FOLDER_CONFIG_FILE = "magic-folder.properties"; //$NON-NLS-1$
+public class Configuration extends es.ree.eemws.kit.config.Configuration {
 
     /** Name of the service to run / create . */
     private static final String SERVICE_NAME = "magic-folder"; //$NON-NLS-1$
@@ -59,385 +46,138 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
     /** RMI url protocol prefix. */
     private static final String RMI_URL_PROTOCOL = "rmi://"; //$NON-NLS-1$
 
-    /**
-     * Mapping key for the value of server ID.
-     * @see {@link #thisServiceID}
-     */
+    /** Configuration key for service RMI number. */
     private static final String ID_KEY = "THIS_ID"; //$NON-NLS-1$
 
-    /**
-     * Prefix uses for the mapping key to host values for group working.
-     * @see {@link #membersRmiUrls}.
-     */
+    /** Configuration key for HOST (or IP) RMI value. */
     private static final String HOST_PREFIX_KEY = "HOST"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #inputFolder}. */
-    private static final String INPUT_FOLDER_KEY = "INPUT_FOLDER"; //$NON-NLS-1$
-
-    /** Mapping key to {@link #sleepTimeInput}. */
+    /** Configuration key for input sleep time between run loops. */
     private static final String INPUT_DELAYTIME_KEY = "INPUT_FOLDER_DELAY_TIME_MS"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #ackFolder}. */
-    private static final String RESPONSE_FOLDER_KEY = "ACK_FOLDER"; //$NON-NLS-1$
+    /** Configuration key for ack folder. */
+    protected static final String RESPONSE_FOLDER_KEY = "ACK_FOLDER"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #ackFolderOk}. */
+    /** Configuration key for ack OK folder. */
     private static final String RESPONSE_FOLDER_OK_KEY = "ACK_FOLDER_OK"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #ackFolderFailed}. */
+    /** Configuration key for ack FAILED folder. */
     private static final String RESPONSE_FOLDER_FAILED_KEY = "ACK_FOLDER_FAILED"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #ackOkCmd}. */
+    /** Configuration key for script / program to be executed for ack ok messages. */
     private static final String ACK_FOLDER_OK_PROGRAM_CMD_LINE_KEY = "ACK_FOLDER_OK_PROGRAM_CMD_LINE"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #ackFailedCmd}. */
+    /** Configuration key for script / program to be executed for ack failed messages. */
     private static final String ACK_FOLDER_FAILED_PROGRAM_CMD_LINE_KEY = "ACK_FOLDER_FAILED_PROGRAM_CMD_LINE"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #processedFolder}. */
-    private static final String PROCESSED_FOLDER_KEY = "PROCESSED_FOLDER"; //$NON-NLS-1$
+    /** Configuration key for input url. */
+    private static final String INPUT_URL_KEY = "INPUT_WEBSERVICES_URL"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #outputFolder}. */
-    private static final String OUTPUT_FOLDER_KEY = "OUTPUT_FOLDER"; //$NON-NLS-1$
+    /** Configuration key for output url. */
+    private static final String OUTPUT_URL_KEY = "OUTPUT_WEBSERVICES_URL"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #backupFolder}. */
-    private static final String BACKUP_FOLDER_KEY = "BACKUP_FOLDER"; //$NON-NLS-1$
-
-    /** Mapping key to {@link #instanceID}. */
+    /** Configuration key for instance identification. */
     private static final String INSTANCE_ID_KEY = "INSTANCE_ID"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #sleepTimeOutput}. */
+    /** Configuration key for output sleep time between run loops. */
     private static final String OUTPUT_DELAYTIME_KEY = "OUTPUT_FOLDER_DELAY_TIME_MS"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #numOfDaysKept}. */
-    private static final String MAX_FILE_AGE_IN_DAYS = "MAX_FILE_AGE_IN_DAYS"; //$NON-NLS-1$
-
-    /** Mapping key to {@link #messageTypesList}. */
+    /** Configuration key for the messages types to be retrieved. */
     private static final String MENSSAGE_TYPES_KEY = "OUTPUT_FOLDER_MESSAGE_TYPES"; //$NON-NLS-1$
 
-    /** Mapping key to {@link #fileNameExtension}. */
+    /** Configuration key for files extension. */
     private static final String FILE_NAME_EXTENSION_KEY = "OUTPUT_FILE_NAME_EXTENSION"; //$NON-NLS1$ //$NON-NLS-1$
 
-    /** Mapping key to {@link #programCmdLine}. */
+    /** Configuration key for command line / program to be executed after retrieving a message. */
     private static final String COMMAND_LINE_KEY = "OUTPUT_PROGRAM_CMD_LINE"; //$NON-NLS-1$
 
-    /** Max. length for {@link #instanceID}. */
+    /** Maximum instance identification lenght. */
     private static final int INSTANCE_ID_MAX_LENGTH = 20;
 
-    /** Mapping key to {@link #maxNumThreads}. */
+    /** Configuration key for the maximun number of threads. */
     private static final String MAX_NUM_THREADS_KEY = "MAX_NUM_THREADS"; //$NON-NLS-1$
 
-    /** Default maxinum number of threads. */
-    private static final String DEFAULT_MAX_NUM_THREADS = "5"; //$NON-NLS-1$
+    /** Default number of thrads. */
+    private static final int DEFAULT_MAX_NUM_THREADS = 5;
 
     /** Max number of threads. */
-    private static final String MAX_NUM_THREADS = "25"; //$NON-NLS-1$
-    
-    /**
-     * Min delay time for loops (input / output).
-     * @see {@link #sleepTimeInput}, {@link #sleepTimeOutput}.
-     */
-    private static final long MIN_SLEEP_TIME = 60000;
+    private static final int MAX_NUM_THREADS = 25;
 
-    /**
-     * Default delay time for loops (input / output) in milliseconds.
-     * @see {@link #sleepTimeInput}, {@link #sleepTimeOutput}.
-     */
-    private static final String DEFAULT_DELAY = "180000"; //$NON-NLS-1$
+    /** Configuration key for the number of days that a file is kept in the system. */
+    private static final String MAX_FILE_AGE_IN_DAYS = "MAX_FILE_AGE_IN_DAYS"; //$NON-NLS-1$
 
-    /** Default value for {@link #numOfDaysKept}. */
-    private static final String DEFAULT_MAX_FILE_AGE_IN_DAYS = "7"; //$NON-NLS-1$
-
-    /** Default file name extension.*/
-    private static final String DEFAULT_FILE_NAME_EXTENSION = FILE_NAME_EXTENSION_AUTO;
-
-    /** Default value index. */
-    private static final Integer DEFAULT_INDEX_VALUE = new Integer(0);
+    /** Default value for the numbers of days that a file is kept in the system. */
+    private static final int DEFAULT_MAX_FILE_AGE_IN_DAYS = 7;
 
     /** ID string for this service into farm. */
-    private String thisServiceID;
+    private String rmiServiceNumber;
 
     /** List containing all hosts and ports of service Farm. */
     private final List<String> membersRmiUrls = new ArrayList<>();
 
-    /** Input folder. */
-    private Map<Integer, String> inputFolder = new HashMap<>();
-
-    /** Output folder. */
-    private Map<Integer, String> outputFolder = new HashMap<>();
-
-    /** Command line for output. */
-    private Map<Integer, String> programCmdLine = new HashMap<>();
-
-    /** Processed messages folder. */
-    private Map<Integer, String> processedFolder = new HashMap<>();
-
-    /** Folder containing ack responses. */
-    private Map<Integer, String> ackFolder = new HashMap<>();
-
-    /** Folder containing OK ack responses. */
-    private Map<Integer, String> ackFolderOk = new HashMap<>();
-
-    /** Folder containing FAILED ack responses. */
-    private Map<Integer, String> ackFolderFailed = new HashMap<>();
-
-    /** Command line for ack ok. */
-    private Map<Integer, String> ackOkCmd = new HashMap<>();
-
-    /** Command line for ack failed. */
-    private Map<Integer, String> ackFailedCmd = new HashMap<>();
-
-    /** Backup folder. */
-    private String backupFolder = null;
-
     /** This instance identification. */
     private String instanceID = null;
 
-    /** Sleep time between two input detection cycles. */
-    private Map<Integer, String> sleepTimeInput = new HashMap<>();
-
-    /** Sleep time between two output detection cycles. */
-    private String sleepTimeOutput;
-
     /** Number of days that a file is kept in file system before a backup is done. */
-    private String numOfDaysKept;
-
-    /** List containing types of messages to be retrieved. */
-    private Map<Integer, List<String>> messageTypesList = new HashMap<>();
-
-    /** File name extension to be used when retrieving files. */
-    private Map<Integer, String> fileNameExtension = new HashMap<>();
+    private int numOfDaysKept;
 
     /** Max number of concurrent threads. */
-    private String maxNumThreads;
+    private int maxNumThreads;
+
+    /** Backup folder. */
+    protected String backupFolder = null;
+
+    /** List of input configuration sets. */
+    protected List<InputConfigurationSet> inputSetLst = new ArrayList<>();
+
+    /** List of output configuration sets by URL. */
+    protected List<List<OutputConfigurationSet>> outputSetLst = new ArrayList<>();
+
+    /** Configuration key for input folder. */
+    protected static final String INPUT_FOLDER_KEY = "INPUT_FOLDER"; //$NON-NLS-1$
+
+    /** Configuration key for processed folder. */
+    protected static final String PROCESSED_FOLDER_KEY = "PROCESSED_FOLDER"; //$NON-NLS-1$
+
+    /** Configuration key for output folder. */
+    protected static final String OUTPUT_FOLDER_KEY = "OUTPUT_FOLDER"; //$NON-NLS-1$
+
+    /** Configuration key backup folder. */
+    protected static final String BACKUP_FOLDER_KEY = "BACKUP_FOLDER"; //$NON-NLS-1$
+
+    /** Settings file for Folder manager. */
+    protected static final String FOLDER_CONFIG_FILE = "magic-folder.properties"; //$NON-NLS-1$
+
+    /** Min delay time for loops. */
+    protected static final long MIN_SLEEP_TIME = 60000;
+
+    /** Log elements separator. */
+    protected static final String TAB = "\n    "; //$NON-NLS-1$
 
     /**
-     * Validates settings. Checks that paths exist and the timeout period entered is numeric.
-     * @throws ConfigException If any validation fails.
+     * Checks that the given folder (if not null) exists.
+     * @param folderPath Absolute path to the folder.
+     * @param folderID Identification of the folder (for error details).
+     * @return The folderPath in linux format (/ instead of \)
+     * @throws ConfigException If the given folder is not an existent directory.
      */
-    public void validateConfiguration() throws ConfigException {
+    protected String validateFolder(final String folderPath, final String folderID) throws ConfigException {
 
-        StringBuilder msgErr = new StringBuilder();
+        String retValue = null;
 
-        validateFolders(msgErr);
-
-        validateDuplications(msgErr);
-
-        validateSleeps(msgErr);
-
-        /* No input, no output: Magic folder has nothing to do!. */
-        if (inputFolder.get(DEFAULT_INDEX_VALUE) == null && outputFolder.get(DEFAULT_INDEX_VALUE) == null) {
-            msgErr.append("\n").append(Messages.getString("MF_UNABLE_TO_START", INPUT_FOLDER_KEY, OUTPUT_FOLDER_KEY)); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        for (String memberRmiUrl : membersRmiUrls) {
-            String hostPort = memberRmiUrl.substring(RMI_URL_PROTOCOL.length(), memberRmiUrl.indexOf(SERVICE_NAME) - 1);
-
-            int colonPosition = hostPort.indexOf(":"); //$NON-NLS-1$
-            if (colonPosition == -1) {
-                msgErr.append("\n").append(Messages.getString("MF_MF_INVALID_MEMBER_URL", hostPort)); //$NON-NLS-1$//$NON-NLS-2$
+        if (isNotNullAndNotEmpty(folderPath)) {
+            File f = new File(folderPath);
+            if (f.isDirectory()) {
+                retValue = folderPath.trim().replaceAll("\\\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+                if (retValue.endsWith("/")) { //$NON-NLS-1$
+                    retValue = folderPath.substring(0, folderPath.length() - 1);
+                }
             } else {
-                String port = ""; //$NON-NLS-1$
-                try {
-                    port = hostPort.substring(colonPosition + 1);
-                    Integer.parseInt(port);
-                } catch (NumberFormatException ex) {
-                    msgErr.append("\n").append(Messages.getString("MF_INVALID_MEMBER_PORT", port)); //$NON-NLS-1$//$NON-NLS-2$
-                }
+                throw new ConfigException(Messages.getString("MF_INVALID_FOLDER", folderID, folderPath)); //$NON-NLS-1$
             }
         }
 
-        if (numOfDaysKept != null) {
-            try {
-                Integer.parseInt(numOfDaysKept);
-            } catch (NumberFormatException ex) {
-                msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", MAX_FILE_AGE_IN_DAYS, numOfDaysKept)); //$NON-NLS-1$//$NON-NLS-2$
-            }
-        }
-
-        if (isNotNullAndNotEmpty(maxNumThreads)) {
-            try {
-                int numThread = Integer.parseInt(maxNumThreads);
-                if (numThread < Integer.parseInt(DEFAULT_MAX_NUM_THREADS)) {
-                    maxNumThreads = DEFAULT_MAX_NUM_THREADS;
-                } 
-                if (numThread > Integer.parseInt(MAX_NUM_THREADS)) {
-                    maxNumThreads = MAX_NUM_THREADS;
-                }
-            } catch (NumberFormatException ex) {
-                msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", MAX_NUM_THREADS_KEY, maxNumThreads)); //$NON-NLS-1$//$NON-NLS-2$
-            }
-        }
-        
-        
-        if (thisServiceID != null) {
-            try {
-                Integer.parseInt(thisServiceID);
-            } catch (NumberFormatException ex) {
-                msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", ID_KEY, thisServiceID)); //$NON-NLS-1$//$NON-NLS-2$
-            }
-        }
-
-        if (instanceID != null) {
-            try {
-                File f = new File(instanceID);
-                f.getCanonicalPath();
-            } catch (IOException e) {
-                msgErr.append("\n").append(Messages.getString("MF_INVALID_ID", INSTANCE_ID_KEY, instanceID)); //$NON-NLS-1$//$NON-NLS-2$
-            }
-
-            if (instanceID.length() > INSTANCE_ID_MAX_LENGTH) {
-                msgErr.append("\n").append(Messages.getString("MF_INVALID_ID_LENGTH", INSTANCE_ID_KEY, instanceID, INSTANCE_ID_MAX_LENGTH)); //$NON-NLS-1$//$NON-NLS-2$
-            }
-        }
-
-        if (msgErr.length() > 0) {
-            throw new ConfigException(msgErr.toString());
-        }
-    }
-
-    /** 
-     * Validates the realitionship between folders.
-     * <li>Input folder cannot be set with the same value of any other response folders.
-     * <li>Input folder cannot be set with the same value of any other output folders.
-     * <li>Input folder cannot be set with the same value of any other processed folders.
-     * <li>Input folder cannot be repeated in other set.
-     * @param msgErr String buffer error message.
-     */
-    private void validateDuplications(final StringBuilder msgErr) {
-
-        Collection<String> inputF;
-
-        /* Input folders and response folders must be different, otherwise would create a loop. */
-        inputF = new ArrayList<>(inputFolder.values());
-        inputF.retainAll(ackFolder.values());
-        if (!inputF.isEmpty()) {
-            msgErr.append("\n").append(Messages.getString("MF_INVALID_FOLDER_INPUT_ACK", inputF.toString())); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        inputF = new ArrayList<>(inputFolder.values());
-        inputF.retainAll(ackFolderOk.values());
-        if (!inputF.isEmpty()) {
-            msgErr.append("\n").append(Messages.getString("MF_INVALID_FOLDER_INPUT_ACK", inputF.toString())); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        inputF = new ArrayList<>(inputFolder.values());
-        inputF.retainAll(ackFolderFailed.values());
-        if (!inputF.isEmpty()) {
-            msgErr.append("\n").append(Messages.getString("MF_INVALID_FOLDER_INPUT_ACK", inputF.toString())); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        /* Input folders and output folders must be different, otherwise would create a loop. */
-        inputF = new ArrayList<>(inputFolder.values());
-        inputF.retainAll(outputFolder.values());
-        if (!inputF.isEmpty()) {
-            msgErr.append("\n").append(Messages.getString("MF_INVALID_FOLDER_INPUT_OUTPUT", inputF.toString())); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        /* Input folders and processed folders must be different, otherwise would create a loop. */
-        inputF = new ArrayList<>(inputFolder.values());
-        inputF.retainAll(processedFolder.values());
-        if (!inputF.isEmpty()) {
-            msgErr.append("\n").append(Messages.getString("MF_INVALID_FOLDER_INPUT_PROCESSED", inputF.toString())); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        int inputFolderSize = inputFolder.values().size();
-        int inputFolderSizeNoDuplicates = new HashSet<>(inputFolder.values()).size();
-        if (inputFolderSize != inputFolderSizeNoDuplicates) {
-            msgErr.append("\n").append("No se puede especificar la misma carpeta de entrada en varios conjuntos"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-    }
-
-    /**
-     * Validates sleeps values.
-     * @param msgErr String buffer error message.
-     */
-    private void validateSleeps(final StringBuilder msgErr) {
-
-        for (Integer k : inputFolder.keySet()) {
-            String slep = sleepTimeInput.get(k);
-            if (slep != null) {
-                try {
-                    long lo = Long.parseLong(slep);
-                    if (lo < MIN_SLEEP_TIME) {
-                        if (k == 0) {
-                            msgErr.append("\n").append(Messages.getString("MF_VALUE_TOO_SMALL", //$NON-NLS-1$ //$NON-NLS-2$
-                                    INPUT_DELAYTIME_KEY, sleepTimeInput, MIN_SLEEP_TIME));
-                        } else {
-                            msgErr.append("\n").append(Messages.getString("MF_VALUE_TOO_SMALL", //$NON-NLS-1$ //$NON-NLS-2$
-                                    INPUT_DELAYTIME_KEY + "_" + k, sleepTimeInput, MIN_SLEEP_TIME)); //$NON-NLS-1$ 
-                        }
-                    }
-                } catch (NumberFormatException e) {
-                    if (k == 0) {
-                        msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", //$NON-NLS-1$//$NON-NLS-2$
-                                INPUT_DELAYTIME_KEY, sleepTimeInput));
-                    } else {
-                        msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", //$NON-NLS-1$//$NON-NLS-2$
-                                INPUT_DELAYTIME_KEY + "_" + k, sleepTimeInput)); //$NON-NLS-1$ 
-                    }
-                }
-            }
-        }
-
-        if (sleepTimeOutput != null) {
-            try {
-                long slep = Long.parseLong(sleepTimeOutput);
-                if (slep < MIN_SLEEP_TIME) {
-                    msgErr.append("\n").append(Messages.getString("MF_VALUE_TOO_SMALL", OUTPUT_DELAYTIME_KEY, sleepTimeOutput, MIN_SLEEP_TIME)); //$NON-NLS-1$//$NON-NLS-2$
-                }
-            } catch (NumberFormatException ex) {
-                msgErr.append("\n").append(Messages.getString("MF_INVALID_NUMBER", OUTPUT_DELAYTIME_KEY, sleepTimeOutput)); //$NON-NLS-1$//$NON-NLS-2$
-            }
-        }
-
-    }
-
-    /**
-     * Validates all the configured folders.
-     * @param msgErr Error message buffer.
-     */
-    private void validateFolders(final StringBuilder msgErr) {
-        validateFolder(msgErr, inputFolder, INPUT_FOLDER_KEY);
-        validateFolder(msgErr, outputFolder, OUTPUT_FOLDER_KEY);
-        validateFolder(msgErr, processedFolder, PROCESSED_FOLDER_KEY);
-        validateFolder(msgErr, ackFolder, RESPONSE_FOLDER_KEY);
-        validateFolder(msgErr, ackFolderOk, RESPONSE_FOLDER_OK_KEY);
-        validateFolder(msgErr, ackFolderFailed, RESPONSE_FOLDER_FAILED_KEY);
-        
-        if (isNotNullAndNotEmpty(backupFolder)) {
-            Map<Integer, String> temp = new HashMap<>();
-            temp.put(DEFAULT_INDEX_VALUE, backupFolder);
-            validateFolder(msgErr, temp, BACKUP_FOLDER_KEY);
-            backupFolder = temp.get(DEFAULT_INDEX_VALUE);
-        }
-    }
-
-    /**
-     * Checks the given set of paths are existent directories and not a file.
-     * @param msgErr Error message container to be modified in case of entered path is a nonexistent path or a file.
-     * @param folders Absolute path to the folder.
-     * @param folderID Type of folder to be validated.
-     */
-    private void validateFolder(final StringBuilder msgErr, final Map<Integer, String> folders, final String folderID) {
-
-        for (Integer k : folders.keySet()) {
-            String folderPath = folders.get(k);
-            if (folderPath != null) {
-                File f = new File(folderPath);
-                if (f.isDirectory()) {
-                    folderPath = folderPath.trim().replaceAll("\\\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
-                    if (folderPath.endsWith("/")) { //$NON-NLS-1$
-                        folderPath = folderPath.substring(0, folderPath.length() - 1);
-                    }
-                    folders.put(k, folderPath);
-                } else {
-                    if (k.equals(DEFAULT_INDEX_VALUE)) {
-                        msgErr.append("\n").append(Messages.getString("MF_INVALID_FOLDER", folderID, folderPath)); //$NON-NLS-1$//$NON-NLS-2$
-                    } else {
-                        msgErr.append("\n").append(Messages.getString("MF_INVALID_FOLDER", folderID + "_" + k.toString(), folderPath)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    }
-                }
-            }
-        }
+        return retValue;
     }
 
     /**
@@ -445,30 +185,62 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
      * @return Maximun number of threads.
      */
     public int getMaxNumThreads() {
-        return Integer.parseInt(maxNumThreads);
+        return maxNumThreads;
     }
 
     /**
-     * Return the input folder for the given index.
-     * @param pos Index.
-     * @return Input folder for the given index.
+     * Sets the maximun number of threads.
+     * @param value Configured number of threads.
+     * @throws ConfigException If the configured value is not a number.
      */
-    public String getInputFolder(final Integer pos) {
-        return inputFolder.get(pos);
-    }
-
-    /**
-     * Sets input folder for 0 index..
-     * @param folder Input folder for 0 index.
-     */
-    public void setInputFolder(final String folder) {
-        if (folder != null) {
-            inputFolder.put(DEFAULT_INDEX_VALUE, folder);
+    private void setMaxNumThreads(final String value) throws ConfigException {
+        if (isNotNullAndNotEmpty(value)) {
+            try {
+                maxNumThreads = Integer.parseInt(value);
+                if (maxNumThreads < DEFAULT_MAX_NUM_THREADS) {
+                    maxNumThreads = DEFAULT_MAX_NUM_THREADS;
+                }
+                if (maxNumThreads > MAX_NUM_THREADS) {
+                    maxNumThreads = MAX_NUM_THREADS;
+                }
+            } catch (NumberFormatException ex) {
+                throw new ConfigException(Messages.getString("MF_INVALID_NUMBER", MAX_NUM_THREADS_KEY, maxNumThreads)); //$NON-NLS-1$
+            }
+        } else {
+            maxNumThreads = DEFAULT_MAX_NUM_THREADS;
         }
     }
 
     /**
-     * Return instance ID.
+     * Sets this MF instance id.
+     * @param value Configured identification.
+     * @throws ConfigException If the given value is incorrect.
+     */
+    private void setInstanceId(final String value) throws ConfigException {
+
+        if (isNotNullAndNotEmpty(value)) {
+
+            instanceID = value;
+
+            try {
+                File f = new File(instanceID);
+                f.getCanonicalPath();
+            } catch (IOException e) {
+                throw new ConfigException(Messages.getString("MF_INVALID_ID", INSTANCE_ID_KEY, instanceID)); //$NON-NLS-1$
+            }
+
+            if (instanceID.length() > INSTANCE_ID_MAX_LENGTH) {
+                throw new ConfigException(Messages.getString("MF_INVALID_ID_LENGTH", INSTANCE_ID_KEY, instanceID, INSTANCE_ID_MAX_LENGTH)); //$NON-NLS-1$
+            }
+
+            StatusIcon.setIdentification(value);
+        } else {
+            instanceID = null;
+        }
+    }
+
+    /**
+     * Returns this MF instance ID.
      * @return Instance ID <code>null</code> if undefined.
      */
     public String getInstanceID() {
@@ -476,249 +248,92 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
     }
 
     /**
-     * Return response folder for given index.
-     * @param pos Index.
-     * @return Response folder for given index.
-     */
-    public String getResponseFolder(final Integer pos) {
-        return ackFolder.get(pos);
-    }
-
-    /**
-     * Return response "OK" folder for given index.
-     * @param pos Index.
-     * @return Response "OK" folder for given index.
-     */
-    public String getResponseOkFolder(final Integer pos) {
-        return ackFolderOk.get(pos);
-    }
-
-    /**
-     * Return response "FAILED" folder for given index.
-     * @param pos Index.
-     * @return Response "FAILED" folder for given index.
-     */
-    public String getResponseFailedFolder(final Integer pos) {
-        return ackFolderFailed.get(pos);
-    }
-
-    /**
-     * Set response folder for 0 index.
-     * @param folder Response folder for 0 index.
-     */
-    public void setResponseFolder(final String folder) {
-        if (folder != null) {
-            ackFolder.put(DEFAULT_INDEX_VALUE, folder);
-        }
-    }
-
-    /**
-     * Return output folder for given index.
-     * @param pos Index.
-     * @return Output folder for given index.
-     */
-    public String getOutputFolder(final Integer pos) {
-        return outputFolder.get(pos);
-    }
-    
-    /**
-     * Sets default (index=0) output folder.
-     * @param folder Folder to be set.
-     */
-    public void setOutputFolder(final String folder) {
-        if (folder != null) {
-            outputFolder.put(DEFAULT_INDEX_VALUE, folder);
-        }
-    }
-
-    /**
-     * Return processed folder for given index.
-     * @param pos Index.
-     * @return Processed folder for given index.
-     */
-    public String getProcessedFolder(final Integer pos) {
-        return processedFolder.get(pos);
-    }
-
-    /**
-     * Sets processed folder for index 0.
-     * @param folder Processed folder for index 0.
-     */
-    public void setProcessedFolder(final String folder) {
-        if (folder != null) {
-            processedFolder.put(DEFAULT_INDEX_VALUE, folder);
-        }
-    }
-
-    /**
      * Gets backup folder.
-     * @return Backup folder.
+     * @return Configured backup folder or <code>null</code> if there is no backup folder.
      */
     public String getBackupFolder() {
         String retValue = null;
         if (isNotNullAndNotEmpty(backupFolder)) {
             retValue = backupFolder;
         }
-        
+
         return retValue;
     }
-    
+
     /**
-     * Returns the configured backup folder or <code>null</code> if there is no backup folder.
-     * @param folder Returns the configured backup folder or <code>null</code> if there is no backup folder.
+     * Sets the backup folder or <code>null</code> if there is no backup folder.
+     * @param folder Configured backup folder or <code>null</code> if there is no backup folder.
      */
     public void setBackupFolder(final String folder) {
         backupFolder = folder;
     }
 
     /**
-     * Gets delay time between two input message detection cycles for given index.
-     * @param pos Configuration position index.
-     * @return Delay time between two input detection cycles in milliseconds.
+     * Gets the number of days that a generated file is keep in the file system.
+     * @return Number of days that a generated file is keep in the file system.
      */
-    public long getSleepTimeInput(final Integer pos) {
+    public Integer getNumOfDaysKept() {
+        return numOfDaysKept;
+    }
 
-        String str = sleepTimeInput.get(pos);
-        if (str == null) {
-            str = DEFAULT_DELAY;
+    /**
+     * Sets the number of days that a generated file is keep in the file system.
+     * @param value Configured number of days that a generated file is keep in the file system.
+     * @throws ConfigException If the configured value is not a number.
+     */
+    private void setNumOfDaysKept(final String value) throws ConfigException {
+        if (isNotNullAndNotEmpty(value)) {
+            try {
+                numOfDaysKept = Integer.parseInt(value);
+            } catch (NumberFormatException ex) {
+                throw new ConfigException(Messages.getString("MF_INVALID_NUMBER", MAX_FILE_AGE_IN_DAYS, numOfDaysKept)); //$NON-NLS-1$
+            }
+        } else {
+            numOfDaysKept = DEFAULT_MAX_FILE_AGE_IN_DAYS;
         }
-
-        return Long.parseLong(str);
     }
 
     /**
-     * Returns delay time between two output message detection cycles.
-     * @return Delay time between two output message detection cycles.
+     * Sets this server rmi service number.
+     * @param value Configured rmi service number.
+     * @throws ConfigException If the configured number is not valid.
      */
-    public long getSleepTimeOutput() {
-        return Long.parseLong(sleepTimeOutput);
+    private void rmiServiceNumber(final String value) throws ConfigException {
+        rmiServiceNumber = value;
+
+        if (rmiServiceNumber != null) {
+            try {
+                int k = Integer.parseInt(rmiServiceNumber);
+                if (k < 1) {
+                    throw new ConfigException(Messages.getString("MF_INVALID_NUMBER", ID_KEY, rmiServiceNumber)); //$NON-NLS-1$
+                }
+            } catch (NumberFormatException ex) {
+                throw new ConfigException(Messages.getString("MF_INVALID_NUMBER", ID_KEY, rmiServiceNumber)); //$NON-NLS-1$
+            }
+        }
     }
 
     /**
-     * Returns number of days that a file is kept in file system.
-     * @return Number of days that a file is kept in file system.
+     * Returns this server rmi service number.
+     * @return Configured rmi service number.
      */
-    public int getNumOfDaysKept() {
-        return Integer.parseInt(numOfDaysKept);
+    public String getRmiServiceNumber() {
+        return rmiServiceNumber;
     }
 
     /**
-     * Returns ID string for this service.
-     * @return ID string for this service.
-     */
-    public String getServiceID() {
-        return thisServiceID;
-    }
-
-    /**
-     * Returns an array containing info about all hosts and ports.
-     * @return ArrayList containing info about all members rmi urls.
+     * Returns a list containing info about all hosts and ports.
+     * @return List containing info about all members rmi urls.
      */
     public List<String> getMembersRmiUrls() {
         return membersRmiUrls;
     }
 
-    /**
-     * Returns a list of message types to retrieve for given index. If returned value is <code>null</code> all available messages will be
-     * retrieved.
-     * @param pos Index.
-     * @return List of message types to retrieve. <code>null</code> to retrieve all available messages.
-     */
-    public List<String> getMessagesTypeList(final Integer pos) {
-        return messageTypesList.get(pos);
-    }
+  
 
     /**
-     * Returns the filename extension to be used when retrieving files.
-     * Possible values are:
-     * NONE: no file name extension will be used.
-     * AUTO: create a filename extesion according to the content.
-     * XXXX: use "XXXX" filename extension.
-     * @param pos Index.
-     * @return file name extension for the given index.
-     */
-    public String getFileNameExtension(final Integer pos) {
-        String str = fileNameExtension.get(pos);
-        if (str == null) {
-            str = DEFAULT_FILE_NAME_EXTENSION;
-        }
-        return str;
-    }
-
-    /**
-     * Sets the list of desired messages to retrieve.
-     * @param cm ConfigManager with all the configuration information.
-     * @param keys Keys to search in the configuration.
-     */
-    private void setMessagesTypeList(final ConfigManager cm, final Set<Integer> keys) {
-        Map<Integer, String> map = new HashMap<>();
-        readMappedValue(MENSSAGE_TYPES_KEY, map, cm, keys);
-
-        for (Integer k : map.keySet()) {
-            String str = map.get(k);
-            messageTypesList.put(k, Arrays.asList(str.split(";"))); //$NON-NLS-1$
-        }
-    }
-
-    /**
-     * Reads a configuration value and store its value in the given map.
-     * First configuration name has no index:  "CONFIG_NAME" 
-     * If there are other values, these must have an index starting from 1: "CONFIG_NAME_1", "CONFIG_NAME_2", etc.
-     * @param key Configuration name key.
-     * @param map Map to store the configuration values.
-     * @param cm Configuration set.
-     */
-    private void readMappedValue(final String key, final Map<Integer, String> map, final ConfigManager cm) {
-        String value = cm.getValue(key);
-        if (isNotNullAndNotEmpty(value)) {
-            map.put(DEFAULT_INDEX_VALUE, value);
-
-            int cont = 1;
-            do {
-                value = cm.getValue(key + "_" + cont); //$NON-NLS-1$
-                if (isNotNullAndNotEmpty(value)) {
-                    map.put(new Integer(cont), value);
-                }
-                cont++;
-            } while (value != null);
-        }
-    }
-
-    /**
-     * Reads configuration values for no index element and for those elements that has the same index as keys has.
-     * @param key Configuration name key.
-     * @param map Map to store the configuration values.
-     * @param cm Configuration set.
-     * @param keys Index set to be read.
-     */
-    private void readMappedValue(final String key, final Map<Integer, String> map, final ConfigManager cm, final Set<Integer> keys) {
-        String value = cm.getValue(key);
-        if (isNotNullAndNotEmpty(value)) {
-            map.put(DEFAULT_INDEX_VALUE, value);
-        }
-
-        for (int k : keys) {
-            value = cm.getValue(key + "_" + k); //$NON-NLS-1$
-            if (isNotNullAndNotEmpty(value)) {
-                map.put(k, value);
-            }
-        }
-    }
-    
-    /**
-     * Returns <code>true</code> if the provided value is not null
-     * and not empty.
-     * @param value Value to be checked.
-     * @return <code>true</code> if the provided value is not null
-     * and not empty.
-     */
-    private boolean isNotNullAndNotEmpty(final String value) {
-        return value != null && !value.trim().isEmpty();
-    }
- 
-    /**
-     * Reads configuration file values.
-     * @throws ConfigException If any of the required files cannot be read.
+     * Reads and validates the configuration file.
+     * @throws ConfigException If the configuration file cannot be read of if it is incorrect.
      */
     @Override
     public void readConfiguration() throws ConfigException {
@@ -728,103 +343,178 @@ public final class Configuration extends es.ree.eemws.kit.config.Configuration {
         ConfigManager cm = new ConfigManager();
         cm.readConfigFile(FOLDER_CONFIG_FILE);
 
-        instanceID = cm.getValue(INSTANCE_ID_KEY);
-        if (instanceID != null && instanceID.trim().isEmpty()) {
-            instanceID = null;
-        } else {
-            StatusIcon.setIdentification(instanceID);
+        setInstanceId(cm.getValue(INSTANCE_ID_KEY));
+        rmiServiceNumber(cm.getValue(ID_KEY));
+        setNumOfDaysKept(cm.getValue(MAX_FILE_AGE_IN_DAYS));
+        setMaxNumThreads(cm.getValue(MAX_NUM_THREADS_KEY));
+
+        backupFolder = validateFolder(cm.getValue(BACKUP_FOLDER_KEY), BACKUP_FOLDER_KEY);
+
+        boolean atLeastOneIFolder = readInputSet(cm);
+        boolean atLeastOneOFolder = readOutputSet(cm);
+
+        if (!atLeastOneIFolder && !atLeastOneOFolder) {
+            throw new ConfigException(Messages.getString("MF_UNABLE_TO_START", INPUT_FOLDER_KEY, OUTPUT_FOLDER_KEY)); //$NON-NLS-1$ 
         }
 
-        readMappedValue(INPUT_FOLDER_KEY, inputFolder, cm);
-        Set<Integer> inputSet = inputFolder.keySet();
-        readMappedValue(RESPONSE_FOLDER_KEY, ackFolder, cm, inputSet);
-        readMappedValue(PROCESSED_FOLDER_KEY, processedFolder, cm, inputSet);
-        readMappedValue(INPUT_DELAYTIME_KEY, sleepTimeInput, cm, inputSet);
-        readMappedValue(RESPONSE_FOLDER_OK_KEY, ackFolderOk, cm, inputSet);
-        readMappedValue(RESPONSE_FOLDER_FAILED_KEY, ackFolderFailed, cm, inputSet);
-        readMappedValue(ACK_FOLDER_OK_PROGRAM_CMD_LINE_KEY, ackOkCmd, cm, inputSet);
-        readMappedValue(ACK_FOLDER_FAILED_PROGRAM_CMD_LINE_KEY, ackFailedCmd, cm, inputSet);
+        readRmiUrls(cm);
 
-        readMappedValue(OUTPUT_FOLDER_KEY, outputFolder, cm);
-        Set<Integer> outputSet = outputFolder.keySet();
-        readMappedValue(FILE_NAME_EXTENSION_KEY, fileNameExtension, cm, outputSet);
-        readMappedValue(COMMAND_LINE_KEY, programCmdLine, cm, outputSet);
-        setMessagesTypeList(cm, outputSet);
+    }
 
-        backupFolder = cm.getValue(BACKUP_FOLDER_KEY);
-        sleepTimeOutput = cm.getValue(OUTPUT_DELAYTIME_KEY, DEFAULT_DELAY);
-        numOfDaysKept = cm.getValue(MAX_FILE_AGE_IN_DAYS, DEFAULT_MAX_FILE_AGE_IN_DAYS);
-
-        maxNumThreads = cm.getValue(MAX_NUM_THREADS_KEY, DEFAULT_MAX_NUM_THREADS);
-
+    /**
+     * Reads the RMI configuration.
+     * @param cm Configuration Manager in order to read configured values.
+     * @throws ConfigException If the RMI configuration is invalid.
+     */
+    private void readRmiUrls(final ConfigManager cm) throws ConfigException {
         boolean loop = true;
         for (int count = 1; loop; count++) {
             String hostAndPort = cm.getValue(HOST_PREFIX_KEY + "_" + count); //$NON-NLS-1$
             if (hostAndPort != null) {
-                membersRmiUrls.add(RMI_URL_PROTOCOL + hostAndPort + File.separator + SERVICE_NAME);
+                String rmiUrl = RMI_URL_PROTOCOL + hostAndPort + File.separator + SERVICE_NAME;
+
+                String hostPort = rmiUrl.substring(RMI_URL_PROTOCOL.length(), rmiUrl.indexOf(SERVICE_NAME) - 1);
+                int colonPosition = hostPort.indexOf(":"); //$NON-NLS-1$
+                if (colonPosition == -1) {
+                    throw new ConfigException(Messages.getString("MF_MF_INVALID_MEMBER_URL", hostPort)); //$NON-NLS-1$
+                }
+
+                String port = ""; //$NON-NLS-1$
+                try {
+                    port = hostPort.substring(colonPosition + 1);
+                    Integer.parseInt(port);
+                } catch (NumberFormatException ex) {
+                    throw new ConfigException(Messages.getString("MF_INVALID_MEMBER_PORT", port)); //$NON-NLS-1$
+                }
+
+                membersRmiUrls.add(rmiUrl);
+
             } else {
                 loop = false;
             }
         }
-
-        thisServiceID = cm.getValue(ID_KEY);
     }
 
     /**
-     * Updates configuration file.
-     * @throws ConfigException If cannot update file (File access error).
+     * Reads input set configuration.
+     * @param cm Configuration Manager in order to read configured values.
+     * @return <code>true</code> if at least one input folder is configured.
+     * @throws ConfigException If the configured set of input values are invalid.
      */
-    @Override
-    public void writeConfiguration() throws ConfigException {
+    private boolean readInputSet(final ConfigManager cm) throws ConfigException {
+        boolean retValue = false;
+        int cont = 0;
+        String sufix = ""; //$NON-NLS-1$
+        String value;
+        String key;
 
-        ConfigManager cm = new ConfigManager();
-        cm.readConfigFile(FOLDER_CONFIG_FILE);
+        do {
+            key = INPUT_FOLDER_KEY + sufix;
+            value = cm.getValue(key);
 
-        try {
-            String fullPathConfig = FileUtil.getFullPathOfResoruce(FOLDER_CONFIG_FILE);
+            if (isNotNullAndNotEmpty(value)) {
+                retValue = true;
+                InputConfigurationSet is = new InputConfigurationSet(cont);
+                is.setInputFolder(validateFolder(value, key));
 
-            String fileContent = FileUtil.read(fullPathConfig);
-            fileContent = writeValue(inputFolder.get(DEFAULT_INDEX_VALUE), cm.getValue(INPUT_FOLDER_KEY), INPUT_FOLDER_KEY, fileContent);
-            fileContent = writeValue(outputFolder.get(DEFAULT_INDEX_VALUE), cm.getValue(OUTPUT_FOLDER_KEY), OUTPUT_FOLDER_KEY, fileContent);
-            fileContent = writeValue(backupFolder, cm.getValue(BACKUP_FOLDER_KEY), BACKUP_FOLDER_KEY, fileContent);
-            fileContent = writeValue(processedFolder.get(DEFAULT_INDEX_VALUE), cm.getValue(PROCESSED_FOLDER_KEY), PROCESSED_FOLDER_KEY, fileContent);
-            fileContent = writeValue(ackFolder.get(DEFAULT_INDEX_VALUE), cm.getValue(RESPONSE_FOLDER_KEY), RESPONSE_FOLDER_KEY, fileContent);
+                key = RESPONSE_FOLDER_KEY + sufix;
+                is.setAckFolder(validateFolder(cm.getValue(key), key));
 
-            FileUtil.createBackup(fullPathConfig);
-            FileUtil.write(fullPathConfig, fileContent);
-        } catch (IOException ex) {
-            throw new ConfigException(ex);
-        }
+                key = PROCESSED_FOLDER_KEY + sufix;
+                is.setProcessedFolder(validateFolder(cm.getValue(key), key));
+
+                key = RESPONSE_FOLDER_OK_KEY + sufix;
+                is.setAckOkFolder(validateFolder(cm.getValue(key), key));
+
+                key = RESPONSE_FOLDER_FAILED_KEY + sufix;
+                is.setAckFailedFolder(validateFolder(cm.getValue(key), key));
+
+                key = INPUT_DELAYTIME_KEY + sufix;
+                is.setSleepTime(cm.getValue(key), key);
+
+                is.setOkCmd(cm.getValue(ACK_FOLDER_OK_PROGRAM_CMD_LINE_KEY + sufix));
+                is.setFailedCmd(cm.getValue(ACK_FOLDER_FAILED_PROGRAM_CMD_LINE_KEY + sufix));
+
+                key = INPUT_URL_KEY + sufix;
+                is.setInputUrlEndPoint(cm.getValue(key, super.getUrlEndPoint().toString()), key);
+
+                inputSetLst.add(is);
+            }
+
+            cont++;
+            sufix = "_" + cont; //$NON-NLS-1$
+
+        } while (value != null);
+
+        return retValue;
     }
 
     /**
-     * Gets the command line to be executed for the given index.
-     * @param index Index value to be retrieved
-     * @return Command line to be executed by provided index. <code>null</code> 
-     * if no command line was specified.
+     * Reads output set configuration.
+     * @param cm Configuration Manager in order to read configured values.
+     * @return <code>true</code> if at least one output folder is configured.
+     * @throws ConfigException If the configured set of output values are invalid.
      */
-    public String getProgramCmdLine(final int index) {
-        return programCmdLine.get(index);
+    private boolean readOutputSet(final ConfigManager cm) throws ConfigException {
+        boolean retValue = false;
+        int cont = 0;
+        String sufix = ""; //$NON-NLS-1$
+        String value;
+        String key;
+        Map<URL, List<OutputConfigurationSet>> listByUrl = new HashMap<>();
+
+        do {
+            key = OUTPUT_FOLDER_KEY + sufix;
+            value = cm.getValue(key);
+
+            if (isNotNullAndNotEmpty(value)) {
+                retValue = true;
+                OutputConfigurationSet os = new OutputConfigurationSet(cont);
+                os.setOutputFolder(validateFolder(value, key));
+                os.setFileNameExtension(cm.getValue(FILE_NAME_EXTENSION_KEY + sufix));
+                os.setProgramCmdLine(cm.getValue(COMMAND_LINE_KEY + sufix));
+                os.setMessagesTypesList(cm.getValue(MENSSAGE_TYPES_KEY + sufix));
+
+                key = OUTPUT_DELAYTIME_KEY + sufix;
+                os.setSleepTime(cm.getValue(key), key);
+
+                key = OUTPUT_URL_KEY + sufix;
+                os.setOutputUrlEndPoint(cm.getValue(key, super.getUrlEndPoint().toString()), key);
+
+                URL url = os.getOutputUrlEndPoint();
+                List<OutputConfigurationSet> lst = listByUrl.get(url);
+                if (lst == null) {
+                    lst = new ArrayList<>();
+                    listByUrl.put(url,  lst);
+                }
+
+                lst.add(os);
+            }
+
+            cont++;
+            sufix = "_" + cont; //$NON-NLS-1$
+
+        } while (value != null);
+
+        outputSetLst.addAll(listByUrl.values());
+
+        return retValue;
     }
 
     /**
-     * Gets the command line to be executed for ack ok for the given index.
-     * @param index Index value to be retrieved.
-     * @return Command line to be executed for ack ok for the given index.
-     * <code>null</code> if no command line was specified.
+     * Returns the current input configuration set values.
+     * @return Current input configuration set values.
      */
-    public String getAckOkProgramCmdLIne(final int index) {
-        return ackOkCmd.get(index);
+    public List<InputConfigurationSet> getInputConfigurationSet() {
+        return inputSetLst;
     }
 
     /**
-     * Gets the command line to be executed for ack failed for the given index.
-     * @param index Index value to be retrieved.
-     * @return Command line to be executed for ack failed for the given index.
-     * <code>null</code> if no command line was specified.
+     * Returns the current output configuration set values by URL.
+     * @return Current output configuration set values.
      */
-    public String getAckFailedProgramCmdLine(final int index) {
-        return ackFailedCmd.get(index);
+    public List<List<OutputConfigurationSet>> getOutputConfigurationSet() {
+        return outputSetLst;
     }
 
 }

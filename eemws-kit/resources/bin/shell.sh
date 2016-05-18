@@ -1,3 +1,3 @@
 #!/bin/sh
-export PATH=$PATH:$INSTALL_PATH/bin
+export PATH=$PATH:%INSTALL_PATH/bin
 $shell

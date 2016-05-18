@@ -11,6 +11,15 @@
 
         <createForPack name="Core"/>
     </shortcut>
+	
+	
+    <shortcut name="File sender" target="$INSTALL_PATH/bin/sender.cmd" commandLine=""
+        workingDirectory="$INSTALL_PATH/bin" description="File sender"
+        iconFile="$INSTALL_PATH/bin/sender.ico" iconIndex="0" initialState="normal"
+        programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no">
+
+        <createForPack name="Core"/>
+    </shortcut>
 
     <shortcut name="Message editor" target="$INSTALL_PATH/bin/editor.cmd" commandLine=""
         workingDirectory="$INSTALL_PATH/bin" description="Message editor"

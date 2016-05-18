@@ -147,8 +147,6 @@ public final class Main extends ParentMain {
 			loadLocalTrustStore(localTrustFile, passwd.toCharArray());
 
 			LOGGER.info(Messages.getString("TRUSTSERVER_TRUST_SIZE", localTrustStore.size())); //$NON-NLS-1$
-			
-			LOGGER.info(""); //$NON-NLS-1$
 			LOGGER.info(Messages.getString("TRUSTSERVER_GETTING_SERVER_CERTICATES")); //$NON-NLS-1$
 			
 			boolean certAdded  = addServerCerts(urlEndPoint);
@@ -156,8 +154,7 @@ public final class Main extends ParentMain {
 			if (certAdded) {
 				LOGGER.info(Messages.getString("TRUSTSERVER_RERUN_COMMAND")); //$NON-NLS-1$
 			} else {
-				LOGGER.info(""); //$NON-NLS-1$
-				LOGGER.info(Messages.getString("TRUSTSERVER_GETTING_SIGNATURE_CERTICATES")); //$NON-NLS-1$
+			    LOGGER.info(Messages.getString("TRUSTSERVER_GETTING_SIGNATURE_CERTICATES")); //$NON-NLS-1$
 				addSignatureCert(urlEndPoint);
 			} 
 
@@ -241,13 +238,13 @@ public final class Main extends ParentMain {
 				LOGGER.info(Messages.getString("TRUSTSERVER_MSG_GET", String.valueOf(listMsg.get(0).getCode().longValue()))); //$NON-NLS-1$
 				get.get(listMsg.get(0).getCode().longValue());
 			}
-		} catch (ListOperationException | GetOperationException ce) {
-			
-			LOGGER.log(Level.FINE, Messages.getString("TRUSTSERVER_UNABLE_TO_CONNECT_WITH_SERVER", ce.getMessage()), ce); //$NON-NLS-1$
-		} catch (WebServiceException ce) {
-			LOGGER.warning(Messages.getString("TRUSTSERVER_UNABLE_TO_CONNECT_WITH_SERVER", ce.getMessage())); //$NON-NLS-1$
-			LOGGER.log(Level.FINE, Messages.getString("TRUSTSERVER_UNABLE_TO_CONNECT_WITH_SERVER", ce.getMessage()), ce); //$NON-NLS-1$
-			
+		} catch (ListOperationException ex) {
+		    LOGGER.log(Level.SEVERE, Messages.getString("TRUSTSERVER_UNABLE_TO_CONNECT_WITH_SERVER"), ex); //$NON-NLS-1$
+		} catch (GetOperationException ex) {
+			LOGGER.log(Level.FINE, Messages.getString("TRUSTSERVER_UNABLE_TO_CONNECT_WITH_SERVER"), ex); //$NON-NLS-1$
+		} catch (WebServiceException ex) {
+			LOGGER.warning(Messages.getString("TRUSTSERVER_UNABLE_TO_CONNECT_WITH_SERVER", ex.getMessage())); //$NON-NLS-1$
+			LOGGER.log(Level.FINE, Messages.getString("TRUSTSERVER_UNABLE_TO_CONNECT_WITH_SERVER", ex.getMessage()), ex); //$NON-NLS-1$
 		} finally {
 			if (get != null) {
 				MessageMetaData md = get.getMessageMetaData();
@@ -266,17 +263,17 @@ public final class Main extends ParentMain {
 	 * Adds the all the certificates in the server's certificate chain to the local trust store.
 	 * @param urlEndPoint Url to connect with in order to retrieve the certificate chain.
 	 * @return <code>true</code> if a least one certificate is added.
-	 * @throws MalformedURLException If the current url is incorrecto (impossible at this point) 
 	 * @throws KeyStoreException If the method is unable to add the retrieved certificate.
 	 * @throws NoSuchAlgorithmException If the system is unable to deal with TSL protocol (Is this possible by the way?)
 	 * @throws KeyManagementException If it is not possible to initialize the SSL context with the local trust store.
+	 * @throws IOException If server didn't send certificate chain.
 	 */
 	private static boolean addServerCerts(final String urlEndPoint) 
-	        throws MalformedURLException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+	        throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException, IOException {
 
 		boolean certsAdded = false;
 		
-		URL url = new URL(urlEndPoint);
+		URL url = new URL(urlEndPoint); 
 		String host = url.getHost();
 		int port = url.getPort();
 		if (port == -1) {
@@ -312,6 +309,8 @@ public final class Main extends ParentMain {
 					    certsAdded = true;
 					} 
 				}
+			} else {
+			    throw new IOException(Messages.getString("TRUSTSERVER_NO_CERT_CHAIN")); //$NON-NLS-1$
 			}
 		}
 		
