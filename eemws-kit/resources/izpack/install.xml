@@ -48,6 +48,7 @@
 			<description>Neccessary components</description>
 
 			<file src="../../bin/commEnv.cmd" targetdir="$INSTALL_PATH/bin" os="windows"/>
+			<file src="../../bin/sender.cmd" targetdir="$INSTALL_PATH/bin" os="windows"/>
 			<file src="../../bin/setup.cmd" targetdir="$INSTALL_PATH/bin" os="windows"/>
 			<file src="../../bin/editor.cmd" targetdir="$INSTALL_PATH/bin" os="windows"/>
 			<file src="../../bin/browser.cmd" targetdir="$INSTALL_PATH/bin" os="windows"/>
@@ -62,6 +63,7 @@
 
 			<file src="../../bin/commEnv.sh" targetdir="$INSTALL_PATH/bin" os="unix"/>
 			<file src="../../bin/setup.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
+			<file src="../../bin/sender.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
 			<file src="../../bin/editor.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
 			<file src="../../bin/browser.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
 			<file src="../../bin/magic-folder.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
@@ -74,6 +76,7 @@
 			<file src="../../bin/query.sh" targetdir="$INSTALL_PATH/bin" os="unix" />
 
 			<file src="../../bin/setup.ico" targetdir="$INSTALL_PATH/bin" os="windows"/>
+			<file src="../../bin/sender.ico" targetdir="$INSTALL_PATH/bin" os="windows"/>
 			<file src="../../bin/editor.ico" targetdir="$INSTALL_PATH/bin" os="windows"/>
 			<file src="../../bin/browser.ico" targetdir="$INSTALL_PATH/bin" os="windows"/>
 			<file src="../../bin/magic-folder.ico" targetdir="$INSTALL_PATH/bin" os="windows"/>
@@ -100,6 +103,7 @@
 						
 			<executable targetfile="$INSTALL_PATH/bin/commEnv.sh" stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/setup.sh" stage="never" os="unix"/>
+			<executable targetfile="$INSTALL_PATH/bin/sender.sh" stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/editor.sh" stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/shell.sh" stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/browser.sh" stage="never" os="unix"/>

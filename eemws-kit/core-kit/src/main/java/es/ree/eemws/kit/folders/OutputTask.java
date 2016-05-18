@@ -25,13 +25,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import es.ree.eemws.kit.common.Messages;
 import es.ree.eemws.client.get.GetMessage;
 import es.ree.eemws.client.get.RetrievedMessage;
 import es.ree.eemws.client.list.ListMessages;
@@ -39,6 +36,7 @@ import es.ree.eemws.client.list.MessageListEntry;
 import es.ree.eemws.core.utils.file.FileUtil;
 import es.ree.eemws.core.utils.operations.get.GetOperationException;
 import es.ree.eemws.core.utils.operations.list.ListOperationException;
+import es.ree.eemws.kit.common.Messages;
 
 /**
  * Execute a list + get loop to retrieve messages.
@@ -49,36 +47,9 @@ import es.ree.eemws.core.utils.operations.list.ListOperationException;
  */
 public final class OutputTask implements Runnable {
 
-    /** Output folder. */
-    private Map<Integer, String> outputFolder = new HashMap<>();
-
-    /** List of message types to retrieve. */
-    private Map<Integer, List<String>> typesToRetrieveList = new HashMap<>();
-
-    /** Program to be executed when a file is saved. */
-    private Map<Integer, String> programCmdLine = new HashMap<>();
-    
-    /** Total list of messages to retrieve (sum of the typesToRetrieveList). */
-    private List<String> totalTypesToRetrieve = new ArrayList<>();
-
-    /** File name extension to be used. */
-    private Map<Integer, String> fileNameExtension = new HashMap<>();
-
-    /** Code for the last listed message. */
-    private long lastListCode;
-
     /** Object which locks message for group working. */
     private LockHandler lh;
-
-    /** List messages. */
-    private ListMessages list;
-
-    /** Retrieve messages. */
-    private GetMessage get;
-    
-    /** Log elements separator. */
-    private static final String TAB = "\n    "; //$NON-NLS-1$
-    
+        
     /** Log system. */
     private static final Logger LOGGER = Logger.getLogger(OutputTask.class.getName());
 
@@ -92,81 +63,70 @@ public final class OutputTask implements Runnable {
     private static final String FILE_ELEMENTS_SEPARTOR = "."; //$NON-NLS-1$
 
     /** Headers values that identifies the file type. */
-    private static final String[] HEADER_VALUES = { "BZh91AY", "7z", "PDF", "PK", "PNG", "JFIF" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-
+    @SuppressWarnings("nls")
+    private static final String[] HEADER_VALUES = { "BZh91AY", "7z", "PDF", "PK", "PNG", "JFIF" };
+    
     /** File extensions according to the header value. */
-    private static final String[] EXTENSION_VALUES = { "bz2", "7z", "pdf", "zip", "png", "jpg" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-
+    @SuppressWarnings("nls")
+    private static final String[] EXTENSION_VALUES = { "bz2", "7z", "pdf", "zip", "png", "jpg" }; 
+    
     /** Reads up to 20 bytes in order to guess the proper file extension. */
     private static final int FIRST_BYTES_OF_MESSAGE = 20;
+    
+    /** This task configuration set values. */
+    private List<OutputConfigurationSet> ocs;
 
+    /** Last retrieved code. */
+    private long lastListCode;
+
+    /** Full list of files to retrieve. */
+    private List<String> totalTypesToRetrieve;
+
+    /** Message List object. */
+    private ListMessages list;
+
+    /** Message get object. */
+    private GetMessage get; 
+    
+    /** This output task set of ids. */
+    private String setIds;
+    
     /**
      * Constructor. Initializes parameters for detection thread.
      * @param lockHandler Lock Manager.
-     * @param config Module configuration.
+     * @param oc List of output configuration sets that shares the same url.
+     * @param setIdss This output task set of ids.
      */
-    public OutputTask(final LockHandler lockHandler, final Configuration config) {
-
-        StringBuilder msg = new StringBuilder();
+    public OutputTask(final LockHandler lockHandler, final List<OutputConfigurationSet> oc, final String setIdss) {
         
-        boolean listAll = false;
-        for (int k = 0; config.getOutputFolder(k) != null; k++) {
+        totalTypesToRetrieve = new ArrayList<>();
+        boolean retrieveAllMessages = false;
+        for (OutputConfigurationSet o : oc) { 
+            LOGGER.info(o.toString());
             
-            List<String> lstT = config.getMessagesTypeList(k);
-            if (lstT == null) {
-                listAll = true;
-            } else {
-                typesToRetrieveList.put(k, lstT);
-                totalTypesToRetrieve.addAll(lstT);
+            if (!retrieveAllMessages) {
+                List<String> lstRetr = o.getMessagesTypesList();
+                if (lstRetr == null) {
+                    retrieveAllMessages = true;
+                    totalTypesToRetrieve = null;
+                } else {
+                    totalTypesToRetrieve.addAll(lstRetr);
+                }
             }
-            
-            String outF = config.getOutputFolder(k);
-            outputFolder.put(k, outF);     
-            msg.append("\n"); //$NON-NLS-1$
-            msg.append(Messages.getString("MF_SET_NUM", k)); //$NON-NLS-1$
-            msg.append(TAB).append(Messages.getString("MF_CONFIG_OUTPUT_FOLDER", outF)); //$NON-NLS-1$ 
-            
-            msg.append(TAB);
-            if (lstT == null) {
-                msg.append(Messages.getString("MF_CONFIG_LST_MESSAGES_TYPE_ALL")); //$NON-NLS-1$ 
-            } else {                
-                msg.append(Messages.getString("MF_CONFIG_LST_MESSAGES_TYPE", lstT.toString())); //$NON-NLS-1$ 
-            }
-            
-            String filE = config.getFileNameExtension(k);
-            fileNameExtension.put(k, filE);
-            msg.append(TAB).append(Messages.getString("MF_FILE_NAME_EXTENSION", filE)); //$NON-NLS-1$ 
-
-            
-            String program = config.getProgramCmdLine(k);
-            if (program == null) {
-                msg.append(TAB).append(Messages.getString("MF_NO_PROGRAM")); //$NON-NLS-1$ 
-
-            } else {
-                msg.append(TAB).append(Messages.getString("MF_PROGRAM", program)); //$NON-NLS-1$ 
-                programCmdLine.put(k, program);
-            }            
-        }
-        msg.append("\n").append(Messages.getString("MF_CONFIG_DELAY_TIME_O", config.getSleepTimeOutput())); //$NON-NLS-1$//$NON-NLS-2$
-        
-        if (listAll) {
-            totalTypesToRetrieve = null;
         }
         
-        URL endPoint = config.getUrlEndPoint();
-        lastListCode = 0;
-        lh = lockHandler;
-
+        URL endPoint = oc.get(0).getOutputUrlEndPoint();
+                
         list = new ListMessages();
         list.setEndPoint(endPoint);
-
+        
         get = new GetMessage();
         get.setEndPoint(endPoint);
-
+                        
+        setIds = setIdss;
+        lh = lockHandler;
+        ocs = oc;  
         
-        msg.append("\n").append(Messages.getString("MF_CONFIG_URL_O", endPoint.toString())); //$NON-NLS-1$ //$NON-NLS-2$
-         
-        LOGGER.info(msg.toString());
     }
 
     /**
@@ -184,37 +144,39 @@ public final class OutputTask implements Runnable {
 
             try {
                 if (mle.getVersion() == null) {
-                    LOGGER.info(Messages.getString("MF_RETRIEVING_MESSAGE_WO_VERSION", codeStr, mle.getMessageIdentification())); //$NON-NLS-1$
+                    LOGGER.info(Messages.getString("MF_RETRIEVING_MESSAGE_WO_VERSION", setIds, codeStr, mle.getMessageIdentification())); //$NON-NLS-1$
                 } else {
-                    LOGGER.info(Messages.getString("MF_RETRIEVING_MESSAGE", codeStr, mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
+                    LOGGER.info(Messages.getString("MF_RETRIEVING_MESSAGE", setIds, codeStr, mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
                 }
 
                 RetrievedMessage response = get.get(code);
 
                 if (mle.getVersion() == null) {
-                    LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE_WO_VERSION", codeStr, mle.getMessageIdentification())); //$NON-NLS-1$
+                    LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE_WO_VERSION", setIds, codeStr, mle.getMessageIdentification())); //$NON-NLS-1$
                 } else {
-                    LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE", codeStr, mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
+                    LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE", setIds, codeStr, mle.getMessageIdentification(), mle.getVersion())); //$NON-NLS-1$
                 }
 
-                for (Integer k : outputFolder.keySet()) {
-                    List<String> type = typesToRetrieveList.get(k);
+                for (OutputConfigurationSet oc : ocs) {
+                    List<String> type = oc.getMessagesTypesList();
                     if (type == null || type.contains(mle.getType())) {
-                        saveFile(mle, response, outputFolder.get(k), fileNameExtension.get(k), programCmdLine.get(k));
+                        saveFile(mle, response, oc.getOutputFolder(), oc.getFileNameExtension(), oc.getProgramCmdLine(), oc.getIndex());
                     }                    
                 }
                 
             } catch (GetOperationException e) {
                 if (mle.getVersion() == null) {
-                    LOGGER.log(Level.SEVERE, Messages.getString("MF_UNABLE_TO_GET_WO_VERSION", String.valueOf(code), mle.getMessageIdentification()), e); //$NON-NLS-1$
+                    LOGGER.log(Level.SEVERE, Messages.getString("MF_UNABLE_TO_GET_WO_VERSION", setIds, String.valueOf(code), mle.getMessageIdentification()), e); //$NON-NLS-1$
                 } else {
-                    LOGGER.log(Level.SEVERE, Messages.getString("MF_UNABLE_TO_GET", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion()), e); //$NON-NLS-1$
+                    LOGGER.log(Level.SEVERE, Messages.getString("MF_UNABLE_TO_GET", setIds, String.valueOf(code), //$NON-NLS-1$
+                            mle.getMessageIdentification(), mle.getVersion()), e); 
                 }
             } catch (IOException e) {
                 if (mle.getVersion() == null) {
-                    LOGGER.log(Level.SEVERE, Messages.getString("MF_UNABLE_TO_SAVE_WO_VERSION", String.valueOf(code), mle.getMessageIdentification()), e); //$NON-NLS-1$
+                    LOGGER.log(Level.SEVERE, Messages.getString("MF_UNABLE_TO_SAVE_WO_VERSION", setIds, String.valueOf(code), mle.getMessageIdentification()), e); //$NON-NLS-1$
                 } else {
-                    LOGGER.log(Level.SEVERE, Messages.getString("MF_UNABLE_SAVE_GET", String.valueOf(code), mle.getMessageIdentification(), mle.getVersion()), e); //$NON-NLS-1$
+                    LOGGER.log(Level.SEVERE, Messages.getString("MF_UNABLE_TO_SAVE", setIds, String.valueOf(code), //$NON-NLS-1$
+                            mle.getMessageIdentification(), mle.getVersion()), e); 
                 }
             } finally {
                 lh.releaseLock(codeStr);
@@ -229,15 +191,18 @@ public final class OutputTask implements Runnable {
      * @param outPath Path to save.
      * @param fExtension File extension to be added to the file name.
      * @param cmdLine Program to execute. <code>null</code> if no program have to be executed.
+     * @param setIndex The index of the output set.
      * @throws IOException If the message cannot be saved or if the provided command line produces error.
      */
-    private void saveFile(final MessageListEntry mle, final RetrievedMessage response, final String outPath, final String fExtension, final String cmdLine) throws IOException {
+    private void saveFile(final MessageListEntry mle, final RetrievedMessage response, final String outPath, 
+            final String fExtension, final String cmdLine, final int setIndex) throws IOException {
+        
         String fileName = getFileName(mle, response, fExtension);
         String abosoluteFileName = outPath + File.separator + fileName;
 
         if (FileUtil.exists(abosoluteFileName)) {
 
-            LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE_ALREADY_EXISTS", abosoluteFileName)); //$NON-NLS-1$
+            LOGGER.info(Messages.getString("MF_RETRIEVED_MESSAGE_ALREADY_EXISTS", setIndex, abosoluteFileName)); //$NON-NLS-1$
 
         } else {
 
@@ -282,7 +247,7 @@ public final class OutputTask implements Runnable {
             }
         }
 
-        if (fExtension.equalsIgnoreCase(Configuration.FILE_NAME_EXTENSION_AUTO)) {
+        if (fExtension.equalsIgnoreCase(OutputConfigurationSet.FILE_NAME_EXTENSION_AUTO)) {
             if (response.isBinary()) {
                 byte[] b = response.getBinaryPayload();
                 if (b.length > FIRST_BYTES_OF_MESSAGE) {
@@ -301,7 +266,7 @@ public final class OutputTask implements Runnable {
                 retValue.append(FILE_ELEMENTS_SEPARTOR);
                 retValue.append(FILE_NAME_EXTENSION_XML);
             }
-        } else if (!fExtension.equalsIgnoreCase(Configuration.FILE_NAME_EXTENSION_NONE)) {
+        } else if (!fExtension.equalsIgnoreCase(OutputConfigurationSet.FILE_NAME_EXTENSION_NONE)) {
             retValue.append(FILE_ELEMENTS_SEPARTOR);
             retValue.append(fExtension);
         }
@@ -319,7 +284,7 @@ public final class OutputTask implements Runnable {
         try {
             messageList = list.list(lastListCode);
         } catch (ListOperationException ex) {
-            LOGGER.log(Level.SEVERE, Messages.getString("MF_UNABLE_TO_LIST"), ex); //$NON-NLS-1$
+            LOGGER.log(Level.SEVERE, Messages.getString("MF_UNABLE_TO_LIST", setIds), ex); //$NON-NLS-1$
         }
 
         return messageList;
@@ -328,6 +293,7 @@ public final class OutputTask implements Runnable {
     /**
      * Detection cycle.
      */
+    @Override
     public void run() {
         try {
             List<MessageListEntry> messageList = listMessages();
@@ -357,7 +323,7 @@ public final class OutputTask implements Runnable {
         } catch (Exception ex) {
 
             // Defensive exception, if runnable task ends with exception won't be exectued againg!
-            LOGGER.log(Level.SEVERE, Messages.getString("MF_UNEXPECTED_ERROR"), ex); //$NON-NLS-1$
+            LOGGER.log(Level.SEVERE, Messages.getString("MF_UNEXPECTED_ERROR_O", setIds), ex); //$NON-NLS-1$
         }
     }
 

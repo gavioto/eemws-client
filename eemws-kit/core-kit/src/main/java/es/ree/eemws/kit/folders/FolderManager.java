@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Eléctrica de España, S.A.U.
+ * Copyright 2016 Red Eléctrica de España, S.A.U.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -23,6 +23,7 @@ package es.ree.eemws.kit.folders;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +40,7 @@ import es.ree.eemws.core.utils.config.ConfigException;
  * Creates all the objects and schedules.
  *
  * @author Red Eléctrica de España S.A.U.
- * @version 1.0 09/05/2014
+ * @version 1.1 27/04/2016
  *
  */
 public final class FolderManager {
@@ -68,8 +69,7 @@ public final class FolderManager {
     	try {
             Configuration config = new Configuration();
             config.readConfiguration();
-            config.validateConfiguration();
-            
+                        
             if (ExecutionControl.isRunning(config.getInstanceID())) {
                 if (StatusIcon.isInteractive()) {
                     JOptionPane.showMessageDialog(null, Messages.getString("MF_ALREADY_RUNNING"), //$NON-NLS-1$
@@ -87,21 +87,37 @@ public final class FolderManager {
                 LockHandler lh = new LockHandler(config);
 
             	scheduler = Executors.newScheduledThreadPool(config.getMaxNumThreads());
-                
-                /* Creates input detector only if an input folder is set. */
-            	for (int k = 0; config.getInputFolder(k) != null; k++) {
-                	InputTask it = new InputTask(lh, k, config);
-                	long sleep = config.getSleepTimeInput(k);
-                	scheduler.scheduleAtFixedRate(it, 0, sleep, TimeUnit.MILLISECONDS);
-                }
 
-                /* Create output detector only if an output folder is set. */
-            	if (config.getOutputFolder(0) != null) {
-            	    OutputTask ot = new OutputTask(lh, config);
-                	long sleep = config.getSleepTimeOutput();
-                	scheduler.scheduleAtFixedRate(ot, 0, sleep, TimeUnit.MILLISECONDS);
+            	List<InputConfigurationSet> ics = config.getInputConfigurationSet();
+            	for (InputConfigurationSet ic : ics) {
+                    scheduler.scheduleAtFixedRate(new InputTask(lh, ic), 0, ic.getSleepTime(), TimeUnit.MILLISECONDS);
+               	}
+ 
+            	for (List<OutputConfigurationSet> lst : config.getOutputConfigurationSet()) {
+            	    long sleep = Long.MAX_VALUE;
+            	    StringBuffer outSetIds = new StringBuffer();
+            	    for (OutputConfigurationSet ocs : lst) {
+            	        long curr = ocs.getSleepTime();
+            	        if (sleep > curr) {
+            	            sleep = curr;
+            	        }
+            	        outSetIds.append(ocs.getIndex());
+            	        outSetIds.append("-"); //$NON-NLS-1$
+            	    }
+            	    
+            	    outSetIds.setLength(outSetIds.length() - 1);
+            	    
+            	    String setIds = outSetIds.toString();
+            	    if (setIds.equals("0")) { //$NON-NLS-1$
+            	        setIds = ""; //$NON-NLS-1$
+            	    } else {
+            	        setIds = "-" + setIds; //$NON-NLS-1$
+            	    }
+            	                	    
+            	    LOGGER.info(Messages.getString("MF_CONFIG_DELAY_TIME_O", setIds, sleep));   //$NON-NLS-1$
+            	    scheduler.scheduleAtFixedRate(new OutputTask(lh, lst, setIds), 0, sleep, TimeUnit.MILLISECONDS);
                 }
-
+                 	
                 /* Create deletion / backup folder. */
                 if (config.getBackupFolder() != null) {
                 	DeleteFilesTask dft = new DeleteFilesTask(lh, config);
