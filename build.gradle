@@ -1,23 +1,59 @@
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.3.4'
+}
+
+description = 'eemws-client-parent'
+
+scmVersion {
+    tag {
+        prefix = ''
+    }
+
+    // Incrementing policy
+    versionIncrementer 'incrementMinor'  // default
+    branchVersionIncrementer = [
+       'master': 'incrementPrerelease',
+       'release/.*': 'incrementPrerelease',
+       'hotfix/.*': 'incrementPrerelease'
+    ]
+
+    // Decorators
+    versionCreator 'simple'
+    //branchVersionCreator = [
+    //   'feature/.*': 'versionWithBranch'
+    //]
+
+    localOnly = true  // no pushing to remote
+
+    ignoreUncommittedChanges = false  // add -SNAPSHOT if uncommited changes
+}
+
 allprojects  {
   apply plugin: 'maven'
 
   group = 'eemws'
-version = '1.0-m13-SNAPSHOT'
+  version = scmVersion.version
+  eemws_core_version = '1.0.0'  // used in subprojects dependencies
 }
 
 subprojects {
   apply plugin: 'java'
-  sourceCompatibility = 1.5
-  targetCompatibility = 1.5
+  sourceCompatibility = 1.7
+  targetCompatibility = 1.7
 
-  
+
   repositories {
     mavenLocal()
-    
+
     maven { url "http://repo.maven.apache.org/maven2" }
   }
 
-  
-  
-  
+  tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+  }
+
 }
+
+println "-------------------------------------------------" + '-' * version.toString().length()
+println " IEC62325-504 client libraries + kit - version: $version "
+println "-------------------------------------------------" + '-' * version.toString().length()
