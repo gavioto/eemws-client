@@ -28,12 +28,15 @@ scmVersion {
     ignoreUncommittedChanges = false  // add -SNAPSHOT if uncommited changes
 }
 
+ext {
+  eemws_core_version = '1.0.0'  // used in subprojects dependencies
+}
+
 allprojects  {
   apply plugin: 'maven'
 
   group = 'eemws'
   version = scmVersion.version
-  eemws_core_version = '1.0.0'  // used in subprojects dependencies
 }
 
 subprojects {
