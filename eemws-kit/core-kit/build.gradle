@@ -1,0 +1,18 @@
+description = """core-kit"""
+
+dependencies {
+  compile(
+    [group: 'eemws', name: 'eemws-utils', version: eemws_core_version],
+    //[group: 'eemws', name: 'eemws-core', version: eemws_core_version],
+    [project(':eemws-client')]
+  )
+}
+
+  // TODO: need to copy dependencies?
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': project.description,
+                   'Implementation-Version': version
+    }
+}

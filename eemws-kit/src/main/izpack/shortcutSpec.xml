@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
-<shortcuts>
+<izpack:shortcuts version="5.0"
+                  xmlns:izpack="http://izpack.org/schema/shortcuts"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://izpack.org/schema/shortcuts http://izpack.org/schema/5.0/izpack-shortcuts-5.0.xsd">
     <skipIfNotSupported/>
 
     <programGroup defaultName="Connection kit" location="applications"/>
@@ -11,8 +14,8 @@
 
         <createForPack name="Core"/>
     </shortcut>
-	
-	
+
+
     <shortcut name="File sender" target="$INSTALL_PATH/bin/sender.cmd" commandLine=""
         workingDirectory="$INSTALL_PATH/bin" description="File sender"
         iconFile="$INSTALL_PATH/bin/sender.ico" iconIndex="0" initialState="normal"
@@ -61,4 +64,4 @@
         <createForPack name="Core"/>
     </shortcut>
 
-</shortcuts>
+</izpack:shortcuts>
