@@ -1,4 +1,4 @@
 rootProject.name = 'eemws-client-parent'
 include "eemws-client"
-include "core-kit"
+include "eemws-kit"
 include "eemws-kit:core-kit"
