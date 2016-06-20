@@ -1,5 +1,6 @@
 # IEC 62325-504 client #
 
+[![Build Status](https://drone.io/bitbucket.org/smree/eemws-client/status.png)](https://drone.io/bitbucket.org/smree/eemws-client/latest)
 
 ### What is this repository for? ###
 
