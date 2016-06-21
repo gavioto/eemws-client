@@ -60,6 +60,6 @@ subprojects {
 
 }
 
-println "-------------------------------------------------" + '-' * version.toString().length()
-println " IEC62325-504 client libraries + kit - version: $version "
-println "-------------------------------------------------" + '-' * version.toString().length()
+logger.lifecycle "-------------------------------------------------" + '-' * version.toString().length()
+logger.lifecycle " IEC62325-504 client libraries + kit - version: $version "
+logger.lifecycle "-------------------------------------------------" + '-' * version.toString().length()
