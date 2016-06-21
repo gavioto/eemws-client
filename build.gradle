@@ -33,6 +33,14 @@ ext {
   eemws_core_version = '1.0.1'  // used in subprojects dependencies
 }
 
+task getCoreVersion {
+  description 'prints the dependency on eemws-core version'
+}
+
+getCoreVersion << {
+  println eemws_core_version
+}
+
 allprojects  {
   apply plugin: 'maven'
 
@@ -43,7 +51,7 @@ allprojects  {
 subprojects {
   apply plugin: 'java'
   apply plugin: 'jacoco'
-  
+
   sourceCompatibility = 1.7
   targetCompatibility = 1.7
 
