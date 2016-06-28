@@ -29,9 +29,6 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.w3c.dom.Element;
-
-import ch.iec.tc57._2011.schema.message.PayloadType;
 import ch.iec.tc57._2011.schema.message.RequestMessage;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
 import es.ree.eemws.client.common.ParentClient;
@@ -43,13 +40,12 @@ import es.ree.eemws.core.utils.iec61968100.MessageUtil;
 import es.ree.eemws.core.utils.operations.HandlerException;
 import es.ree.eemws.core.utils.operations.query.QueryOperationException;
 import es.ree.eemws.core.utils.operations.query.QueryRequestMessageValidator;
-import es.ree.eemws.core.utils.xml.XMLElementUtil;
 
 /**
  * Query Data Service can be used by clients to request specific data from the server using different query parameters.
  * 
  * @author Red Eléctrica de España S.A.U.
- * @version 1.1 10/01/2016
+ * @version 1.1 17/06/2016
  */
 public final class QueryData extends ParentClient {
 
@@ -72,6 +68,7 @@ public final class QueryData extends ParentClient {
      * Invokes the QueryData operation with no parameters (just the query identification).
      * @param dataType Indicates the type of data being requested.
      * @return String with the server's response (only payload content).
+     * @see #queryWithResponseMessage(String)
      * @throws QueryOperationException If the retrieved message has an invalid format or the application cannot handle it.
      * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
@@ -79,6 +76,19 @@ public final class QueryData extends ParentClient {
 
         return query(dataType, null, null, null);
     }
+    
+    /**
+     * Invokes the QueryData operation with no parameters (just the query identification).
+     * @param dataType Indicates the type of data being requested.
+     * @return ResponseMessage with the server's response.
+     * @see #query(String)
+     * @throws QueryOperationException If the retrieved message has an invalid format or the application cannot handle it.
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
+     */
+    public ResponseMessage queryWithResponseMessage(final String dataType) throws QueryOperationException {
+
+        return queryWithResponseMessage(dataType, null, null, null);
+    }    
 
     /**
      * Invokes the QueryData operation with start time parameter.
@@ -109,7 +119,6 @@ public final class QueryData extends ParentClient {
 
         return query(dataType, startTime, endTime, null);
     }
-
     
     /**
      * Invokes the QueryData operation with the given parameters.
@@ -121,24 +130,44 @@ public final class QueryData extends ParentClient {
     public String query(final Map<String, String> msgOptions) throws QueryOperationException {
 
         String retValue = null;
+        
+        try {
+
+            retValue = MessageUtil.responsePayload2String(queryWithResponseMessage(msgOptions));
+
+        } catch (TransformerException | ParserConfigurationException e) {
+         
+            throw new QueryOperationException(EnumErrorCatalog.ERR_QRY_012, e, e.getMessage());
+        
+        }
+
+        return retValue;
+    }
+
+    /**
+     * Invokes the QueryData operation with the given parameters.
+     * @param msgOptions List options as a Map which key must be on the EnumFilterElement list.
+     * @return ResponseMessage with the server's response.
+     * @throws QueryOperationException If the retrieved message has an invalid format or if the application cannot handle it.
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
+     */
+    public ResponseMessage queryWithResponseMessage(final Map<String, String> msgOptions) throws QueryOperationException {
+
+        ResponseMessage retValue = null;
 
         try {
             RequestMessage requestMessage = MessageUtil.createRequestWithOptions(EnumVerb.GET, EnumNoun.QUERY_DATA, msgOptions);
             QueryRequestMessageValidator.validate(requestMessage);
-            ResponseMessage response = sendMessage(requestMessage);
-            validateResponse(response, EnumNoun.QUERY_DATA.toString());
-                        
-            retValue = responsePayload2String(response);
-
-        } catch (TransformerException | ParserConfigurationException e) {
-            throw new QueryOperationException(EnumErrorCatalog.ERR_QRY_012, e, e.getMessage());
+            retValue = sendMessage(requestMessage);
+            validateResponse(retValue, EnumNoun.QUERY_DATA.toString());
+            
         } catch (HandlerException e) {
             throw new QueryOperationException(e);
         }
 
         return retValue;
     }
-
+    
     /**
      * Invokes the QueryData operation with the given parameters.
      * @param dataType Indicates the type of data being requested.
@@ -149,11 +178,47 @@ public final class QueryData extends ParentClient {
      * @param others Specifies others parameters to the query. The parameters are expressed as a key-value pairs, where
      * the value is optional.
      * @return String with the server's response (only payload content).
+     * @see #queryWithResponseMessage(String, Date, Date, Map)
      * @throws QueryOperationException If the retrieved message has an invalid format or the application cannot handle it.
      * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
      */
     public String query(final String dataType, final Date startTime, final Date endTime, final Map<String, String> others) throws QueryOperationException {
 
+        return query(prepareOptions(dataType, startTime, endTime, others));
+    }
+    
+    /**
+     * Invokes the QueryData operation with the given parameters.
+     * @param dataType Indicates the type of data being requested.
+     * @param startTime Specifies that the returned message should only include data whose Application Date is after the
+     * given date. (Can be <code>null</code>).
+     * @param endTime Specifies that the returned message should only include data whose Application Date is before the
+     * given date. (Can be <code>null</code>).
+     * @param others Specifies others parameters to the query. The parameters are expressed as a key-value pairs, where
+     * the value is optional.
+     * @return String with the server's response (only payload content).
+     * @see #query(String, Date, Date, Map)
+     * @throws QueryOperationException If the retrieved message has an invalid format or the application cannot handle it.
+     * or if the retrieved message has invalid signature or is not valid (has no header, invalid verb, etc.)
+     */
+    public ResponseMessage queryWithResponseMessage(final String dataType, final Date startTime, final Date endTime, final Map<String, String> others) throws QueryOperationException {
+
+        return queryWithResponseMessage(prepareOptions(dataType, startTime, endTime, others));
+    }
+
+    /**
+     * Creates a map with all the filter's values of the given query.
+     * @param dataType Indicates the type of data being requested.
+     * @param startTime Specifies that the returned message should only include data whose Application Date is after the
+     * given date. (Can be <code>null</code>).
+     * @param endTime Specifies that the returned message should only include data whose Application Date is before the
+     * given date. (Can be <code>null</code>).
+     * @param others Specifies others parameters to the query. The parameters are expressed as a key-value pairs, where
+     * the value is optional.
+     * @return A map with all the filter's values.
+     */    
+    private Map<String, String> prepareOptions(final String dataType, final Date startTime, final Date endTime, final Map<String, String> others) {
+        
         Map<String, String> msgOptions = new HashMap<>(others);
 
         msgOptions.put(EnumFilterElement.DATA_TYPE.toString(), dataType);
@@ -167,22 +232,7 @@ public final class QueryData extends ParentClient {
             DateFormat df = DateFormat.getInstance();
             msgOptions.put(EnumFilterElement.END_TIME.toString(), df.format(endTime));
         }
-
-        return query(msgOptions);
-    }
-
-    /**
-     * Returns the operation response's payload content as a String.
-     * @param responseMessage Response message received from server.
-     * @return String with the server's response (only payload content).
-     * @throws TransformerException If the method cannot create a string from the received response.
-     * @throws ParserConfigurationException If the method cannot create a string from the received response.
-     */
-    private String responsePayload2String(final ResponseMessage responseMessage) throws TransformerException, ParserConfigurationException {
-        PayloadType payload = responseMessage.getPayload();
-
-        Element message = payload.getAnies().get(0);
-
-        return XMLElementUtil.element2String(message);
+        
+        return msgOptions;
     }
 }

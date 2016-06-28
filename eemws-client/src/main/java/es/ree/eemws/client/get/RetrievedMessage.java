@@ -46,7 +46,7 @@ import es.ree.eemws.core.utils.xml.XMLUtil;
  * Payload response message wrapper. 
  *
  * @author Red Eléctrica de España S.A.U.
- * @version 1.1 10/01/2016
+ * @version 1.2 17/06/2016
  */
 
 public final class RetrievedMessage {
@@ -65,6 +65,9 @@ public final class RetrievedMessage {
 
     /** This message fileName. */
     private String fileName;
+    
+    /** Response message. */
+    private ResponseMessage respMess;
 
     /**
      * Returns whether the message is binary.
@@ -135,6 +138,14 @@ public final class RetrievedMessage {
 
         return retValue;
     }
+    
+    /**
+     * Returns the response message (whole reply from the get operation).
+     * @return Reply of the get operation.
+     */
+    public ResponseMessage getResponseMessage() {
+        return respMess;
+    }
 
     /**
      * Sets this class payload or binary values from a ResponseMessage object.
@@ -142,7 +153,9 @@ public final class RetrievedMessage {
      * @throws GetOperationException If the BINARY response has an invalid format or if it cannot be unzipped.  
      */
     public void setMessage(final ResponseMessage response) throws GetOperationException {
-
+        
+        respMess = response;
+        
         try {
 
             if (response.getHeader().getNoun().equals(EnumNoun.COMPRESSED.toString())) {
