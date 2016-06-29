@@ -2,7 +2,7 @@ description = """core-kit"""
 
 dependencies {
   compile(
-    [group: 'eemws', name: 'eemws-utils', version: eemws_core_version],
+    [group: 'es.ree.eemws', name: 'eemws-utils', version: eemws_core_version],
     //[group: 'eemws', name: 'eemws-core', version: eemws_core_version],
     [project(':eemws-client')]
   )
