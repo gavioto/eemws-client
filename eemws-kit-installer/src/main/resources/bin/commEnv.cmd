@@ -1,6 +1,9 @@
 @echo off
 setlocal EnableDelayedExpansion
+
 SET CLASSPATH=
+SET JAVA_OPTIONS=
+
 for %%a in ("%INSTALL_PATH\lib\*.*") do set CLASSPATH=!CLASSPATH!;%%a
 endlocal & set CLASSPATH=%CLASSPATH%
 SET CLASSPATH=%CLASSPATH%;%INSTALL_PATH\config
@@ -19,3 +22,6 @@ REM SET JAVA_OPTIONS=%JAVA_OPTIONS% -DUSE_LEGACY_SHA1
 
 REM Uncomment if you want to send as binary compressed XML payload which size is greater than the specified number of characters (here 1000)
 REM SET JAVA_OPTIONS=%JAVA_OPTIONS% -DXML_TO_BINARY_THRESHOLD_CHARS=1000
+
+REM Uncomment if you face issues with server SNI miss configuration.
+REM SET JAVA_OPTIONS=%JAVA_OPTIONS% -Djsse.enableSNIExtension=false

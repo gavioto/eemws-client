@@ -1,5 +1,6 @@
 # IEC 62325-504 client #
 
+[![Build Status](https://drone.io/bitbucket.org/smree/eemws-client/status.png)](https://drone.io/bitbucket.org/smree/eemws-client/latest)
 
 ### What is this repository for? ###
 
@@ -7,7 +8,7 @@ This is a client implementation of IEC 62325-504 technical specification.
 
 * **eemws-client** includes client classes to invoke the eem web services
 * **eemws-kit** includes command line utilities to invoke the eem web services, as well as several GUI applications (browser, editor, ...).
-* Version **1.0.1**
+* Version **1.1.0**
 
 Please use `./gradlew install` and java 7.x in order to compile.
 

@@ -184,6 +184,7 @@ public abstract class ParentClient {
             
             /* Translate into plain English most common connection issues: */
             String errStr = ex.getMessage();
+            
             if (errStr.indexOf("trustAnchors") != -1 || errStr.indexOf("PKIX path building failed") != -1) { //$NON-NLS-1$ //$NON-NLS-2$
                 throw new HandlerException(EnumErrorCatalog.ERR_HAND_013);
             } else if (errStr.indexOf("No subject alternative") != -1) {  //$NON-NLS-1$
@@ -202,6 +203,8 @@ public abstract class ParentClient {
                 throw new HandlerException(EnumErrorCatalog.ERR_HAND_020);
             } else if (errStr.indexOf("The server sent HTTP status code 400:") != -1) { //$NON-NLS-1$ 
                 throw new HandlerException(EnumErrorCatalog.ERR_HAND_021);
+            } else if (errStr.indexOf("unrecognized_name") != -1) { //$NON-NLS-1$
+                throw new HandlerException(EnumErrorCatalog.ERR_HAND_023);
             } else {
                 
                 /* Do no throw a RuntimeException ! */
