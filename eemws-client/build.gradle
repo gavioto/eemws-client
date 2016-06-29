@@ -1,4 +1,4 @@
-description = """eemws-client"""
+description = "Client implementation of IEC 62325-504 technical specification. eemws-client includes client classes to invoke the eem web services"
 
 dependencies {
   compile(
@@ -18,4 +18,11 @@ jar {
         attributes 'Implementation-Title': project.description,
                    'Implementation-Version': version
     }
+}
+
+ modifyPom {
+    project {
+         name project.name
+         description project.description
+     }
 }

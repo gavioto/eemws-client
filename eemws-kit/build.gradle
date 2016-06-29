@@ -1,4 +1,4 @@
-description = """eemws-kit"""
+description = "Client implementation of IEC 62325-504 technical specification. eemws-kit-installer is the installer for several GUI applications (browser, editor, ...)"
 
 import org.apache.tools.ant.filters.ReplaceTokens
 

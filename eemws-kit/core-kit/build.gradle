@@ -1,4 +1,4 @@
-description = """core-kit"""
+description = "Client implementation of IEC 62325-504 technical specification. eemws-kit includes command line utilities to invoke the eem web services, as well as several GUI applications (browser, editor, ...)"
 
 dependencies {
   compile(
@@ -15,4 +15,11 @@ jar {
         attributes 'Implementation-Title': project.description,
                    'Implementation-Version': version
     }
+}
+
+ modifyPom {
+    project {
+         name project.name
+         description project.description
+     }
 }

@@ -36,17 +36,17 @@ ext {
 }
 
 allprojects  {
-  apply plugin: 'maven'
-
-  group = 'es.ree.eemws'
   version = scmVersion.version
 }
 
 subprojects {
   apply plugin: 'java'
   apply plugin: 'jacoco'
+  //apply plugin: 'maven'
 
   apply plugin: 'com.bmuschko.nexus'
+
+  group = 'es.ree.eemws'
 
   sourceCompatibility = 1.7
   targetCompatibility = 1.7
@@ -62,6 +62,41 @@ subprojects {
     options.encoding = 'UTF-8'
   }
 
+  modifyPom {
+    project {
+         //name 'eemws-client-parent'
+         //description 'eemws-client libraries'
+         url 'https://bitbucket.org/smree/eemws-client'
+         inceptionYear '2014'
+
+         scm {
+             url 'https://bitbucket.org/smree/eemws-client'
+             connection 'scm:https://bitbucket.org/smree/eemws-client.git'
+             developerConnection 'scm:git://bitbucket.org:smree/eemws-client.git'
+         }
+
+         licenses {
+             license {
+                 name 'GNU General Lesser Public License (LGPL) version 3.0'
+                 url 'https://www.gnu.org/licenses/lgpl-3.0.txt'
+                 distribution 'repo'
+             }
+         }
+
+         developers {
+             developer {
+                 id 'e-jimenez'
+                 name 'Enrique Jiménez Raya'
+                 email 'ejimenez@ree.es'
+             }
+             developer {
+                 id 'agusmba'
+                 name 'Agustín Martín Barbero'
+                 email 'ambarbero@ree.es'
+             }
+         }
+    }
+  }
 }
 
 logger.lifecycle "-------------------------------------------------" + '-' * version.toString().length()
