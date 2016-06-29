@@ -23,7 +23,7 @@ dependencies {
     compile(
       [group: 'eemws', name: 'eemws-utils', version: eemws_core_version],
       [project(':eemws-client')],
-      [project(':eemws-kit:core-kit')]
+      [project(':eemws-kit')]
     )
 }
 
@@ -76,3 +76,12 @@ install {
    actions = []
 }
 install.dependsOn izPackCreateInstaller
+// reset actions included by nexus plugin
+extraArchive {
+    sources = false
+    //test = false
+    javadoc = false
+}
+nexus {   
+   sign = false
+}
