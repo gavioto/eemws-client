@@ -57,7 +57,7 @@ task prepareIzpack(type: Copy) {
 izpack{
     baseDir = file("$buildDir/assemble/izpack") //default
     installFile = file("$baseDir/install.xml") //filtered. no funciona poner $buildDir ...
-    outputFile = file("$buildDir/distributions/${project.name}-${version}-installer.jar")
+    outputFile = file("$buildDir/distributions/${project.name}-${version}.jar")
     compression = 'deflate'
     compressionLevel = 9
     appProperties = ['app.group': 'REE', 'app.name': "${project.name}", 'app.title': 'IEC62325-504 Kit',
