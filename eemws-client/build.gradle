@@ -2,8 +2,8 @@ description = """eemws-client"""
 
 dependencies {
   compile(
-    [group: 'eemws', name: 'eemws-utils', version: eemws_core_version],
-    [group: 'eemws', name: 'eemws-core', version: eemws_core_version],
+    [group: 'es.ree.eemws', name: 'eemws-utils', version: eemws_core_version],
+    [group: 'es.ree.eemws', name: 'eemws-core', version: eemws_core_version],
     [group: 'javax', name: 'javaee-api', version: '6.0']
   )
   testCompile (
