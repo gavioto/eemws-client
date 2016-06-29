@@ -55,7 +55,7 @@ public final class MessageStatus  {
 
     /**
      * Constructor. Creates a new instance of the object containing the status.
-     * @param pStatus String containing value ({@link #STATUS_OK} or {@link #STATUS_NO_OK})
+     * @param pStatus String containing value ({@link #STATUS_OK} or anything else for NOT_OK)
      */
     public MessageStatus(final String pStatus) {
 
