@@ -21,7 +21,7 @@ dependencies {
     }
 
     compile(
-      [group: 'eemws', name: 'eemws-utils', version: eemws_core_version],
+      [group: 'es.ree.eemws', name: 'eemws-utils', version: eemws_core_version],
       [project(':eemws-client')],
       [project(':eemws-kit')]
     )
@@ -84,4 +84,7 @@ extraArchive {
 }
 nexus {   
    sign = false
+}
+uploadArchives {
+    actions = []
 }
