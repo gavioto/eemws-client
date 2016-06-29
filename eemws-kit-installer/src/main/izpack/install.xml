@@ -89,7 +89,7 @@
 			<file src="./lib/eemws-client-@project.version@.jar" targetdir="$INSTALL_PATH/lib"/>
 			<file src="./lib/eemws-core-@eemws_core_version@.jar" targetdir="$INSTALL_PATH/lib"/>
 			<file src="./lib/eemws-utils-@eemws_core_version@.jar" targetdir="$INSTALL_PATH/lib"/>
-			<file src="./lib/core-kit-@project.version@.jar" targetdir="$INSTALL_PATH/lib"/>
+			<file src="./lib/eemws-kit-@project.version@.jar" targetdir="$INSTALL_PATH/lib"/>
 
 			<file src="./COPYING" targetdir="$INSTALL_PATH"/>
 			<file src="./COPYING.LESSER" targetdir="$INSTALL_PATH"/>

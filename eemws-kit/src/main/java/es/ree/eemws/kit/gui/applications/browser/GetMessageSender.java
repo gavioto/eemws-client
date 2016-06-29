@@ -130,7 +130,7 @@ public final class GetMessageSender {
     /**
      * Performs the message retrieval once the graphic components are disabled.
      * @param row Row index.
-     * @see {@link #retrieve(int)}.
+     * @see #retrieve().
      */
     private void retieveWhenDisabled(final int row) {
 

@@ -1,0 +1,90 @@
+description = "Client implementation of IEC 62325-504 technical specification. eemws-kit-installer is the installer for several GUI applications (browser, editor, ...)"
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-izpack-plugin:2.1'
+    }
+}
+
+apply plugin: "com.bmuschko.izpack"
+
+dependencies {
+    izpack ('org.codehaus.izpack:izpack-ant:5.0.8') {  // 5.0.7 fixes https://izpack.atlassian.net/browse/IZPACK-1170
+            // 5.0.8 fixes https://izpack.atlassian.net/browse/IZPACK-1383
+      exclude group: 'org.icepdf.os'  // these dependencies are not found in a public maven repo
+    }
+
+    compile(
+      [group: 'es.ree.eemws', name: 'eemws-utils', version: eemws_core_version],
+      [project(':eemws-client')],
+      [project(':eemws-kit')]
+    )
+}
+
+task prepareIzpack(type: Copy) {
+    dependsOn { [build] }
+
+    destinationDir = "$buildDir/assemble/izpack" as File
+    from ('src/main/izpack') {
+        into '.'
+    }
+    from ('src/main/izpack/install.xml') {
+        into '.'
+        filter(ReplaceTokens, tokens: ['project.version': version.toString(),
+                                       'eemws_core_version': eemws_core_version.toString()])
+        filteringCharset = 'UTF-8'
+    }
+    from ('src/main/resources') {
+        into '.'
+    }
+    from(configurations.runtime) {
+        into 'lib'
+    }
+    from("${rootProject.projectDir}/COPYING") {
+        into '.'
+    }
+    from("${rootProject.projectDir}/COPYING.LESSER") {
+        into '.'
+    }
+}
+
+izpack{
+    baseDir = file("$buildDir/assemble/izpack") //default
+    installFile = file("$baseDir/install.xml") //filtered. no funciona poner $buildDir ...
+    outputFile = file("$buildDir/distributions/${project.name}-${version}-installer.jar")
+    compression = 'deflate'
+    compressionLevel = 9
+    appProperties = ['app.group': 'REE', 'app.name': "${project.name}", 'app.title': 'IEC62325-504 Kit',
+                     'app.version': version, 'app.subpath': "${project.name}-$version"]
+}
+
+izPackCreateInstaller.dependsOn prepareIzpack
+
+//this sub-project should not generate the standard jar, only the izPack installer
+jar {
+   // reset actions included by java plugin
+   actions = []
+}
+install {
+   // reset actions included by maven plugin
+   actions = []
+}
+install.dependsOn izPackCreateInstaller
+// reset actions included by nexus plugin
+extraArchive {
+    sources = false
+    //test = false
+    javadoc = false
+}
+nexus {   
+   sign = false
+}
+uploadArchives {
+    actions = []
+}
