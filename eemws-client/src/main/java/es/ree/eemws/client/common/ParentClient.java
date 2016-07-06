@@ -60,7 +60,7 @@ public abstract class ParentClient {
     private static final QName SERVICE_NAME = new QName("urn:iec62325.504:wss:1:0", "ServiceEME"); //$NON-NLS-1$ //$NON-NLS-2$
 
     /** WSDL file name in order to avoid connection to the remote server just to retrieve it. */
-    private static final String WSDL_FILE = "urn-iec62325-504-wss-1-0.wsdl"; //$NON-NLS-1$
+    private static final String WSDL_FILE = "wsdl/urn-iec62325-504-wss-1-0.wsdl"; //$NON-NLS-1$
 
     /** Web service's URL endpoint . */
     private URL endPoint = null;
