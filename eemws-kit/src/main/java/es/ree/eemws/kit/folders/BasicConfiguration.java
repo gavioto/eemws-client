@@ -53,11 +53,13 @@ public final class BasicConfiguration extends Configuration {
 
     /**
      * Reads the basic set of configuration folders:
+     * <ul>
      * <li>Input</li>
      * <li>Ack</li>
      * <li>Processed</li>
      * <li>Output</li>
      * <li>Backup</li>
+     * </ul>
      * @throws ConfigException  If it is not possible to read the configuration file.
      */
     @Override

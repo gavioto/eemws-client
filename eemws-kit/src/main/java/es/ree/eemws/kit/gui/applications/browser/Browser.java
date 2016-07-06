@@ -54,7 +54,7 @@ import es.ree.eemws.kit.gui.common.Logger;
 import es.ree.eemws.kit.gui.common.ServiceMenuListener;
 
 /**
- * Implements graphic interface for list & get.
+ * Implements graphic interface for list and get.
  *
  * @author Red Eléctrica de España, S.A.U.
  * @version 1.0 09/05/2014

@@ -32,7 +32,7 @@ scmVersion {
 }
 
 ext {
-  eemws_core_version = '1.1.0'  // used in subprojects dependencies
+  eemws_core_version = '1.1.2'  // used in subprojects dependencies
 }
 
 allprojects  {
