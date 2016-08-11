@@ -23,5 +23,8 @@ REM SET JAVA_OPTIONS=%JAVA_OPTIONS% -DUSE_LEGACY_SHA1
 REM Uncomment if you want to send as binary compressed XML payload which size is greater than the specified number of characters (here 1000)
 REM SET JAVA_OPTIONS=%JAVA_OPTIONS% -DXML_TO_BINARY_THRESHOLD_CHARS=1000
 
+REM Uncomment if you want to get the xml outputs pretty printed (note: this could impact in the performance if your system deals with "huge" messages)
+REM SET JAVA_OPTIONS=%JAVA_OPTIONS% -DUSE_PRETTY_PRINT_OUTPUT
+
 REM Uncomment if you face issues with server SNI miss configuration.
 REM SET JAVA_OPTIONS=%JAVA_OPTIONS% -Djsse.enableSNIExtension=false
