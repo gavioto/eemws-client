@@ -23,7 +23,7 @@ export JAVA_OPTIONS=
 #export JAVA_OPTIONS="${JAVA_OPTIONS} -DXML_TO_BINARY_THRESHOLD_CHARS=1000"
 
 # Uncomment if you want to get the xml outputs pretty printed (note: this could impact in the performance if your system deals with "huge" messages)
-#export JAVA_OPTIONS="${JAVA_OPTIONS} -DDUSE_PRETTY_PRINT_OUTPUT"
+#export JAVA_OPTIONS="${JAVA_OPTIONS} -DUSE_PRETTY_PRINT_OUTPUT"
 
 # Uncomment if you face issues with server SNI miss configuration.
 #export JAVA_OPTIONS="${JAVA_OPTIONS} -Djsse.enableSNIExtension=false"
