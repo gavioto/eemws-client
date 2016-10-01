@@ -101,7 +101,7 @@ public final class InputConfigurationSet extends Configuration {
      */
     public void setInputFolder(final String folder) {
         if (isNotNullAndNotEmpty(folder)) {
-            inputFolder = folder;
+            inputFolder = folder.trim();
         }
     }
 
@@ -129,7 +129,7 @@ public final class InputConfigurationSet extends Configuration {
      */
     public void setAckFolder(final String folder) {
         if (isNotNullAndNotEmpty(folder)) {
-            ackFolder = folder;    
+            ackFolder = folder.trim();    
         }        
     }
 
@@ -147,7 +147,7 @@ public final class InputConfigurationSet extends Configuration {
      */
     public void setAckOkFolder(final String folder) {
         if (isNotNullAndNotEmpty(folder)) {
-            ackOkFolder = folder;
+            ackOkFolder = folder.trim();
         }
     }
 
@@ -165,7 +165,7 @@ public final class InputConfigurationSet extends Configuration {
      */
     public void setProcessedFolder(final String folder) {
         if (isNotNullAndNotEmpty(folder)) {
-            processedFolder = folder;
+            processedFolder = folder.trim();
         }
     }
 
@@ -183,7 +183,7 @@ public final class InputConfigurationSet extends Configuration {
      */
     public void setAckFailedFolder(final String folder) {
         if (isNotNullAndNotEmpty(folder)) {
-            ackFailedForder = folder;
+            ackFailedForder = folder.trim();
         }
     }
 
