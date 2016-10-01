@@ -242,7 +242,7 @@ public final class OutputTask implements Runnable {
             if (message.isBinary()) {
                 FileUtil.write(tmpFile.getAbsolutePath(), message.getBinaryPayload());
             } else {
-                FileUtil.writeUTF8(tmpFile.getAbsolutePath(), message.getPrettyPayload()); 
+                FileUtil.writeUTF8(tmpFile.getAbsolutePath(), message.getStringPayload()); 
             }
 
             File file = new File(abosoluteFileName);
