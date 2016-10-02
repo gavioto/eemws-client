@@ -93,7 +93,7 @@ public final class OutputConfigurationSet extends Configuration {
      */
     public void setOutputFolder(final String folder) {
         if (isNotNullAndNotEmpty(folder)) {
-            outputFolder = folder;
+            outputFolder = folder.trim();
         }
     }
 
@@ -132,7 +132,7 @@ public final class OutputConfigurationSet extends Configuration {
      */
     public void setFileNameExtension(final String ext) {
         if (isNotNullAndNotEmpty(ext)) {
-            fileNameExtension = ext;
+            fileNameExtension = ext.trim();
         } else {
             fileNameExtension = FILE_NAME_EXTENSION_AUTO;
         }
