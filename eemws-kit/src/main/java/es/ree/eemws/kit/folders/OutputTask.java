@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 import es.ree.eemws.client.get.GetMessage;
 import es.ree.eemws.client.get.RetrievedMessage;
@@ -93,6 +94,9 @@ public final class OutputTask implements Runnable {
 
     /** Last retrieved file. */
     private RetrievedMessage lastRetrievedFile = null;
+    
+    /** Preference object in order to keep the lastest list's code value. */
+    private Preferences preferences = Preferences.userNodeForPackage(getClass()); 
 
     /**
      * Constructor. Initializes parameters for detection thread.
@@ -118,8 +122,14 @@ public final class OutputTask implements Runnable {
             }
         }
 
-        URL endPoint = oc.get(0).getOutputUrlEndPoint();
-
+        URL endPoint = oc.get(0).getOutputUrlEndPoint(); 
+        
+        lastListCode = preferences.getLong(oc.get(0).getOutputUrlEndPoint().toString(), 0);
+        
+        if (lastListCode != 0) {
+            LOGGER.info(Messages.getString("MF_CONFIG_LST_CODE", setIdss, String.valueOf(lastListCode)));   //$NON-NLS-1$
+        }
+                
         list = new ListMessages();
         list.setEndPoint(endPoint);
 
@@ -367,6 +377,7 @@ public final class OutputTask implements Runnable {
                         int msgCode = message.getCode().intValue();
                         if (msgCode > lastListCode) {
                             lastListCode = msgCode;
+                            preferences.putLong(ocs.get(0).getOutputUrlEndPoint().toString(), lastListCode);
                         }
                     }
 
