@@ -22,5 +22,8 @@ export JAVA_OPTIONS=
 # Uncomment if you want to send as binary compressed XML payload which size is greater than the specified number of characters (here 1000)
 #export JAVA_OPTIONS="${JAVA_OPTIONS} -DXML_TO_BINARY_THRESHOLD_CHARS=1000"
 
+# Uncomment if you want to get the xml outputs pretty printed (note: this could impact in the performance if your system deals with "huge" messages)
+#export JAVA_OPTIONS="${JAVA_OPTIONS} -DUSE_PRETTY_PRINT_OUTPUT"
+
 # Uncomment if you face issues with server SNI miss configuration.
 #export JAVA_OPTIONS="${JAVA_OPTIONS} -Djsse.enableSNIExtension=false"

@@ -30,23 +30,21 @@ import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.w3c.dom.Element;
-
 import ch.iec.tc57._2011.schema.message.ReplyType.ID;
 import ch.iec.tc57._2011.schema.message.ResponseMessage;
 import es.ree.eemws.core.utils.error.EnumErrorCatalog;
 import es.ree.eemws.core.utils.file.GZIPUtil;
 import es.ree.eemws.core.utils.iec61968100.EnumMessageFormat;
 import es.ree.eemws.core.utils.iec61968100.EnumNoun;
+import es.ree.eemws.core.utils.iec61968100.MessageUtil;
 import es.ree.eemws.core.utils.operations.get.GetOperationException;
-import es.ree.eemws.core.utils.xml.XMLElementUtil;
 import es.ree.eemws.core.utils.xml.XMLUtil;
 
 /**
  * Payload response message wrapper. 
  *
  * @author Red Eléctrica de España S.A.U.
- * @version 1.2 17/06/2016
+ * @version 1.3 11/08/2016
  */
 
 public final class RetrievedMessage {
@@ -127,6 +125,7 @@ public final class RetrievedMessage {
 
     /**
      * Returns a pretty print version of this message string (xml) content.
+     * Note: If the System property <code>USE_PRETTY_PRINT_OUTPUT</code> is set, the output is already pretty printed.
      * @return A pretty print (formatted) version of this message string content. <code>null</code> if there is no string payload. 
      */
     public String getPrettyPayload() {
@@ -195,8 +194,7 @@ public final class RetrievedMessage {
                 }
 
             } else {
-                Element message = response.getPayload().getAnies().get(0);
-                xmlContent = XMLElementUtil.element2String(message);
+                xmlContent = MessageUtil.responsePayload2String(response);
             }
 
         } catch (IOException e) {
